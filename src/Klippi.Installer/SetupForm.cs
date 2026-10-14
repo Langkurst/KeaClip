@@ -30,7 +30,8 @@ public sealed class SetupForm : Form
         StartPosition = FormStartPosition.CenterScreen; Font = new("Segoe UI", 10); BackColor = Background; ForeColor = Text1;
         if (Environment.ProcessPath is { } self) Icon = Icon.ExtractAssociatedIcon(self);
         var panel = new FlowLayoutPanel { Dock = DockStyle.Fill, Padding = new(30, 26, 30, 20), FlowDirection = FlowDirection.TopDown, WrapContents = false, AutoScroll = true };
-        panel.Controls.Add(new Label { Text = uninstall ? "Remove KeaClip" : "Install KeaClip", AutoSize = true, Font = new("Segoe UI Semibold", 20), Margin = new(0, 0, 0, 6) });
+        // Large text carries extra side bearing: nudge the heading left so it lines up with the text below.
+        panel.Controls.Add(new Label { Text = uninstall ? "Remove KeaClip" : "Install KeaClip", AutoSize = true, Font = new("Segoe UI Semibold", 20), Margin = new(-4, 0, 0, 6) });
         panel.Controls.Add(new Label
         {
             Text = uninstall
@@ -49,6 +50,8 @@ public sealed class SetupForm : Form
         panel.Controls.Add(_main); panel.Controls.Add(_status);
         Controls.Add(panel);
         AcceptButton = _main;
+        // Start on the main button, not inside the path box (which would show the path selected).
+        Shown += (_, _) => { _folder.SelectionLength = 0; ActiveControl = _main; };
         _browse.LinkClicked += (_, _) => { using var dialog = new FolderBrowserDialog { Description = "Choose an empty folder for KeaClip, or the folder it is already installed in", SelectedPath = _folder.Text, UseDescriptionForTitle = true }; if (dialog.ShowDialog(this) == DialogResult.OK) _folder.Text = dialog.SelectedPath; };
         _main.Click += async (_, _) => { if (_installedApp is { } app) OpenAndClose(app); else await RunAsync(); };
         FormClosing += (_, e) => { if (_busy) { e.Cancel = true; _status.Text = "Almost done. Please wait a moment before closing."; } };
