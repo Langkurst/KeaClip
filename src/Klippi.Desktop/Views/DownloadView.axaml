@@ -505,7 +505,10 @@
               <Grid Name="ShareWhenFinishedRow" ColumnDefinitions="*,Auto" ColumnSpacing="14">
                 <StackPanel Spacing="2" VerticalAlignment="Center">
                   <TextBlock Text="Share when finished" Classes="strong" />
-                  <TextBlock Text="Uploads the finished file to File.Kiwi, encrypted, and copies the link. Links expire. Only share what you're allowed to." Classes="caption muted" TextWrapping="Wrap" />
+                  <TextBlock Text="Uploads the finished file with the file.kiwi API, encrypted, and copies the link. Free to download for 24 hours (less for files over 10 GB). Only share what you're allowed to." Classes="caption muted" TextWrapping="Wrap" />
+                  <Button Name="ShareWhenFinishedHoursLink" Classes="link small" HorizontalAlignment="Left" Padding="0,2" Command="{Binding OpenShareHoursCommand}" ToolTip.Tip="Opens file.kiwi's table of free download hours by file size" AutomationProperties.Name="How long share links last">
+                    <StackPanel Orientation="Horizontal" Spacing="5"><TextBlock Text="How long links last" VerticalAlignment="Center" /><c:StrokeIcon Data="{StaticResource IconExternal}" Size="12" /></StackPanel>
+                  </Button>
                 </StackPanel>
                 <ToggleSwitch Name="ShareWhenFinishedSwitch" Grid.Column="1" IsChecked="{Binding ShareWhenFinished, Mode=TwoWay}" AutomationProperties.Name="Share when finished" AutomationProperties.HelpText="Uploads each finished download to File.Kiwi, encrypted, and copies its link." />
               </Grid>

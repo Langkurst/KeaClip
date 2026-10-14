@@ -17,7 +17,7 @@ No ads, no account, no tracking.</p>
 - **Trim** any video or audio file: drag the orange handles, then export just that part. Pull out the sound as MP3, fade in and out, make a short soundboard clip, or export the selection as a **GIF**.
 - **Fit it for Discord** in one click: Discord (10 MB), Email (25 MB), Nitro Basic (50 MB) or Nitro (500 MB) aims the clip just under that size.
 - **Your game clips** are waiting when you open the Editor: new recordings from Xbox Game Bar, AMD ReLive, NVIDIA and OBS show up ready to trim.
-- **Share** with an encrypted [File.Kiwi](https://file.kiwi) link. The file is encrypted on your PC before it uploads, and links expire on their own.
+- **Share** with an encrypted [file.kiwi](https://file.kiwi) link. Sharing uses the [file.kiwi API](https://file.kiwi/api): the file is encrypted on your PC before it uploads, and the link expires on its own.
 - **Keep** everything in your Library to open, edit or share again later. Removing a record never deletes the file.
 
 | Trim and export | Your library |
@@ -39,6 +39,7 @@ Windows may show an "unknown publisher" warning until KeaClip is code-signed. Th
 - **Only save media you own or are allowed to keep.** KeaClip never gets around DRM or paywalls.
 - **Your stuff stays on your PC.** Settings, history and any browser sign-in stay on this device. Nothing is uploaded unless you choose Share.
 - **Your originals are safe.** Editing makes a new file. KeaClip only deletes an original if you tick that option, and only after the new file checks out.
+- **Share links are free to download for 24 hours** (12 hours for files of 10 to 20 GB, 6 hours for 20 GB or more), then they stop working. These are file.kiwi's times for API uploads and differ from uploads made on the file.kiwi website; see [free download hours by file size](https://file.kiwi/api#free-download-hours-by-file-size).
 
 ## Support
 
@@ -48,6 +49,6 @@ Found a bug or want something added? Open an issue.
 
 ## Licence
 
-KeaClip is free software under the [GNU GPL v3 or later](LICENSE). It's built with [Avalonia](https://avaloniaui.net), [LibVLC](https://www.videolan.org/vlc/libvlc.html), and works with [yt-dlp](https://github.com/yt-dlp/yt-dlp), [FFmpeg](https://ffmpeg.org) and [Deno](https://deno.com). Their licences ship with the app; source details are in [SOURCE.md](docs/SOURCE.md).
+KeaClip is free software under the [GNU GPL v3 or later](LICENSE). It's built with [Avalonia](https://avaloniaui.net), [LibVLC](https://www.videolan.org/vlc/libvlc.html), and works with [file.kiwi](https://file.kiwi/api) for sharing, [yt-dlp](https://github.com/yt-dlp/yt-dlp), [FFmpeg](https://ffmpeg.org) and [Deno](https://deno.com). Their licences ship with the app; source details are in [SOURCE.md](docs/SOURCE.md).
 
 Building from source: see [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).

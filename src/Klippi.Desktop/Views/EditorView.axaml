@@ -591,7 +591,10 @@
                 <Border Classes="well large"><c:StrokeIcon Data="{StaticResource IconShare}" /></Border>
                 <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
                   <TextBlock Text="Share" Classes="section" />
-                  <TextBlock Text="Encrypted on this PC, then uploaded to File.Kiwi. Links expire." Classes="caption muted" TextWrapping="Wrap" />
+                  <TextBlock Name="ShareHoursText" Text="Encrypted on this PC, then uploaded with the file.kiwi API. Free to download for 24 hours (less for files over 10 GB)." Classes="caption muted" TextWrapping="Wrap" />
+                  <Button Name="ShareHoursLink" Classes="link small" HorizontalAlignment="Left" Padding="0,2" Command="{Binding OpenShareHoursCommand}" ToolTip.Tip="Opens file.kiwi's table of free download hours by file size" AutomationProperties.Name="How long share links last">
+                    <StackPanel Orientation="Horizontal" Spacing="5"><TextBlock Text="How long links last" VerticalAlignment="Center" /><c:StrokeIcon Data="{StaticResource IconExternal}" Size="12" /></StackPanel>
+                  </Button>
                 </StackPanel>
               </Grid>
 

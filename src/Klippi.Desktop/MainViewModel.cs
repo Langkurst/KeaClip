@@ -1084,8 +1084,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     public string ShareFileName { get => _shareFileName; private set => SetProperty(ref _shareFileName, value); }
     private Task ShareEditorAsync() => string.IsNullOrWhiteSpace(EditorPath) ? RunAsync(OperationLane.Share, _ => throw new MediaOperationException("Open or choose a local file first.")) : ShareFileAsync(EditorPath);
     /// <summary>
-    /// Shares a local file. A very large one waits for confirmation first, because File.Kiwi upload
-    /// links last 36 hours and an interrupted share cannot resume yet: choosing Share again for the
+    /// Shares a local file. A very large one waits for confirmation first, because File.Kiwi gives an upload
+    /// 36 hours to finish and an interrupted share cannot resume yet: choosing Share again for the
     /// same file (from any Share button), or <see cref="ConfirmLargeShareCommand"/>, starts it.
     /// </summary>
     public Task ShareFileAsync(string path)
@@ -1117,13 +1117,15 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         finally { progress.Close(); IsSharing = false; _sharingPath = null; ShareProgressText = ""; }
         ShareUrl = result.ShareUrl;
         RecordShareLink(path, result.ShareUrl);
-        ShareInfo = (result.FreeDownloadHours is { } hours ? $"Service returned approximately {hours:0.##} hours of free availability. " : "The service did not return a free-availability duration. ") + (result.EstimatedFreeUntil is { } until ? $"Estimated until {until.ToLocalTime():g}. " : "") + "This is an expiring link. Paid retention needs a separate cost and confirmation." + (result.Warning is { } warning ? " " + MediaValidation.Redact(warning) : "");
+        ShareInfo = (result.FreeDownloadHours is { } hours ? $"Free to download for about {hours:0.##} hours" + (result.EstimatedFreeUntil is { } until ? $", until about {until.ToLocalTime():g}. " : ". ")
+                : $"File.Kiwi did not say how long this link lasts; API uploads are usually free to download for {FreeDownloadHoursText(File.Exists(path) ? new FileInfo(path).Length : 0)}. ")
+            + "After that the link stops working." + (result.Warning is { } warning ? " " + MediaValidation.Redact(warning) : "");
         if (!automatic) { SelectedTab = 3; Status = "Upload finished. Copy the full link to share; its decryption secret is not saved to history."; }
         return result;
     }
 
     // ----- Very large shares -----
-    // File.Kiwi upload links last 36 hours and an interrupted share cannot be resumed yet. A file
+    // File.Kiwi gives an upload 36 hours to finish and an interrupted share cannot be resumed yet. A file
     // of about 100 GB, or one that would take over 30 hours at a modest 1 MB/s, could run out of
     // time, so the upload starts only after the user confirms they understand that.
     internal const long LargeShareBytes100Gb = 100_000_000_000;
@@ -1140,10 +1142,17 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     /// <summary>How long Share again confirms the prompt; after that the prompt is shown again.</summary>
     internal TimeSpan LargeShareConfirmWindow { get; set; } = TimeSpan.FromMinutes(5);
     /// <summary>True while a very large share waits for Upload anyway or Cancel.</summary>
+    /// <summary>File.Kiwi's table of how long API uploads stay free to download (they differ from the website's).</summary>
+    public const string ShareHoursUrl = "https://file.kiwi/api#free-download-hours-by-file-size";
+    public IRelayCommand OpenShareHoursCommand => _openShareHours ??= new RelayCommand(() => _services.Platform.OpenUri(new Uri(ShareHoursUrl)));
+    private IRelayCommand? _openShareHours;
+    /// <summary>The published free download time for an API upload of this size: 24 h under 10 GB, 12 h to 20 GB, then 6 h.</summary>
+    public static string FreeDownloadHoursText(long bytes) => bytes < 10_000_000_000 ? "24 hours" : bytes < 20_000_000_000 ? "12 hours" : "6 hours";
+
     public bool HasPendingLargeShare => _largeSharePath is not null;
     public string LargeShareTitle => _largeSharePath is null ? "" : $"Upload {Size(_largeShareBytes)}?";
     public string LargeShareWarning => _largeSharePath is null ? "" :
-        $"{Path.GetFileName(_largeSharePath)} is {Size(_largeShareBytes)}. At about 1 MB/s the upload takes around {EstimatedUploadTime(_largeShareBytes).TotalHours:0} hours. File.Kiwi upload links last 36 hours, and an interrupted share can't be resumed yet, so a slow or interrupted upload has to start again from the beginning.";
+        $"{Path.GetFileName(_largeSharePath)} is {Size(_largeShareBytes)}. At about 1 MB/s the upload takes around {EstimatedUploadTime(_largeShareBytes).TotalHours:0} hours. File.Kiwi gives an upload 36 hours to finish, and an interrupted share can't be resumed yet, so a slow or interrupted upload has to start again from the beginning.";
     /// <summary>Starts the large share the user has confirmed.</summary>
     public IAsyncRelayCommand ConfirmLargeShareCommand => _confirmLargeShareCommand ??= new AsyncRelayCommand(() =>
     {
@@ -1178,7 +1187,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     {
         _largeSharePath = path; _largeShareBytes = bytes; _largeShareAskedAt = Stopwatch.GetTimestamp();
         RaiseLargeShare();
-        Status = $"Large upload ({Size(bytes)}): choose Share again to upload it anyway. File.Kiwi links last 36 hours and an interrupted upload can't resume, so a slow upload may have to start over.";
+        Status = $"Large upload ({Size(bytes)}): choose Share again to upload it anyway. File.Kiwi gives an upload 36 hours to finish and an interrupted upload can't resume, so a slow upload may have to start over.";
     }
     private void ClearLargeShareRequest()
     {

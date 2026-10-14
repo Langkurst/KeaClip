@@ -4,6 +4,7 @@
 
 - Beta copies (`build/package.ps1 -Beta`) open a short **Beta test** checklist on first start: six things to try, Works or Problem for each, a notes box and **Save report**, which writes a plain-text report (answers, Windows version, screen scaling, last error, personal paths removed) to the Desktop to email to keaclip@proton.me. Normal builds show none of it.
 - Updates and the download link now point at the public repository `Langkurst/KeaClip`.
+- Share says how long links last: free to download for 24 hours (12 hours for 10 to 20 GB, 6 hours for 20 GB or more), with a **How long links last** link to file.kiwi's table, and after an upload the time file.kiwi gave that file. The README credits the file.kiwi API. The large-upload warning now says correctly that an upload has 36 hours to finish.
 - The source zip in public packages leaves out private working notes.
 - The installer accepts `--silent` (for winget: per-user install or upgrade, no window) and is about 60 MB smaller (compressed). `build/winget-manifest.ps1` writes the winget manifests for a release.
 

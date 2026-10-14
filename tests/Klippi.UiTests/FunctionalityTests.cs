@@ -550,7 +550,7 @@ public sealed class FunctionalityTests
             await model.ShareFileAsync(file);
             // The prompt stays on the page where Share was chosen, so the same button can confirm it.
             Assert.Equal(0, fake.Sharing.Calls); Assert.True(model.HasPendingLargeShare); Assert.True(model.ShowShareCard); Assert.Equal(2, model.SelectedTab);
-            Assert.StartsWith("Large upload (", model.Status); Assert.Contains(" KB): choose Share again to upload it anyway. File.Kiwi links last 36 hours", model.Status);
+            Assert.StartsWith("Large upload (", model.Status); Assert.Contains(" KB): choose Share again to upload it anyway. File.Kiwi gives an upload 36 hours", model.Status);
             Assert.Contains("36 hours", model.LargeShareWarning); Assert.Contains("can't be resumed", model.LargeShareWarning); Assert.Contains(Path.GetFileName(file), model.LargeShareWarning);
             model.CancelLargeShareCommand.Execute(null);
             Assert.False(model.HasPendingLargeShare); Assert.Equal(0, fake.Sharing.Calls); Assert.Equal("Large upload cancelled. Nothing was uploaded.", model.Status);
