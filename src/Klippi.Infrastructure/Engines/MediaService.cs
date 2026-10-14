@@ -622,7 +622,8 @@ public sealed partial class MediaService(IProcessRunner runner, IComponentServic
         if (options.ClipMode == ClipMode.Lossless) return new ExportEstimate(duration, (long)Math.Ceiling(probe.SizeBytes * seconds / probe.Duration.TotalSeconds), null, "Estimated from the source average bitrate; keyframes and variable bitrate affect the actual size.");
         if (encodesVideo && PresetCapKbps(probe, options) is { } cap)
             return new ExportEstimate(duration, (long)Math.Ceiling((cap + (probe.HasAudio ? AudioKbpsFor(probe, options) : 0)) * 1000d / 8 * seconds * 1.02), cap, $"Estimated from the source bitrate: this preset aims to keep video at or below about {cap.ToString(EngineSupport.Invariant)} kbps, so the result is usually about this size or smaller; hardware H.264 can land higher. The actual size is checked after export." + sdrNote);
-        return new ExportEstimate(duration, null, null, "Quality-based encoding has no reliable size estimate until the file is exported." + sdrNote);
+        // The card already says the size is known after export; only an HDR note needs saying.
+        return new ExportEstimate(duration, null, null, sdrNote.Trim());
     }
     private static string Note(string? note) => note is null ? "" : " " + note;
     private static string CompressionName(CompressionPreset preset) => preset == CompressionPreset.VerySmall ? "Very small" : preset.ToString();

@@ -45,7 +45,7 @@ Windows may show an "unknown publisher" warning until KeaClip is code-signed. Th
 
 KeaClip is free and always will be. If it saved you some time, you can [shout me a coffee on Ko-fi](https://ko-fi.com/keaclip). It helps me keep making it better.
 
-Found a bug or want something added? Open an issue.
+Found a bug or want something added? Open an issue, or email [keaclip@proton.me](mailto:keaclip@proton.me).
 
 ## Licence
 

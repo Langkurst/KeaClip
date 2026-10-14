@@ -404,6 +404,12 @@
             </StackPanel>
             <Border Classes="divider" />
             <StackPanel Spacing="6">
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <TextBlock Text="Questions, bugs or ideas:" Classes="caption muted" VerticalAlignment="Center" />
+                <Button Name="ContactEmailButton" Classes="link small" Padding="0,2" Command="{Binding CopyContactEmailCommand}" ToolTip.Tip="Copy the email address" AutomationProperties.Name="Copy the KeaClip contact email address">
+                  <StackPanel Orientation="Horizontal" Spacing="5"><TextBlock Text="{Binding ContactEmail}" VerticalAlignment="Center" /><c:StrokeIcon Data="{StaticResource IconCopy}" Size="12" /></StackPanel>
+                </Button>
+              </StackPanel>
               <TextBlock Text="KeaClip works with open-source tools including yt-dlp, FFmpeg, LibVLC, Deno and Avalonia. Their licences and notices ship with the app in its Licenses folder." Classes="caption muted" />
               <TextBlock Text="Download only media you own or are allowed to save. KeaClip never bypasses DRM." Classes="caption muted" />
             </StackPanel>

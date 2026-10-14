@@ -187,7 +187,7 @@
           </Button>
         </TextBox.InnerRightContent>
       </TextBox>
-      <Button Grid.Column="1" Name="ClearHistoryButton" MinHeight="40" IsEnabled="{Binding HasHistoryRecords}" ToolTip.Tip="Remove every record from the library. Your files are kept." AutomationProperties.Name="Clear history records">
+      <Button Grid.Column="1" Name="ClearHistoryButton" Classes="ghost" MinHeight="40" IsEnabled="{Binding HasHistoryRecords}" ToolTip.Tip="Remove every record from the library. Your files are kept." AutomationProperties.Name="Clear history records">
         <StackPanel Orientation="Horizontal" Spacing="8">
           <c:StrokeIcon Data="{StaticResource IconBroom}" Size="16" Classes="muted" />
           <TextBlock Text="Clear history" VerticalAlignment="Center" />

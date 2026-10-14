@@ -489,7 +489,7 @@
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
                   <StackPanel Spacing="2" VerticalAlignment="Center">
                     <TextBlock Text="Just part of it" Classes="strong" />
-                    <TextBlock Text="Save only the bit you want, like 0:45 to 1:20 of a long stream, without downloading the rest." Classes="caption muted" TextWrapping="Wrap" />
+                    <TextBlock Text="Save only the bit you want, like 0:45 to 1:20, without downloading the rest." Classes="caption muted" TextWrapping="Wrap" />
                   </StackPanel>
                   <ToggleSwitch Name="SavePartSwitch" Grid.Column="1" IsChecked="{Binding SavePart, Mode=TwoWay}" AutomationProperties.Name="Save just part of it" />
                 </Grid>
@@ -505,7 +505,7 @@
               <Grid Name="ShareWhenFinishedRow" ColumnDefinitions="*,Auto" ColumnSpacing="14">
                 <StackPanel Spacing="2" VerticalAlignment="Center">
                   <TextBlock Text="Share when finished" Classes="strong" />
-                  <TextBlock Text="Uploads the finished file with the file.kiwi API, encrypted, and copies the link. Free to download for 24 hours (less for files over 10 GB). Only share what you're allowed to." Classes="caption muted" TextWrapping="Wrap" />
+                  <TextBlock Text="Uploads it encrypted to file.kiwi and copies the link. Free to download for 24 hours." Classes="caption muted" TextWrapping="Wrap" />
                   <Button Name="ShareWhenFinishedHoursLink" Classes="link small" HorizontalAlignment="Left" Padding="0,2" Command="{Binding OpenShareHoursCommand}" ToolTip.Tip="Opens file.kiwi's table of free download hours by file size" AutomationProperties.Name="How long share links last">
                     <StackPanel Orientation="Horizontal" Spacing="5"><TextBlock Text="How long links last" VerticalAlignment="Center" /><c:StrokeIcon Data="{StaticResource IconExternal}" Size="12" /></StackPanel>
                   </Button>

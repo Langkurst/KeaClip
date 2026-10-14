@@ -279,6 +279,10 @@ public sealed class EditorViewTests
         try
         {
             await model.InitializeAsync(); model.ReducedMotion = true; await model.OpenEditorAsync("fixture.mp4"); window.UpdateLayout();
+            // Cut (Lossless / Exact) lives under Advanced: Exact is the default and right for nearly everyone.
+            Assert.False(window.FindNamed<Expander>("AdvancedExpander")!.IsExpanded);
+            window.FindNamed<Expander>("AdvancedExpander")!.IsExpanded = true; window.UpdateLayout();
+            model.DeleteOriginal = true; window.UpdateLayout(); Assert.True(window.FindNamed<StackPanel>("DeleteOriginalReminder")!.IsVisible); model.DeleteOriginal = false;
             Click(window, window.FindNamed<RadioButton>("LosslessTile")!);
             Assert.Equal(ClipMode.Lossless, model.ClipMode); Assert.False(window.FindNamed<Grid>("ExportConversionControls")!.IsEnabled);
             Assert.Equal("Lossless copy", model.EstimateQualityText);
@@ -958,7 +962,7 @@ public sealed class EditorViewTests
             if (target is { } bytes) return new(duration, bytes, options.AudioOnly ? null : 900, "Target is an estimate; the actual exported size is checked before completion.");
             if (options.ClipMode == ClipMode.Lossless) return new(duration, (long)Math.Ceiling(probe.SizeBytes * duration.TotalSeconds / probe.Duration.TotalSeconds), null, "Estimated from the source average bitrate.");
             if (options.AudioOnly && options.AudioFormat is AudioFormat.Mp3 or AudioFormat.Aac or AudioFormat.Opus or AudioFormat.Ogg) return new(duration, (long)Math.Ceiling(duration.TotalSeconds * options.AudioKbps * 1000 / 8 * 1.03), null, "Estimated audio size.");
-            return new(duration, null, null, "Quality-based encoding has no reliable size estimate until the file is exported.");
+            return new(duration, null, null, "");
         }
     }
 

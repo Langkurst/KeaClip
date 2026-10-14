@@ -273,7 +273,7 @@ public sealed partial class MainViewModel
     public bool HasEstimateProblem => _probe is not null && _editorEstimate is null;
     public string EstimateOriginalText => _probe is null ? "—" : Size(_probe.SizeBytes);
     public string EstimateOutputText => _editorEstimate?.EstimatedBytes is { } bytes ? "≈ " + Size(bytes) : "Known after export";
-    public string EstimateDetailText => _editorEstimate is { } estimate ? $"{MediaValidation.Timecode(estimate.Duration)} selected · {estimate.Explanation}" : "";
+    public string EstimateDetailText => _editorEstimate is { } estimate ? ClockText(estimate.Duration, EditorDuration) + " selected" + (string.IsNullOrWhiteSpace(estimate.Explanation) ? "" : " · " + estimate.Explanation) : "";
     public string EstimateQualityText => !IsExactClip ? "Lossless copy" : AudioOnly && Compression is not (CompressionPreset.Off or CompressionPreset.TargetSize) ? AudioPresetQualityText() : Compression switch
     {
         CompressionPreset.Off => "Full quality",

@@ -6,6 +6,8 @@
 - Updates and the download link now point at the public repository `Langkurst/KeaClip`.
 - Share says how long links last: free to download for 24 hours (12 hours for 10 to 20 GB, 6 hours for 20 GB or more), with a **How long links last** link to file.kiwi's table, and after an upload the time file.kiwi gave that file. The README credits the file.kiwi API. The large-upload warning now says correctly that an upload has 36 hours to finish.
 - The source zip in public packages leaves out private working notes.
+- Tidier Editor: the rarely used Cut choice (Lossless or Exact) and Delete the original moved under Advanced, with a reminder by Export while Delete the original is on; the size panel no longer repeats itself; the Length badge is neutral; Compression reads "Off · full quality".
+- Shorter captions on the Download page, a quieter Clear history in the Library, and a contact address (keaclip@proton.me) in Settings, About and the README.
 - The installer accepts `--silent` (for winget: per-user install or upgrade, no window) and is about 60 MB smaller (compressed). `build/winget-manifest.ps1` writes the winget manifests for a release.
 
 ## 0.3.1 - tidier export, recordings switch (2026-10-14)

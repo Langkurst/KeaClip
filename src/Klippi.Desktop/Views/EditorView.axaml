@@ -301,7 +301,7 @@
                 </StackPanel>
                 <StackPanel Grid.Column="2">
                   <TextBlock Text="Length" Classes="label" />
-                  <Border Classes="chip warm" Height="40" Padding="12,0" CornerRadius="8" Classes.danger="{Binding !IsSelectionValid}">
+                  <Border Classes="chip" Height="40" Padding="12,0" CornerRadius="8" Classes.danger="{Binding !IsSelectionValid}">
                     <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
                       <c:StrokeIcon Data="{StaticResource IconClock}" Size="15" />
                       <TextBlock Name="SelectionLength" Text="{Binding SelectionDurationText}" Classes="tabular strong" VerticalAlignment="Center" />
@@ -323,7 +323,7 @@
                 <Border Classes="well large"><c:StrokeIcon Data="{StaticResource IconScissors}" /></Border>
                 <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
                   <TextBlock Text="Export" Classes="section" />
-                  <TextBlock Text="Choose what to keep and how to cut it." Classes="caption muted" />
+                  <TextBlock Text="Pick a size, then export. Your original is kept." Classes="caption muted" />
                 </StackPanel>
               </Grid>
 
@@ -370,24 +370,6 @@
                 </UniformGrid>
               </StackPanel>
 
-              <StackPanel Spacing="8">
-                <TextBlock Text="CUT" Classes="overline" />
-                <Grid Name="CutTiles" ColumnDefinitions="*,*" ColumnSpacing="2" Margin="-4">
-                  <RadioButton Name="LosslessTile" Classes="tile" GroupName="EditorClipMode" IsChecked="{Binding ClipMode, Mode=TwoWay, Converter={StaticResource EditorChoice}, ConverterParameter=Lossless}" AutomationProperties.Name="Lossless clip">
-                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
-                      <c:StrokeIcon Data="{StaticResource IconSparkle}" Size="18" VerticalAlignment="Top" Margin="0,1,0,0" />
-                      <StackPanel Grid.Column="1" Spacing="2"><TextBlock Text="Lossless" Classes="tile-title" /><TextBlock Text="Fast, no re-encode" Classes="caption muted" /></StackPanel>
-                    </Grid>
-                  </RadioButton>
-                  <RadioButton Name="ExactTile" Grid.Column="1" Classes="tile" GroupName="EditorClipMode" IsChecked="{Binding ClipMode, Mode=TwoWay, Converter={StaticResource EditorChoice}, ConverterParameter=Exact}" AutomationProperties.Name="Exact clip">
-                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
-                      <c:StrokeIcon Data="{StaticResource IconScissors}" Size="18" VerticalAlignment="Top" Margin="0,1,0,0" />
-                      <StackPanel Grid.Column="1" Spacing="2"><TextBlock Text="Exact" Classes="tile-title" /><TextBlock Text="Frame-accurate" Classes="caption muted" /></StackPanel>
-                    </Grid>
-                  </RadioButton>
-                </Grid>
-                <TextBlock Classes="caption muted reveal" TextWrapping="Wrap" IsVisible="{Binding !IsExactClip}" Text="Lossless is fastest and keeps full quality, but cuts can land slightly off. Choose Exact for precise cuts, a new size or format, fades or soundboard clips." />
-              </StackPanel>
 
               <!-- Size targets for sharing are the Fit for buttons above; a custom size is Compression, Target size. -->
               <Grid RowDefinitions="Auto,Auto" IsEnabled="{Binding IsExactClip}">
@@ -445,11 +427,47 @@
                     <c:StrokeIcon Data="{StaticResource IconSettings}" Size="16" Classes="muted" />
                     <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
                       <TextBlock Text="Advanced" FontWeight="SemiBold" VerticalAlignment="Center" />
-                      <TextBlock Text="codec, encoder, size, FPS" Classes="expander-hint" VerticalAlignment="Center" />
+                      <TextBlock Text="cut, codec, size, keep or delete the original" Classes="expander-hint" VerticalAlignment="Center" />
                     </StackPanel>
                   </Grid>
                 </Expander.Header>
                 <StackPanel Spacing="16" Margin="0,4,0,2">
+                  <StackPanel Spacing="8">
+                    <TextBlock Text="CUT" Classes="overline" />
+                    <Grid Name="CutTiles" ColumnDefinitions="*,*" ColumnSpacing="2" Margin="-4">
+                      <RadioButton Name="LosslessTile" Classes="tile" GroupName="EditorClipMode" IsChecked="{Binding ClipMode, Mode=TwoWay, Converter={StaticResource EditorChoice}, ConverterParameter=Lossless}" AutomationProperties.Name="Lossless clip">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                          <c:StrokeIcon Data="{StaticResource IconSparkle}" Size="18" VerticalAlignment="Top" Margin="0,1,0,0" />
+                          <StackPanel Grid.Column="1" Spacing="2"><TextBlock Text="Lossless" Classes="tile-title" /><TextBlock Text="Fast, no re-encode" Classes="caption muted" /></StackPanel>
+                        </Grid>
+                      </RadioButton>
+                      <RadioButton Name="ExactTile" Grid.Column="1" Classes="tile" GroupName="EditorClipMode" IsChecked="{Binding ClipMode, Mode=TwoWay, Converter={StaticResource EditorChoice}, ConverterParameter=Exact}" AutomationProperties.Name="Exact clip">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                          <c:StrokeIcon Data="{StaticResource IconScissors}" Size="18" VerticalAlignment="Top" Margin="0,1,0,0" />
+                          <StackPanel Grid.Column="1" Spacing="2"><TextBlock Text="Exact" Classes="tile-title" /><TextBlock Text="Frame-accurate" Classes="caption muted" /></StackPanel>
+                        </Grid>
+                      </RadioButton>
+                    </Grid>
+                    <TextBlock Classes="caption muted reveal" TextWrapping="Wrap" IsVisible="{Binding !IsExactClip}" Text="Lossless is fastest and keeps full quality, but cuts can land slightly off. Choose Exact for precise cuts, a new size or format, fades or soundboard clips." />
+                  </StackPanel>
+                  <!-- Keep or delete the original -->
+                  <Border Classes="inset" Padding="14,12">
+                    <StackPanel Spacing="10">
+                      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                        <StackPanel Spacing="2" VerticalAlignment="Center">
+                          <TextBlock Text="Delete the original afterwards" FontWeight="Medium" />
+                          <TextBlock Text="Only after the new file exports and passes verification." Classes="caption muted" />
+                        </StackPanel>
+                        <ToggleSwitch Name="DeleteOriginalSwitch" Grid.Column="1" Classes="trailing" IsChecked="{Binding DeleteOriginal, Mode=TwoWay}" AutomationProperties.Name="Delete the original after a verified export" />
+                      </Grid>
+                      <Border Classes="notice danger reveal" Padding="12,10" IsVisible="{Binding DeleteOriginal}">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                          <c:StrokeIcon Data="{StaticResource IconAlert}" Size="16" Classes="danger" VerticalAlignment="Top" />
+                          <TextBlock Grid.Column="1" Text="The original is permanently deleted, not moved to the Recycle Bin. Leave this off if you might want the full file later." Classes="caption" TextWrapping="Wrap" Foreground="{DynamicResource AppDanger}" />
+                        </Grid>
+                      </Border>
+                    </StackPanel>
+                  </Border>
                   <Grid Name="ExportConversionControls" ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="12" IsEnabled="{Binding IsExactClip}">
                     <StackPanel><TextBlock Text="Video codec" Classes="label" /><ComboBox ItemsSource="{Binding VideoCodecs}" SelectedItem="{Binding ExportCodec, Mode=TwoWay}" AutomationProperties.Name="Video codec" /></StackPanel>
                     <StackPanel Grid.Column="1"><TextBlock Text="Encoder" Classes="label" /><ComboBox ItemsSource="{Binding EncoderPreferences}" SelectedItem="{Binding Encoder, Mode=TwoWay}" AutomationProperties.Name="Encoder preference" /></StackPanel>
@@ -522,27 +540,14 @@
                 </StackPanel>
               </Expander>
 
-              <!-- Keep or delete the original -->
-              <Border Classes="inset" Padding="14,12">
-                <StackPanel Spacing="10">
-                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                    <StackPanel Spacing="2" VerticalAlignment="Center">
-                      <TextBlock Text="Delete the original afterwards" FontWeight="Medium" />
-                      <TextBlock Text="Only after the new file exports and passes verification." Classes="caption muted" />
-                    </StackPanel>
-                    <ToggleSwitch Name="DeleteOriginalSwitch" Grid.Column="1" Classes="trailing" IsChecked="{Binding DeleteOriginal, Mode=TwoWay}" AutomationProperties.Name="Delete the original after a verified export" />
-                  </Grid>
-                  <Border Classes="notice danger reveal" Padding="12,10" IsVisible="{Binding DeleteOriginal}">
-                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
-                      <c:StrokeIcon Data="{StaticResource IconAlert}" Size="16" Classes="danger" VerticalAlignment="Top" />
-                      <TextBlock Grid.Column="1" Text="The original is permanently deleted, not moved to the Recycle Bin. Leave this off if you might want the full file later." Classes="caption" TextWrapping="Wrap" Foreground="{DynamicResource AppDanger}" />
-                    </Grid>
-                  </Border>
-                </StackPanel>
-              </Border>
 
               <!-- Export action + progress (steps back to secondary once a clip is ready to share) -->
               <StackPanel Spacing="10">
+                <!-- "Delete the original" lives under Advanced, so say it here too while it is on. -->
+                <StackPanel Name="DeleteOriginalReminder" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" Classes="reveal" IsVisible="{Binding DeleteOriginal}">
+                  <c:StrokeIcon Data="{StaticResource IconAlert}" Size="14" Classes="danger" VerticalAlignment="Center" />
+                  <TextBlock Text="The original will be deleted after a verified export." Classes="caption" Foreground="{DynamicResource AppDanger}" VerticalAlignment="Center" />
+                </StackPanel>
                 <Button Name="ExportButton" Classes="large" Classes.primary="{Binding IsExportPrimary}" Classes.cta="{Binding IsExportPrimary}" HorizontalAlignment="Stretch" Command="{Binding ExportCommand}" IsEnabled="{Binding CanExport}" AutomationProperties.Name="{Binding ExportButtonText}" ToolTip.Tip="Choose where to save, then export the selected range">
                   <StackPanel Orientation="Horizontal" Spacing="9"><c:StrokeIcon Data="{StaticResource IconScissors}" /><TextBlock Text="{Binding ExportButtonText}" VerticalAlignment="Center" /></StackPanel>
                 </Button>

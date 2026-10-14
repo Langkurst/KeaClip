@@ -14,7 +14,7 @@ public sealed class ChoiceLabelConverter : IValueConverter
         MediaContainer.Auto => "Automatic", MediaContainer.Mp4 => "MP4", MediaContainer.Mkv => "MKV", MediaContainer.WebM => "WebM",
         EncoderPreference.Auto => "Automatic", EncoderPreference.Gpu => "Hardware encoder", EncoderPreference.Cpu => "CPU encoder",
         ClipMode.Lossless => "Lossless · near keyframes", ClipMode.Exact => "Exact · re-encode",
-        CompressionPreset.TargetSize => "Target size", CompressionPreset.VerySmall => "Very small",
+        CompressionPreset.Off => "Off · full quality", CompressionPreset.TargetSize => "Target size", CompressionPreset.VerySmall => "Very small",
         CloseBehavior.Exit => "Exit app", CloseBehavior.Tray => "Keep in tray", CloseBehavior.Ask => "Ask each time",
         _ => value?.ToString() ?? ""
     };
