@@ -1,0 +1,25 @@
+* text=auto
+.gitattributes text eol=lf
+.gitignore text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.json text eol=lf
+*.jsonl text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.cs text eol=lf
+*.csproj text eol=lf
+*.axaml text eol=lf
+*.ps1 text eol=crlf
+
+# Preserve the exact bytes of the supplied brief, including its original line endings.
+docs/PROJECT_BRIEF.txt -text
+docs/vendor-notices/** -text -whitespace
+*.png binary
+*.jpg binary
+*.ico binary
+*.mp4 binary
+*.mkv binary
+*.webm binary
+*.mp3 binary
+*.wav binary

@@ -1,0 +1,642 @@
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:c="using:Klippi.Desktop.Controls">
+  <!--
+    KeaClip design system.
+    Motion rule: every animation/transition below is scoped to "Window.motion", a class
+    MainWindow sets only while reduced motion is off. Animations touch Opacity and
+    transforms only (compositor-friendly, no relayout per frame). Colour fades are kept
+    in reduced motion because they do not move anything.
+    Keyframes animate TranslateTransform/ScaleTransform/RotateTransform paths (Avalonia
+    builds the transform group); transitions use TransformOperations. Never mix both on
+    one element: keyframe targets must not also get a TransformOperations RenderTransform.
+  -->
+
+  <!-- ===== Base & typography ===== -->
+  <Style Selector="Window">
+    <Setter Property="Background" Value="{DynamicResource AppBackground}" />
+    <Setter Property="Foreground" Value="{DynamicResource AppText}" />
+    <Setter Property="FontSize" Value="14" />
+  </Style>
+  <Style Selector="TextBlock.display"><Setter Property="FontFamily" Value="{StaticResource DisplayFont}" /><Setter Property="FontSize" Value="28" /><Setter Property="FontWeight" Value="Bold" /><Setter Property="LetterSpacing" Value="-0.5" /></Style>
+  <Style Selector="TextBlock.title"><Setter Property="FontFamily" Value="{StaticResource DisplayFont}" /><Setter Property="FontSize" Value="27" /><Setter Property="FontWeight" Value="Bold" /><Setter Property="LetterSpacing" Value="-0.5" /></Style>
+  <Style Selector="TextBlock.h1"><Setter Property="FontFamily" Value="{StaticResource DisplayFont}" /><Setter Property="FontSize" Value="20" /><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="LetterSpacing" Value="-0.2" /></Style>
+  <Style Selector="TextBlock.section"><Setter Property="FontFamily" Value="{StaticResource DisplayFont}" /><Setter Property="FontSize" Value="17" /><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="LetterSpacing" Value="-0.1" /></Style>
+  <Style Selector="TextBlock.wordmark"><Setter Property="FontFamily" Value="{StaticResource DisplayFont}" /><Setter Property="FontSize" Value="21" /><Setter Property="FontWeight" Value="Bold" /><Setter Property="LetterSpacing" Value="-0.4" /></Style>
+  <Style Selector="TextBlock.strong"><Setter Property="FontWeight" Value="SemiBold" /></Style>
+  <Style Selector="TextBlock.muted"><Setter Property="Foreground" Value="{DynamicResource AppMuted}" /><Setter Property="TextWrapping" Value="Wrap" /></Style>
+  <Style Selector="TextBlock.faint"><Setter Property="Foreground" Value="{DynamicResource AppFaint}" /></Style>
+  <Style Selector="TextBlock.caption"><Setter Property="FontSize" Value="12" /><Setter Property="LineHeight" Value="17" /></Style>
+  <Style Selector="TextBlock.label"><Setter Property="Foreground" Value="{DynamicResource AppMuted}" /><Setter Property="FontSize" Value="12" /><Setter Property="FontWeight" Value="Medium" /><Setter Property="Margin" Value="0,0,0,6" /></Style>
+  <Style Selector="TextBlock.overline"><Setter Property="Foreground" Value="{DynamicResource AppFaint}" /><Setter Property="FontSize" Value="11" /><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="LetterSpacing" Value="0.8" /></Style>
+  <Style Selector="TextBlock.accent"><Setter Property="Foreground" Value="{DynamicResource AppAccent}" /></Style>
+  <Style Selector="TextBlock.danger"><Setter Property="Foreground" Value="{DynamicResource AppDanger}" /></Style>
+  <Style Selector="TextBlock.tabular"><Setter Property="FontFeatures" Value="+tnum" /></Style>
+
+  <!-- ===== Surfaces ===== -->
+  <Style Selector="Border.card">
+    <Setter Property="Background" Value="{DynamicResource AppSurface}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource AppBorder}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="{StaticResource RadiusCard}" />
+    <Setter Property="Padding" Value="22" />
+    <Setter Property="BoxShadow" Value="{DynamicResource ShadowCard}" />
+  </Style>
+  <Style Selector="Border.card.compact"><Setter Property="Padding" Value="16" /></Style>
+  <Style Selector="Border.inset">
+    <Setter Property="Background" Value="{DynamicResource AppSurfaceRaised}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource AppBorder}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="Padding" Value="14" />
+  </Style>
+  <Style Selector="Border.divider"><Setter Property="Height" Value="1" /><Setter Property="Background" Value="{DynamicResource AppBorder}" /></Style>
+  <Style Selector="Border.chip">
+    <Setter Property="CornerRadius" Value="{StaticResource RadiusChip}" />
+    <Setter Property="Padding" Value="8,3" />
+    <Setter Property="Background" Value="{DynamicResource AppSurfaceRaised}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource AppBorder}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="TextElement.FontSize" Value="11.5" />
+    <Setter Property="TextElement.FontWeight" Value="Medium" />
+    <Setter Property="TextElement.Foreground" Value="{DynamicResource AppMuted}" />
+  </Style>
+  <Style Selector="Border.chip.accent"><Setter Property="Background" Value="{DynamicResource AppAccentSubtle}" /><Setter Property="BorderBrush" Value="Transparent" /><Setter Property="TextElement.Foreground" Value="{DynamicResource AppAccentSubtleText}" /></Style>
+  <Style Selector="Border.chip.warm"><Setter Property="Background" Value="{DynamicResource AppWarmSubtle}" /><Setter Property="BorderBrush" Value="Transparent" /><Setter Property="TextElement.Foreground" Value="{DynamicResource AppWarmText}" /></Style>
+  <Style Selector="Border.chip.danger"><Setter Property="Background" Value="{DynamicResource AppDangerSubtle}" /><Setter Property="BorderBrush" Value="Transparent" /><Setter Property="TextElement.Foreground" Value="{DynamicResource AppDanger}" /></Style>
+  <Style Selector="Border.chip.warning"><Setter Property="Background" Value="{DynamicResource AppWarningSubtle}" /><Setter Property="BorderBrush" Value="Transparent" /><Setter Property="TextElement.Foreground" Value="{DynamicResource AppWarning}" /></Style>
+  <Style Selector="Border.chip.info"><Setter Property="Background" Value="{DynamicResource AppInfoSubtle}" /><Setter Property="BorderBrush" Value="Transparent" /><Setter Property="TextElement.Foreground" Value="{DynamicResource AppInfo}" /></Style>
+  <Style Selector="Border.notice">
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="Padding" Value="16,14" />
+    <Setter Property="Background" Value="{DynamicResource AppInfoSubtle}" />
+  </Style>
+  <Style Selector="Border.notice.warning"><Setter Property="Background" Value="{DynamicResource AppWarningSubtle}" /></Style>
+  <Style Selector="Border.notice.danger"><Setter Property="Background" Value="{DynamicResource AppDangerSubtle}" /></Style>
+  <Style Selector="Border.notice.accent"><Setter Property="Background" Value="{DynamicResource AppAccentSubtle}" /></Style>
+  <Style Selector="Border.skeleton"><Setter Property="Background" Value="{DynamicResource AppSkeleton}" /><Setter Property="CornerRadius" Value="6" /></Style>
+  <Style Selector="Border.media-frame">
+    <Setter Property="Background" Value="{DynamicResource AppVideoBackdrop}" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="ClipToBounds" Value="True" />
+  </Style>
+  <!-- Until a picture arrives the frame is a quiet tile, not a black block (bind the class to "no thumbnail"). -->
+  <Style Selector="Border.media-frame.placeholder">
+    <Setter Property="Background" Value="{DynamicResource AppSurfaceRaised}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource AppBorder}" />
+    <Setter Property="BorderThickness" Value="1" />
+  </Style>
+  <!-- Icon well: a soft rounded square that anchors a heading, notice or row (36px; `large` is the
+       38px card-heading size). Its glyph turns accent; `warm`, `neutral` and `raised` change the tone.
+       Top-aligned by default so it sits on the first line of wrapping text beside it. -->
+  <Style Selector="Border.well">
+    <Setter Property="Width" Value="36" />
+    <Setter Property="Height" Value="36" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="Background" Value="{DynamicResource AppAccentSubtle}" />
+    <Setter Property="VerticalAlignment" Value="Top" />
+  </Style>
+  <Style Selector="Border.well c|StrokeIcon"><Setter Property="Foreground" Value="{DynamicResource AppAccent}" /></Style>
+  <Style Selector="Border.well.large"><Setter Property="Width" Value="38" /><Setter Property="Height" Value="38" /></Style>
+  <Style Selector="Border.well.large c|StrokeIcon"><Setter Property="Size" Value="20" /></Style>
+  <Style Selector="Border.well.warm"><Setter Property="Background" Value="{DynamicResource AppWarmSubtle}" /></Style>
+  <Style Selector="Border.well.warm c|StrokeIcon"><Setter Property="Foreground" Value="{DynamicResource AppWarm}" /></Style>
+  <Style Selector="Border.well.raised"><Setter Property="Background" Value="{DynamicResource AppSurface}" /></Style>
+  <Style Selector="Border.well.neutral"><Setter Property="Background" Value="{DynamicResource AppSurfaceRaised}" /></Style>
+  <Style Selector="Border.well.neutral c|StrokeIcon"><Setter Property="Foreground" Value="{DynamicResource AppMuted}" /></Style>
+
+  <!-- ===== Icons ===== -->
+  <Style Selector="c|StrokeIcon.muted"><Setter Property="Foreground" Value="{DynamicResource AppMuted}" /></Style>
+  <Style Selector="c|StrokeIcon.faint"><Setter Property="Foreground" Value="{DynamicResource AppFaint}" /></Style>
+  <!-- Faint hints on the video backdrop (dark in both themes) use a light faint tone: the page's
+       faint text is tuned for light surfaces in the Light theme and would vanish here. -->
+  <Style Selector="Border.media-frame:not(.placeholder) TextBlock.faint"><Setter Property="Foreground" Value="{DynamicResource AppOnVideoFaint}" /></Style>
+  <Style Selector="Border.media-frame:not(.placeholder) c|StrokeIcon.faint"><Setter Property="Foreground" Value="{DynamicResource AppOnVideoFaint}" /></Style>
+  <Style Selector="c|StrokeIcon.accent"><Setter Property="Foreground" Value="{DynamicResource AppAccent}" /></Style>
+  <Style Selector="c|StrokeIcon.warm"><Setter Property="Foreground" Value="{DynamicResource AppWarm}" /></Style>
+  <Style Selector="c|StrokeIcon.danger"><Setter Property="Foreground" Value="{DynamicResource AppDanger}" /></Style>
+
+  <!-- ===== Buttons ===== -->
+  <Style Selector="Button">
+    <Setter Property="CornerRadius" Value="6" />
+    <Setter Property="Padding" Value="14,8" />
+    <Setter Property="MinHeight" Value="36" />
+    <Setter Property="FontWeight" Value="Medium" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+    <!-- Keyboard focus: a rounded accent ring instead of Fluent's square black-and-white box.
+         Adorners are clipped to the button's bounds, so the ring sits on its edge with a thin
+         background-coloured gap inside, which keeps it readable on accent-filled buttons too.
+         Shapes other than the 8px default (large, nav, round) get matching rings below. -->
+    <Setter Property="FocusAdorner">
+      <FocusAdornerTemplate>
+        <Border BorderBrush="{DynamicResource AppAccent}" BorderThickness="2" CornerRadius="6">
+          <Border BorderBrush="{DynamicResource AppBackground}" BorderThickness="1.5" CornerRadius="4" />
+        </Border>
+      </FocusAdornerTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="Button /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Transitions">
+      <Transitions>
+        <BrushTransition Property="Background" Duration="0:0:0.14" />
+        <BrushTransition Property="BorderBrush" Duration="0:0:0.14" />
+        <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.18" />
+      </Transitions>
+    </Setter>
+  </Style>
+  <Style Selector="Button.primary /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AppAccent}" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource AccentText}" />
+  </Style>
+  <Style Selector="Button.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AppAccentHover}" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource AccentText}" />
+    <Setter Property="BoxShadow" Value="{DynamicResource ShadowAccent}" />
+  </Style>
+  <Style Selector="Button.primary:pressed /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AppAccentPressed}" />
+    <Setter Property="Foreground" Value="{DynamicResource AccentText}" />
+  </Style>
+  <Style Selector="Button.primary:disabled /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AccentButtonBackgroundDisabled}" />
+    <Setter Property="Foreground" Value="{DynamicResource AccentButtonForegroundDisabled}" />
+    <Setter Property="BoxShadow" Value="none" />
+  </Style>
+  <Style Selector="Button.primary"><Setter Property="FontWeight" Value="SemiBold" /></Style>
+  <Style Selector="Button.primary c|StrokeIcon"><Setter Property="Foreground" Value="{DynamicResource AccentText}" /></Style>
+  <!-- The glyph dims with the label, so a disabled primary never shows a bright icon on a pale fill. -->
+  <Style Selector="Button.primary:disabled c|StrokeIcon"><Setter Property="Foreground" Value="{DynamicResource AccentButtonForegroundDisabled}" /></Style>
+  <!-- The one main action on a page (Download, Export): the orange flash under a kea's wings. Disabled it falls
+       back to the quiet primary disabled look, so only a ready action is orange. -->
+  <Style Selector="Button.primary.cta /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AppWarm}" />
+    <Setter Property="Foreground" Value="{DynamicResource OnWarmText}" />
+  </Style>
+  <Style Selector="Button.primary.cta:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AppWarmHover}" />
+    <Setter Property="Foreground" Value="{DynamicResource OnWarmText}" />
+  </Style>
+  <Style Selector="Button.primary.cta:pressed /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AppWarmPressed}" />
+    <Setter Property="Foreground" Value="{DynamicResource OnWarmText}" />
+  </Style>
+  <Style Selector="Button.primary.cta:disabled /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AccentButtonBackgroundDisabled}" />
+    <Setter Property="Foreground" Value="{DynamicResource AccentButtonForegroundDisabled}" />
+  </Style>
+  <Style Selector="Button.primary.cta c|StrokeIcon"><Setter Property="Foreground" Value="{DynamicResource OnWarmText}" /></Style>
+  <Style Selector="Button.primary.cta:disabled c|StrokeIcon"><Setter Property="Foreground" Value="{DynamicResource AccentButtonForegroundDisabled}" /></Style>
+
+  <Style Selector="Button.ghost /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+  </Style>
+  <Style Selector="Button.ghost:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AppSurfaceHover}" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+  </Style>
+  <Style Selector="Button.ghost:pressed /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AppSurfacePressed}" />
+  </Style>
+
+  <Style Selector="Button.icon">
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="Width" Value="36" />
+    <Setter Property="Height" Value="36" />
+    <Setter Property="MinHeight" Value="0" />
+  </Style>
+  <Style Selector="Button.icon.small"><Setter Property="Width" Value="30" /><Setter Property="Height" Value="30" /></Style>
+  <Style Selector="Button.icon.round /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="CornerRadius" Value="999" /></Style>
+  <Style Selector="Button.icon.large"><Setter Property="Width" Value="46" /><Setter Property="Height" Value="46" /></Style>
+  <Style Selector="Button.small"><Setter Property="MinHeight" Value="30" /><Setter Property="Padding" Value="10,5" /><Setter Property="FontSize" Value="12.5" /></Style>
+  <Style Selector="Button.large"><Setter Property="MinHeight" Value="46" /><Setter Property="Padding" Value="22,11" /><Setter Property="FontSize" Value="15" /><Setter Property="CornerRadius" Value="8" /></Style>
+  <!-- The size classes above set text padding; an icon button keeps a zero inset so its glyph is
+       drawn at full size (declared after them, so it wins for "icon small" and "icon large"). -->
+  <Style Selector="Button.icon.small, Button.icon.large"><Setter Property="Padding" Value="0" /><Setter Property="MinHeight" Value="0" /></Style>
+  <Style Selector="Button.large">
+    <Setter Property="FocusAdorner">
+      <FocusAdornerTemplate>
+        <Border BorderBrush="{DynamicResource AppAccent}" BorderThickness="2" CornerRadius="8">
+          <Border BorderBrush="{DynamicResource AppBackground}" BorderThickness="1.5" CornerRadius="6" />
+        </Border>
+      </FocusAdornerTemplate>
+    </Setter>
+  </Style>
+
+  <Style Selector="Button.danger"><Setter Property="Foreground" Value="{DynamicResource AppDanger}" /></Style>
+  <Style Selector="Button.danger c|StrokeIcon"><Setter Property="Foreground" Value="{DynamicResource AppDanger}" /></Style>
+  <Style Selector="Button.danger:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AppDangerSubtle}" />
+    <Setter Property="Foreground" Value="{DynamicResource AppDanger}" />
+  </Style>
+
+  <Style Selector="Button.link">
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="MinHeight" Value="0" />
+    <Setter Property="Foreground" Value="{DynamicResource AppAccent}" />
+  </Style>
+  <Style Selector="Button.link /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="Transparent" /><Setter Property="BorderBrush" Value="Transparent" /></Style>
+  <Style Selector="Button.link:pointerover /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="Transparent" /><Setter Property="Foreground" Value="{DynamicResource AppAccentHover}" /></Style>
+
+  <!-- Navigation rail -->
+  <Style Selector="Button.nav">
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="HorizontalContentAlignment" Value="Left" />
+    <Setter Property="Padding" Value="12,0" />
+    <Setter Property="Height" Value="42" />
+    <Setter Property="MinHeight" Value="0" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="Foreground" Value="{DynamicResource AppMuted}" />
+  </Style>
+  <Style Selector="Button.nav /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+  </Style>
+  <Style Selector="Button.nav:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AppSurfaceHover}" />
+    <Setter Property="Foreground" Value="{DynamicResource AppText}" />
+  </Style>
+  <Style Selector="Button.nav.selected /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource AppAccentSubtleText}" />
+  </Style>
+  <Style Selector="Button.nav.selected"><Setter Property="FontWeight" Value="SemiBold" /></Style>
+  <Style Selector="Button.nav c|StrokeIcon"><Setter Property="Foreground" Value="{Binding $parent[Button].Foreground}" /></Style>
+  <Style Selector="Button.nav:pointerover c|StrokeIcon"><Setter Property="Foreground" Value="{DynamicResource AppText}" /></Style>
+  <Style Selector="Button.nav.selected c|StrokeIcon"><Setter Property="Foreground" Value="{DynamicResource AppAccent}" /></Style>
+  <Style Selector="Border.nav-indicator">
+    <Setter Property="Background" Value="{DynamicResource AppAccentSubtle}" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="Height" Value="42" />
+    <Setter Property="VerticalAlignment" Value="Top" />
+    <Setter Property="IsHitTestVisible" Value="False" />
+  </Style>
+  <Style Selector="Border.nav-indicator > Border">
+    <Setter Property="Background" Value="{DynamicResource AppAccent}" />
+    <Setter Property="Width" Value="3" />
+    <Setter Property="Height" Value="18" />
+    <Setter Property="CornerRadius" Value="2" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="Margin" Value="0,0,0,0" />
+  </Style>
+
+  <!-- A small warm dot at the end of a nav item: that page has something unsaved. -->
+  <Style Selector="Border.nav-dot">
+    <Setter Property="Width" Value="8" />
+    <Setter Property="Height" Value="8" />
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="Background" Value="{DynamicResource AppWarm}" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="Margin" Value="0,0,8,0" />
+    <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+  </Style>
+
+  <!-- Shell header Cancel: always in layout so the header never reflows; it fades in while work
+       runs (.active) and keeps its danger look while fading out instead of flashing disabled grey. -->
+  <Style Selector="Button.shell-cancel">
+    <Setter Property="Opacity" Value="0" />
+    <Setter Property="Transitions">
+      <Transitions><DoubleTransition Property="Opacity" Duration="0:0:0.16" /></Transitions>
+    </Setter>
+  </Style>
+  <Style Selector="Button.shell-cancel.active"><Setter Property="Opacity" Value="1" /></Style>
+  <!-- While idle the button only holds its place in layout: keep it (and its label) out of the
+       accessibility tree so a screen reader does not find an invisible "Cancel operation". -->
+  <Style Selector="Button.shell-cancel:not(.active), Button.shell-cancel:not(.active) TextBlock">
+    <Setter Property="AutomationProperties.AccessibilityView" Value="Raw" />
+  </Style>
+  <Style Selector="Button.shell-cancel:disabled /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource ButtonBackground}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource AppDanger}" />
+  </Style>
+
+  <!-- Controls drawn on video (the fullscreen overlay): light glyphs in both themes. -->
+  <Style Selector="Button.on-scrim c|StrokeIcon"><Setter Property="Foreground" Value="{DynamicResource AppOnScrim}" /></Style>
+
+  <!-- Focus rings for the other button shapes (declared after the size and nav styles, so they win). -->
+  <Style Selector="Button.nav">
+    <Setter Property="FocusAdorner">
+      <FocusAdornerTemplate>
+        <Border BorderBrush="{DynamicResource AppAccent}" BorderThickness="2" CornerRadius="8">
+          <Border BorderBrush="{DynamicResource AppSidebar}" BorderThickness="1.5" CornerRadius="6" />
+        </Border>
+      </FocusAdornerTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="Button.round">
+    <Setter Property="FocusAdorner">
+      <FocusAdornerTemplate>
+        <Border BorderBrush="{DynamicResource AppAccent}" BorderThickness="2" CornerRadius="999">
+          <Border BorderBrush="{DynamicResource AppBackground}" BorderThickness="1.5" CornerRadius="999" />
+        </Border>
+      </FocusAdornerTemplate>
+    </Setter>
+  </Style>
+
+  <!-- Window caption buttons (custom title bar) -->
+  <Style Selector="Button.caption">
+    <Setter Property="Width" Value="46" />
+    <Setter Property="Height" Value="36" />
+    <Setter Property="MinHeight" Value="0" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="CornerRadius" Value="0" />
+    <Setter Property="Cursor" Value="Arrow" />
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="Foreground" Value="{DynamicResource AppMuted}" />
+  </Style>
+  <Style Selector="Button.caption /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="Transparent" /><Setter Property="BorderBrush" Value="Transparent" /></Style>
+  <Style Selector="Button.caption:pointerover /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="{DynamicResource AppSurfaceHover}" /></Style>
+  <Style Selector="Button.caption:pressed /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="{DynamicResource AppSurfacePressed}" /></Style>
+  <Style Selector="Button.caption c|StrokeIcon"><Setter Property="Foreground" Value="{DynamicResource AppMuted}" /></Style>
+  <Style Selector="Button.caption:pointerover c|StrokeIcon"><Setter Property="Foreground" Value="{DynamicResource AppText}" /></Style>
+  <Style Selector="Button.caption.close:pointerover /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="#C42B1C" /></Style>
+  <Style Selector="Button.caption.close:pressed /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="#A82518" /></Style>
+  <Style Selector="Button.caption.close:pointerover c|StrokeIcon"><Setter Property="Foreground" Value="#FFFFFF" /></Style>
+  <Style Selector="Window.motion Button.caption:pressed"><Setter Property="RenderTransform" Value="scale(1)" /></Style>
+
+  <!-- Segmented choice tiles (RadioButton).
+       Keyboard focus is a separate rounded ring around the tile, so it never reads as the checked
+       accent border and Fluent's square adorner never cuts the rounded corners. The tile face is
+       inset 4px inside each RadioButton so the ring stays within the control's bounds (and is
+       clipped by a page scroller like any other content). Grids of tiles therefore use a spacing
+       8px smaller than the visible gap they want, and Margin="-4" so the faces line up with the
+       content around them (for example ColumnSpacing="2" Margin="-4" for a 10px gap). -->
+  <Style Selector="RadioButton.tile">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="TileBorder" Margin="4" Background="{DynamicResource AppInput}" BorderBrush="{DynamicResource AppBorder}" BorderThickness="1.5" CornerRadius="12" Padding="{TemplateBinding Padding}">
+          <Border.Transitions>
+            <Transitions>
+              <BrushTransition Property="Background" Duration="0:0:0.15" />
+              <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+            </Transitions>
+          </Border.Transitions>
+          <ContentPresenter Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
+        </Border>
+      </ControlTemplate>
+    </Setter>
+    <Setter Property="Padding" Value="14,12" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+    <Setter Property="FocusAdorner">
+      <FocusAdornerTemplate>
+        <Border CornerRadius="16" BorderThickness="2" BorderBrush="{DynamicResource AppText}" />
+      </FocusAdornerTemplate>
+    </Setter>
+  </Style>
+  <Style Selector="RadioButton.tile:pointerover /template/ Border#TileBorder"><Setter Property="BorderBrush" Value="{DynamicResource AppBorderStrong}" /><Setter Property="Background" Value="{DynamicResource AppInputHover}" /></Style>
+  <Style Selector="RadioButton.tile:checked /template/ Border#TileBorder"><Setter Property="BorderBrush" Value="{DynamicResource AppAccent}" /><Setter Property="Background" Value="{DynamicResource AppAccentSubtle}" /></Style>
+  <!-- With focus, the face keeps its own state colour (the ring carries focus). -->
+  <Style Selector="RadioButton.tile:focus-visible /template/ Border#TileBorder"><Setter Property="BorderBrush" Value="{DynamicResource AppBorderStrong}" /></Style>
+  <Style Selector="RadioButton.tile:checked:focus-visible /template/ Border#TileBorder"><Setter Property="BorderBrush" Value="{DynamicResource AppAccent}" /></Style>
+  <Style Selector="RadioButton.tile:disabled"><Setter Property="Opacity" Value="0.5" /></Style>
+  <Style Selector="RadioButton.tile c|StrokeIcon"><Setter Property="Foreground" Value="{DynamicResource AppMuted}" /></Style>
+  <Style Selector="RadioButton.tile:checked c|StrokeIcon"><Setter Property="Foreground" Value="{DynamicResource AppAccent}" /></Style>
+
+  <!-- ===== Inputs ===== -->
+  <Style Selector="TextBox">
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="MinHeight" Value="40" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+  </Style>
+  <Style Selector="TextBox /template/ Border#PART_BorderElement">
+    <Setter Property="Transitions">
+      <Transitions>
+        <BrushTransition Property="BorderBrush" Duration="0:0:0.14" />
+        <BrushTransition Property="Background" Duration="0:0:0.14" />
+      </Transitions>
+    </Setter>
+  </Style>
+  <Style Selector="TextBox.hero"><Setter Property="MinHeight" Value="52" /><Setter Property="FontSize" Value="15" /><Setter Property="CornerRadius" Value="12" /><Setter Property="Padding" Value="14,0,10,0" /></Style>
+  <Style Selector="TextBox.mono"><Setter Property="FontFeatures" Value="+tnum" /></Style>
+  <Style Selector="ComboBox">
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="MinHeight" Value="40" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="ItemTemplate"><DataTemplate><TextBlock Text="{Binding Converter={StaticResource ChoiceLabel}}" /></DataTemplate></Setter>
+  </Style>
+  <Style Selector="NumericUpDown"><Setter Property="CornerRadius" Value="8" /><Setter Property="MinHeight" Value="40" /></Style>
+  <Style Selector="CheckBox"><Setter Property="Margin" Value="0,4" /><Setter Property="Cursor" Value="Hand" /></Style>
+  <Style Selector="ToggleSwitch"><Setter Property="Cursor" Value="Hand" /><Setter Property="OnContent" Value="" /><Setter Property="OffContent" Value="" /></Style>
+  <!-- On/Off text is never shown (the label sits beside the switch), so the switch is exactly its
+       40px track: the empty text presenters are hidden and the Fluent template's fixed 12px gap
+       column before them is pulled back, so a trailing switch reaches the right edge. -->
+  <Style Selector="ToggleSwitch /template/ ContentPresenter#PART_OnContentPresenter, ToggleSwitch /template/ ContentPresenter#PART_OffContentPresenter"><Setter Property="IsVisible" Value="False" /></Style>
+  <Style Selector="ToggleSwitch /template/ Grid > Grid:not(#SwitchAreaGrid)"><Setter Property="MinWidth" Value="0" /><Setter Property="Margin" Value="0,0,-12,0" /></Style>
+  <!-- The click and focus area stays on the 40px track instead of spilling into the pulled-back gap
+       (the template sets its margin and span, so the width and alignment are set instead). -->
+  <Style Selector="ToggleSwitch /template/ Grid#SwitchAreaGrid"><Setter Property="Width" Value="40" /><Setter Property="HorizontalAlignment" Value="Left" /></Style>
+  <Style Selector="Slider"><Setter Property="Cursor" Value="Hand" /></Style>
+  <Style Selector="ToolTip"><Setter Property="CornerRadius" Value="8" /><Setter Property="Padding" Value="10,6" /><Setter Property="FontSize" Value="12.5" /></Style>
+  <Style Selector="Expander">
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="CornerRadius" Value="8" />
+  </Style>
+
+  <!-- ===== Progress ===== -->
+  <Style Selector="ProgressBar">
+    <Setter Property="MinHeight" Value="6" />
+    <Setter Property="Height" Value="6" />
+    <Setter Property="CornerRadius" Value="3" />
+    <Setter Property="Background" Value="{DynamicResource AppBorder}" />
+    <Setter Property="Foreground" Value="{DynamicResource AppAccent}" />
+  </Style>
+  <Style Selector="ProgressBar.thin"><Setter Property="MinHeight" Value="4" /><Setter Property="Height" Value="4" /><Setter Property="CornerRadius" Value="2" /></Style>
+  <Style Selector="ProgressBar.danger"><Setter Property="Foreground" Value="{DynamicResource AppDanger}" /></Style>
+  <Style Selector="ProgressBar.muted"><Setter Property="Foreground" Value="{DynamicResource AppFaint}" /></Style>
+  <Style Selector="c|ProgressRing">
+    <Setter Property="Foreground" Value="{DynamicResource AppAccent}" />
+    <Setter Property="TrackBrush" Value="{DynamicResource AppBorder}" />
+    <Setter Property="Width" Value="18" />
+    <Setter Property="Height" Value="18" />
+    <Setter Property="Thickness" Value="2.5" />
+    <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+  </Style>
+
+  <!-- ===== Beta test (sidebar footer, beta builds): warm when its page is open ===== -->
+  <Style Selector="Button.beta-nav"><Setter Property="Padding" Value="12,8" /></Style>
+  <Style Selector="Button.beta-nav.selected /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AppWarmSubtle}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource AppWarm}" />
+  </Style>
+  <Style Selector="Button.beta-nav.selected TextBlock"><Setter Property="FontWeight" Value="SemiBold" /></Style>
+  <!-- ===== Fit for chips (Editor): a quiet choice that lights up olive when it is the active size target ===== -->
+  <Style Selector="Button.fit"><Setter Property="Padding" Value="14,8" /><Setter Property="HorizontalAlignment" Value="Stretch" /><Setter Property="HorizontalContentAlignment" Value="Left" /></Style>
+  <Style Selector="Button.fit.selected /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AppAccentSubtle}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource AppAccent}" />
+  </Style>
+  <Style Selector="Button.fit.selected TextBlock.tile-title"><Setter Property="Foreground" Value="{DynamicResource AppAccentSubtleText}" /></Style>
+  <!-- ===== Disclosure row (Settings, Advanced settings): a card-shaped button whose chevron turns when open ===== -->
+  <Style Selector="Button.advanced-row">
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="Padding" Value="22,16" />
+    <Setter Property="CornerRadius" Value="{StaticResource RadiusCard}" />
+    <Setter Property="FontWeight" Value="Normal" />
+  </Style>
+  <Style Selector="Button.advanced-row /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AppSurface}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource AppBorder}" />
+  </Style>
+  <Style Selector="Button.advanced-row:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AppSurface}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource AppBorderStrong}" />
+  </Style>
+  <Style Selector="Button.advanced-row:pressed /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AppSurfaceRaised}" />
+  </Style>
+  <Style Selector="Button.advanced-row c|StrokeIcon.chevron"><Setter Property="RenderTransformOrigin" Value="50%,50%" /><Setter Property="RenderTransform" Value="rotate(0deg)" /></Style>
+  <Style Selector="Button.advanced-row.open c|StrokeIcon.chevron"><Setter Property="RenderTransform" Value="rotate(180deg)" /></Style>
+  <Style Selector="Window.motion Button.advanced-row c|StrokeIcon.chevron">
+    <Setter Property="Transitions">
+      <Transitions><TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.22" Easing="0.2,0.8,0.2,1" /></Transitions>
+    </Setter>
+  </Style>
+  <!-- ===== Motion (only while Window has .motion) ===== -->
+  <Style Selector="Window.motion Button">
+    <Setter Property="Transitions">
+      <Transitions><TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.12" Easing="CubicEaseOut" /></Transitions>
+    </Setter>
+  </Style>
+  <Style Selector="Window.motion Button:pressed"><Setter Property="RenderTransform" Value="scale(0.97)" /></Style>
+  <Style Selector="Window.motion Button.shell-cancel">
+    <Setter Property="Transitions">
+      <Transitions>
+        <DoubleTransition Property="Opacity" Duration="0:0:0.16" />
+        <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.12" Easing="CubicEaseOut" />
+      </Transitions>
+    </Setter>
+  </Style>
+  <Style Selector="Window.motion Button.nav:pressed"><Setter Property="RenderTransform" Value="scale(0.985)" /></Style>
+  <Style Selector="Window.motion Button.advanced-row:pressed"><Setter Property="RenderTransform" Value="scale(0.995)" /></Style>
+  <!-- The main action lifts a pixel under the pointer (its warm glow comes from the primary hover shadow). -->
+  <Style Selector="Window.motion Button.cta:pointerover"><Setter Property="RenderTransform" Value="translateY(-1px)" /></Style>
+  <Style Selector="Window.motion Button.cta:pressed"><Setter Property="RenderTransform" Value="scale(0.97)" /></Style>
+  <Style Selector="Window.motion RadioButton.tile">
+    <Setter Property="Transitions">
+      <Transitions><TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.12" Easing="CubicEaseOut" /></Transitions>
+    </Setter>
+  </Style>
+  <Style Selector="Window.motion RadioButton.tile:pressed"><Setter Property="RenderTransform" Value="scale(0.98)" /></Style>
+
+  <Style Selector="Window.motion ProgressBar">
+    <Setter Property="Transitions">
+      <Transitions><DoubleTransition Property="Value" Duration="0:0:0.45" Easing="CubicEaseOut" /></Transitions>
+    </Setter>
+  </Style>
+  <Style Selector="Window.motion c|ProgressRing">
+    <Setter Property="Transitions">
+      <Transitions><DoubleTransition Property="Value" Duration="0:0:0.45" Easing="CubicEaseOut" /></Transitions>
+    </Setter>
+  </Style>
+  <Style Selector="Window.motion c|ProgressRing[IsIndeterminate=True]">
+    <Style.Animations>
+      <Animation Duration="0:0:0.9" IterationCount="Infinite">
+        <KeyFrame Cue="0%"><Setter Property="RotateTransform.Angle" Value="0" /></KeyFrame>
+        <KeyFrame Cue="100%"><Setter Property="RotateTransform.Angle" Value="360" /></KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+  <Style Selector="Window.motion TextBlock.count">
+    <Setter Property="Transitions">
+      <Transitions><DoubleTransition Property="c:AnimatedNumberText.Value" Duration="0:0:0.45" Easing="CubicEaseOut" /></Transitions>
+    </Setter>
+  </Style>
+
+  <!-- Page entrance: the newly shown page fades up 6px, and its sections (enter e1..e4) rise in after it,
+       45 ms apart, so the eye lands on the first one. FillMode Backward holds a waiting section at its start. -->
+  <Style Selector="Window.motion :is(Control).page[IsVisible=True]">
+    <Style.Animations>
+      <Animation Duration="0:0:0.26" Easing="0.2,0.8,0.2,1">
+        <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0" /><Setter Property="TranslateTransform.Y" Value="6" /></KeyFrame>
+        <KeyFrame Cue="100%"><Setter Property="Opacity" Value="1" /><Setter Property="TranslateTransform.Y" Value="0" /></KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+  <Style Selector="Window.motion :is(Control).page[IsVisible=True] :is(Control).enter.e1">
+    <Style.Animations>
+      <Animation Duration="0:0:0.34" Delay="0:0:0.000" Easing="0.2,0.8,0.2,1" FillMode="Backward">
+        <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0" /><Setter Property="TranslateTransform.Y" Value="14" /></KeyFrame>
+        <KeyFrame Cue="100%"><Setter Property="Opacity" Value="1" /><Setter Property="TranslateTransform.Y" Value="0" /></KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+  <Style Selector="Window.motion :is(Control).page[IsVisible=True] :is(Control).enter.e2">
+    <Style.Animations>
+      <Animation Duration="0:0:0.34" Delay="0:0:0.045" Easing="0.2,0.8,0.2,1" FillMode="Backward">
+        <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0" /><Setter Property="TranslateTransform.Y" Value="14" /></KeyFrame>
+        <KeyFrame Cue="100%"><Setter Property="Opacity" Value="1" /><Setter Property="TranslateTransform.Y" Value="0" /></KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+  <Style Selector="Window.motion :is(Control).page[IsVisible=True] :is(Control).enter.e3">
+    <Style.Animations>
+      <Animation Duration="0:0:0.34" Delay="0:0:0.090" Easing="0.2,0.8,0.2,1" FillMode="Backward">
+        <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0" /><Setter Property="TranslateTransform.Y" Value="14" /></KeyFrame>
+        <KeyFrame Cue="100%"><Setter Property="Opacity" Value="1" /><Setter Property="TranslateTransform.Y" Value="0" /></KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+  <Style Selector="Window.motion :is(Control).page[IsVisible=True] :is(Control).enter.e4">
+    <Style.Animations>
+      <Animation Duration="0:0:0.34" Delay="0:0:0.135" Easing="0.2,0.8,0.2,1" FillMode="Backward">
+        <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0" /><Setter Property="TranslateTransform.Y" Value="14" /></KeyFrame>
+        <KeyFrame Cue="100%"><Setter Property="Opacity" Value="1" /><Setter Property="TranslateTransform.Y" Value="0" /></KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+  <!-- Reveal: content that appears (results, notices, list rows) eases in. -->
+  <Style Selector="Window.motion :is(Control).reveal[IsVisible=True]">
+    <Style.Animations>
+      <Animation Duration="0:0:0.32" Easing="0.2,0.8,0.2,1">
+        <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0" /><Setter Property="TranslateTransform.Y" Value="8" /></KeyFrame>
+        <KeyFrame Cue="100%"><Setter Property="Opacity" Value="1" /><Setter Property="TranslateTransform.Y" Value="0" /></KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+  <Style Selector="Window.motion :is(Control).pop[IsVisible=True]">
+    <Style.Animations>
+      <Animation Duration="0:0:0.42" Easing="BackEaseOut">
+        <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0" /><Setter Property="ScaleTransform.ScaleX" Value="0.6" /><Setter Property="ScaleTransform.ScaleY" Value="0.6" /></KeyFrame>
+        <KeyFrame Cue="60%"><Setter Property="Opacity" Value="1" /></KeyFrame>
+        <KeyFrame Cue="100%"><Setter Property="Opacity" Value="1" /><Setter Property="ScaleTransform.ScaleX" Value="1" /><Setter Property="ScaleTransform.ScaleY" Value="1" /></KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+  <!-- Skeleton placeholders breathe while content is loading. -->
+  <Style Selector="Window.motion Border.skeleton[IsVisible=True]">
+    <Style.Animations>
+      <Animation Duration="0:0:1.2" IterationCount="Infinite" PlaybackDirection="Alternate" Easing="SineEaseInOut">
+        <KeyFrame Cue="0%"><Setter Property="Opacity" Value="1" /></KeyFrame>
+        <KeyFrame Cue="100%"><Setter Property="Opacity" Value="0.45" /></KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+  <!-- The sidebar kea gently bobs only while work is running. -->
+  <!-- The kea carries a download card while downloads run (the control animates the card
+       only under Window.motion), and bobs while any work is running. -->
+  <Style Selector="Window.downloading c|KeaMascot.mascot"><Setter Property="Pose" Value="Carrying" /></Style>
+  <Style Selector="Window.motion.busy c|KeaMascot.mascot">
+    <Style.Animations>
+      <Animation Duration="0:0:1.4" IterationCount="Infinite" PlaybackDirection="Alternate" Easing="SineEaseInOut">
+        <KeyFrame Cue="0%"><Setter Property="TranslateTransform.Y" Value="0" /><Setter Property="RotateTransform.Angle" Value="0" /></KeyFrame>
+        <KeyFrame Cue="100%"><Setter Property="TranslateTransform.Y" Value="-3" /><Setter Property="RotateTransform.Angle" Value="-3" /></KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+  <Style Selector="Window.motion Border.nav-indicator">
+    <Setter Property="Transitions">
+      <Transitions><TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.28" Easing="0.2,0.8,0.2,1" /></Transitions>
+    </Setter>
+  </Style>
+</Styles>

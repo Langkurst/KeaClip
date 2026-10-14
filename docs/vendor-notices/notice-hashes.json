@@ -1,0 +1,267 @@
+[
+  {
+    "File": "upstream-provenance.json",
+    "Sha256": "B671AF6A2116AF8A59E70FF532D08DB4EF9498F60963803EFF5F1E5888D7A5A1",
+    "Bytes": 5211
+  },
+  {
+    "File": "packages/avalonia/12.1.3/avalonia.nuspec",
+    "Sha256": "8FD64A84C229548A71E61390F4A310219F50529AF0EE53162FFD39E7874FF4DC",
+    "Bytes": 1941
+  },
+  {
+    "File": "packages/avalonia.angle.windows.natives/2.1.27548.20260419/avalonia.angle.windows.natives.nuspec",
+    "Sha256": "2DD03940159C3B637786264F5A5563FFD3E9AAD3BDAB4A4C75270E095A485A1F",
+    "Bytes": 1114
+  },
+  {
+    "File": "packages/avalonia.angle.windows.natives/2.1.27548.20260419/LICENSE",
+    "Sha256": "54AFF7276217DF9F6B5181613999D208C9E40D2B1D51BF55217837E6871A4A63",
+    "Bytes": 1675
+  },
+  {
+    "File": "packages/avalonia.desktop/12.1.3/avalonia.desktop.nuspec",
+    "Sha256": "CB0D6A62291E467CB9E3CBC01180C1D061F62A4D9DFFF460D5A359FADED8D848",
+    "Bytes": 2317
+  },
+  {
+    "File": "packages/avalonia.fonts.inter/12.1.3/avalonia.fonts.inter.nuspec",
+    "Sha256": "8F883D5BE3B979DC188C8DE64CBDB416757F232319E025EC94694B0EC533F57F",
+    "Bytes": 1501
+  },
+  {
+    "File": "packages/avalonia.freedesktop/12.1.3/avalonia.freedesktop.nuspec",
+    "Sha256": "6E04DFF25C4CE83814F9E84CB606C7F44AD49BC24BEE2D3A5E520128FB15A809",
+    "Bytes": 1683
+  },
+  {
+    "File": "packages/avalonia.freedesktop.atspi/12.1.3/avalonia.freedesktop.atspi.nuspec",
+    "Sha256": "5EC9EA9BED3E1280C988B2E06938B7F81DDC92FB52B0711536D8A4053AC7B066",
+    "Bytes": 1507
+  },
+  {
+    "File": "packages/avalonia.harfbuzz/12.1.3/avalonia.harfbuzz.nuspec",
+    "Sha256": "15FF9247F7C41FE827FA825AD680560A0983BB6FEDEE0A3A0A4E9030A0BCA549",
+    "Bytes": 2108
+  },
+  {
+    "File": "packages/avalonia.native/12.1.3/avalonia.native.nuspec",
+    "Sha256": "99183E0571ECB1A42532E415002723E9A3236B8F96B02E528A526CE16F6D83A1",
+    "Bytes": 1472
+  },
+  {
+    "File": "packages/avalonia.remote.protocol/12.1.3/avalonia.remote.protocol.nuspec",
+    "Sha256": "4C0CD5EC137D2A376BAB20E62BB2CBBDC9B71FFCB044ACF41ADEAF25CF5025B1",
+    "Bytes": 1418
+  },
+  {
+    "File": "packages/avalonia.skia/12.1.3/avalonia.skia.nuspec",
+    "Sha256": "460E60E81C3F8E8655F27DFF29D1B485D1398F275244CBD9A0172371E4CE0D61",
+    "Bytes": 2690
+  },
+  {
+    "File": "packages/avalonia.themes.fluent/12.1.3/avalonia.themes.fluent.nuspec",
+    "Sha256": "05815E6CCA72F3AEE5E5570E62665925886ADE322C625B7C4CE3C88BEB3893BB",
+    "Bytes": 1503
+  },
+  {
+    "File": "packages/avalonia.win32/12.1.3/avalonia.win32.nuspec",
+    "Sha256": "3506AA7312736322A7CC74204CCCDCD884FD5B2DED2A6B51B5DBE1091897ED34",
+    "Bytes": 1725
+  },
+  {
+    "File": "packages/avalonia.x11/12.1.3/avalonia.x11.nuspec",
+    "Sha256": "ACB9D9BA146314E262FC9E0208574FFF5B13BE9BF63EC9150846566F31879463",
+    "Bytes": 2049
+  },
+  {
+    "File": "packages/communitytoolkit.mvvm/8.4.0/communitytoolkit.mvvm.nuspec",
+    "Sha256": "01C3F845EA8BA4879FD33AF4C7D803BF44CBF14C3DF8E0B0658D6A9F37318FC4",
+    "Bytes": 2942
+  },
+  {
+    "File": "packages/communitytoolkit.mvvm/8.4.0/License.md",
+    "Sha256": "651997EF19DBB9ECB8DD660DBC86444A65AF21F18CFE08DAA69BF201CD5CFDFC",
+    "Bytes": 1158
+  },
+  {
+    "File": "packages/dotnet-runtime-10.0.12/LICENSE.TXT",
+    "Sha256": "D7A68596AB69B06F51CA278A6545148E4269A9381C26D597C13DF5D88E08CF5B",
+    "Bytes": 1139
+  },
+  {
+    "File": "packages/dotnet-runtime-10.0.12/microsoft.netcore.app.runtime.win-x64.nuspec",
+    "Sha256": "2649FC5FCB95C80F991B6D47AD8E10B772923249E87D98F409CA54CEE548C379",
+    "Bytes": 1022
+  },
+  {
+    "File": "packages/dotnet-runtime-10.0.12/Microsoft.NETCore.App.versions.txt",
+    "Sha256": "5821D4886CE8720FEA8A95A798A003E0A31197DE1EFC4FD22FA6A008EECFA3A8",
+    "Bytes": 51
+  },
+  {
+    "File": "packages/dotnet-runtime-10.0.12/THIRD-PARTY-NOTICES.TXT",
+    "Sha256": "6D15E10A101C6BFFF2AB4429ED061BF76C456FC4B23AD6B03E0D0F8377148A21",
+    "Bytes": 78041
+  },
+  {
+    "File": "packages/ffmpeg-9.0.2/LICENSE",
+    "Sha256": "8CEB4B9EE5ADEDDE47B31E975C1D90C73AD27B6B165A1DCD80C7C545EB65B903",
+    "Bytes": 35147
+  },
+  {
+    "File": "packages/ffmpeg-9.0.2/README.txt",
+    "Sha256": "0342DE6BB39DD421CBEC2C00D89AD274B640D75AD3F2CAB09FFD647CE2D8F949",
+    "Bytes": 41577
+  },
+  {
+    "File": "packages/harfbuzzsharp/8.3.1.3/harfbuzzsharp.nuspec",
+    "Sha256": "DC37C8A3C466E1A2AB3A8F9BDECB78D619AC9AE9089B6CE05C291729F4ED7B4A",
+    "Bytes": 4054
+  },
+  {
+    "File": "packages/harfbuzzsharp/8.3.1.3/LICENSE.txt",
+    "Sha256": "89101E35A8C66FD4D6DFFC1763259161D35CB564C169714EC227A768C89F2938",
+    "Bytes": 1129
+  },
+  {
+    "File": "packages/harfbuzzsharp.nativeassets.win32/8.3.1.3/harfbuzzsharp.nativeassets.win32.nuspec",
+    "Sha256": "6443701EBC6778A1F5ADC888CBE30FD12B96F7B211A67311416B80EFB90888B6",
+    "Bytes": 1622
+  },
+  {
+    "File": "packages/harfbuzzsharp.nativeassets.win32/8.3.1.3/LICENSE.txt",
+    "Sha256": "89101E35A8C66FD4D6DFFC1763259161D35CB564C169714EC227A768C89F2938",
+    "Bytes": 1129
+  },
+  {
+    "File": "packages/harfbuzzsharp.nativeassets.win32/8.3.1.3/THIRD-PARTY-NOTICES.txt",
+    "Sha256": "21504C46C4C58AA64C1055BD2DCBC5F9A136B4B8C412ED3CC6740E22C5B127F5",
+    "Bytes": 139775
+  },
+  {
+    "File": "packages/libvlcsharp/3.10.1/libvlcsharp.nuspec",
+    "Sha256": "9F9F3A5F4B672D1AF4E0BEE5B192FA1EEDD34A73855EC625E5153BE396379D53",
+    "Bytes": 7123
+  },
+  {
+    "File": "packages/libvlcsharp.avalonia/3.10.1/libvlcsharp.avalonia.nuspec",
+    "Sha256": "7FC9B4E2C1876197659FBD84C7A8193E4F9C8DC0EFE9CCC3343D6D941E1886DE",
+    "Bytes": 2027
+  },
+  {
+    "File": "packages/microcom.runtime/0.11.6/microcom.runtime.nuspec",
+    "Sha256": "C7AEAB4B73ACDBA3BB8E66865C2BBE67566B8593D972BE2089181344ADEF345F",
+    "Bytes": 874
+  },
+  {
+    "File": "packages/skiasharp/3.119.4/LICENSE.txt",
+    "Sha256": "89101E35A8C66FD4D6DFFC1763259161D35CB564C169714EC227A768C89F2938",
+    "Bytes": 1129
+  },
+  {
+    "File": "packages/skiasharp/3.119.4/skiasharp.nuspec",
+    "Sha256": "64F0B2F1511042F5A6BA63A9B9508AA5D34118E7E388D828121FAA0E124E3597",
+    "Bytes": 6088
+  },
+  {
+    "File": "packages/skiasharp.nativeassets.win32/3.119.4/LICENSE.txt",
+    "Sha256": "89101E35A8C66FD4D6DFFC1763259161D35CB564C169714EC227A768C89F2938",
+    "Bytes": 1129
+  },
+  {
+    "File": "packages/skiasharp.nativeassets.win32/3.119.4/skiasharp.nativeassets.win32.nuspec",
+    "Sha256": "3E0C3EAFD204F390AB4E63F15BFAA34E5F128F576A2D97B9C25D1AFB848A5C16",
+    "Bytes": 1832
+  },
+  {
+    "File": "packages/skiasharp.nativeassets.win32/3.119.4/THIRD-PARTY-NOTICES.txt",
+    "Sha256": "21504C46C4C58AA64C1055BD2DCBC5F9A136B4B8C412ED3CC6740E22C5B127F5",
+    "Bytes": 139775
+  },
+  {
+    "File": "packages/tmds.dbus.protocol/0.94.1/tmds.dbus.protocol.nuspec",
+    "Sha256": "72830040B14D42DE24D85BE271FCE22D608614360BC6BBC46762FD4A5039651A",
+    "Bytes": 1915
+  },
+  {
+    "File": "packages/videolan.libvlc.windows/3.0.24/videolan.libvlc.windows.nuspec",
+    "Sha256": "F8991E02B5479F7D36F92A6389FDB514316D8D237887BE296EEAA0567E5F9776",
+    "Bytes": 1206
+  },
+  {
+    "File": "upstream/avalonia-MIT.txt",
+    "Sha256": "213814D306090074D234D760239FF0F67EB9B8D20EEFB4D5631BB39DBE0B769B",
+    "Bytes": 1096
+  },
+  {
+    "File": "upstream/deno-MIT.txt",
+    "Sha256": "F62497FFFECC0852960C8D3E6934B9DB86D16396E9B604072E923892CAE3A588",
+    "Bytes": 1074
+  },
+  {
+    "File": "upstream/ffmpeg-GPL3.txt",
+    "Sha256": "8CEB4B9EE5ADEDDE47B31E975C1D90C73AD27B6B165A1DCD80C7C545EB65B903",
+    "Bytes": 35147
+  },
+  {
+    "File": "upstream/ffmpeg-LICENSE.md",
+    "Sha256": "2E1D16C72FD74E12063776371DA757322F8B77589386532F4FD8634BDE7DE1AF",
+    "Bytes": 4346
+  },
+  {
+    "File": "upstream/inter-OFL.txt",
+    "Sha256": "262481E844521B326F5ECD053E59B98C8B2DA78C8EE1BDBB6E8174305E54935A",
+    "Bytes": 4380
+  },
+  {
+    "File": "upstream/inter3.019-OFL.txt",
+    "Sha256": "4D7D9C95E7D7F2F0EBF76D5E0B344826B74E903A34028EE18AB54BB639E45906",
+    "Bytes": 4426
+  },
+  {
+    "File": "upstream/libvlcsharp-LGPL-2.1.txt",
+    "Sha256": "20C17D8B8C48A600800DFD14F95D5CB9FF47066A9641DDEAB48DC54AEC96E331",
+    "Bytes": 26526
+  },
+  {
+    "File": "upstream/microcom-MIT.txt",
+    "Sha256": "6EE769C9AC4DAC9ABB16B98B1341E9528FF9F4AB685481410D3376D14148F3A9",
+    "Bytes": 1072
+  },
+  {
+    "File": "upstream/tmds-dbus-MIT.txt",
+    "Sha256": "ACA3B49277ABCC7886CCB2F115603A9F5B15FC3F96019A10C00F2974098B210C",
+    "Bytes": 1151
+  },
+  {
+    "File": "upstream/vlc-COPYING-GPL.txt",
+    "Sha256": "8177F97513213526DF2CF6184D8FF986C675AFB514D4E68A404010521B880643",
+    "Bytes": 18092
+  },
+  {
+    "File": "upstream/vlc-COPYING-LGPL.txt",
+    "Sha256": "DC626520DCD53A22F727AF3EE42C770E56C97A64FE3ADB063799D8AB032FE551",
+    "Bytes": 26530
+  },
+  {
+    "File": "upstream/yt-dlp-curl-cffi.txt",
+    "Sha256": "898C4D3BF40A6F1CB59E8CB8184536C0B97C543367E3256621A5B6D791729632",
+    "Bytes": 52256
+  },
+  {
+    "File": "upstream/yt-dlp-executable-THIRD_PARTY_LICENSES.txt",
+    "Sha256": "5B7BC105C562B81B90D1A2CD5A8CC8B336EE107AE0AE81CE58450CD8B1BC2AD4",
+    "Bytes": 248243
+  },
+  {
+    "File": "upstream/yt-dlp-third-party.txt",
+    "Sha256": "472AEFE951C7DB35E1657C1D13FD337140511ED6F2B329205105AD441C5A02B7",
+    "Bytes": 243550
+  },
+  {
+    "File": "upstream/yt-dlp-Unlicense.txt",
+    "Sha256": "7E12E5DF4BAE12CB21581BA157CED20E1986A0508DD10D0E8A4AB9A4CF94E85C",
+    "Bytes": 1211
+  }
+]

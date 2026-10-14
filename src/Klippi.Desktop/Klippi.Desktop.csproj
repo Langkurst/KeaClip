@@ -1,0 +1,116 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+    <AssemblyName>KeaClip</AssemblyName>
+    <ApplicationIcon>Assets/kea.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <VlcWindowsX64Enabled>true</VlcWindowsX64Enabled>
+    <VlcWindowsX86Enabled>false</VlcWindowsX86Enabled>
+    <VlcWindowsArm64Enabled>false</VlcWindowsArm64Enabled>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Klippi.Core/Klippi.Core.csproj" />
+    <ProjectReference Include="../Klippi.Infrastructure/Klippi.Infrastructure.csproj" />
+    <PackageReference Include="Avalonia" Version="12.1.3" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.1.3" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.3" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.3" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="LibVLCSharp.Avalonia" Version="3.10.1" />
+    <PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.24" />
+  </ItemGroup>
+  <ItemGroup><AvaloniaResource Include="Assets/**" /></ItemGroup>
+  <!-- The preview only plays local files, so VLC's network access, streaming-out, encoders, scripting, subtitle/OSD
+       rendering and other unused plugins are left out (about half of VLC's size). Checked by the native playback tests
+       (KEACLIP_NATIVE_PLAYBACK_TESTS=1) and Klippi.PackageChecks. -->
+  <ItemGroup>
+    <VlcWindowsX64ExcludeFiles Include="plugins\access_output\%2A%2A" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\stream_out\%2A%2A" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\mux\%2A%2A" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\services_discovery\%2A%2A" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\visualization\%2A%2A" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\lua\%2A%2A" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\keystore\%2A%2A" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\video_splitter\%2A%2A" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\meta_engine\%2A%2A" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\text_renderer\%2A%2A" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\spu\%2A%2A" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\stream_extractor\%2A%2A" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\logger\%2A%2A" />
+    <VlcWindowsX64ExcludeFiles Include="lua\%2A%2A" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\access\libaccess_mms_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\access\libaccess_srt_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\access\libaccess_wasapi_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\access\libbluray-awt-j2se-1.4.1.jar" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\access\libbluray-j2se-1.4.1.jar" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\access\libcdda_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\access\libdcp_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\access\libdtv_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\access\libftp_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\access\libhttp_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\access\libhttps_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\access\liblibbluray_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\access\liblive555_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\access\libnfs_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\access\librist_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\access\librtp_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\access\libsatip_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\access\libscreen_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\access\libsdp_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\access\libsftp_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\access\libshm_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\access\libsmb_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\access\libtcp_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\access\libudp_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\access\libvcd_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\access\libvdr_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\codec\liblibass_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\codec\libx26410b_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\codec\libaom_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\codec\libzvbi_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\codec\libqsv_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\codec\libfluidsynth_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\codec\libtwolame_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\codec\libcrystalhd_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\codec\libkate_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\codec\libdvbsub_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\codec\libscte27_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\codec\libscte18_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\codec\libcdg_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\codec\libsvcdsub_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\codec\libcvdsub_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\codec\libtextst_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\codec\liboggspots_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\codec\libstl_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\codec\libsubstx3g_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\codec\libsubsusf_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\codec\libwebvtt_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\codec\libttml_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\codec\libcc_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\codec\libspudec_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\codec\librtpvideo_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\misc\libgnutls_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\misc\libaddonsfsstorage_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\misc\libaddonsvorepository_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\misc\libfingerprinter_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\demux\libadaptive_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\demux\libgme_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\demux\libmod_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\demux\libdemux_chromecast_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\demux\libnsc_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\demux\libty_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\demux\libpva_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\demux\libnuv_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\demux\libsmf_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\demux\libdmxmus_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\demux\libdemuxdump_plugin.dll" />
+    <VlcWindowsX64ExcludeFiles Include="plugins\demux\libvobsub_plugin.dll" />
+  </ItemGroup>
+  <!-- Debug symbols are for developers, not for running KeaClip; SkiaSharp and HarfBuzzSharp alone ship about 100 MB of them. -->
+  <Target Name="LeaveOutDebugSymbols" AfterTargets="ComputeResolvedFilesToPublishList">
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(Extension)' == '.pdb'" />
+    </ItemGroup>
+  </Target>
+</Project>

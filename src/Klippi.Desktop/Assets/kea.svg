@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="KeaClip kea">
+  <title>KeaClip kea</title>
+  <!-- Source of truth for GenerateIcons.ps1 and Controls/KeaMascot.cs (both read this file).
+       fill = dark variant, data-light-fill = light variant, data-mono = monochrome role,
+       data-min-size / data-below-size = pixel sizes at which a detail is drawn.
+       display="none" on a shape with data-below-size marks a small-size variant: hidden in this
+       full-size preview, drawn only below that size. display="none" on <g data-pose> marks a
+       KeaMascot pose layer (never in the icons); data-origin is where it grows from. data-token
+       names the app theme brush the control uses instead of fill. Paths use absolute
+       M L H V C Q Z only. -->
+  <rect id="tile" width="64" height="64" rx="14" fill="#22241D" data-light-fill="#ECE9DF"/>
+  <path id="feet" data-min-size="32" data-mono="ink" fill="#7D726B" data-light-fill="#5F544D" d="M25.2 46L24.8 50.2Q24.7 51.4 25.9 51.4L29.2 51.4Q30.4 51.4 29.6 50.4L27.6 49.6L27.4 46ZM31.5 44.2L31.1 48.4Q31 49.6 32.2 49.6L35.5 49.6Q36.7 49.6 35.9 48.6L33.9 47.8L33.7 44.2Z"/>
+  <path id="body" data-mono="ink" fill="#88A44B" data-light-fill="#769538" d="M34 9.5C28 9.5 23.5 13 22.5 19C21.4 24.5 18.5 30 16.5 36L11 48.5Q9.8 53 14.5 52.6L23.5 47.6C32 48.2 39 43.5 41.6 35.5C42.9 31.5 44 27.5 44.6 23C45.3 14.5 41 9.5 34 9.5Z"/>
+  <path id="flash" data-min-size="24" data-mono="ink" fill="#EC632D" data-light-fill="#E0561F" d="M12.6 48.6C19 51.2 31 44.5 39.2 32.4L33 26L18 37Z"/>
+  <path id="flash-small" data-below-size="24" display="none" data-mono="ink" fill="#EC632D" data-light-fill="#E0561F" d="M14.5 52.6L23.5 47.6C32 48.2 39 43.5 41.6 35.5C38.6 39.6 31 43.2 21.2 43.1L12.2 49.4Z"/>
+  <path id="wing" data-min-size="24" data-mono="ink" data-mono-gap="1.4" data-mono-gap-min-size="48" fill="#5A7232" data-light-fill="#4E6628" d="M32.5 24.5C26 24 20.5 29 18 36L12.6 48.6Q18 49 20.5 44.2Q26.1 44.25 28.5 39.2Q34.5 37.7 36.4 31.8C37.2 28 35.6 25 32.5 24.5Z"/>
+  <path id="wing-scallops" data-min-size="64" fill="#4A5F28" data-light-fill="#415620" d="M17.9 40Q24 40.6 25.9 35Q22.8 38.9 17.9 40ZM25.9 35Q32.1 34.4 33.2 28.6Q30.6 33.1 25.9 35Z"/>
+  <!-- The carried download card keeps one size at every pixel size (it never shrinks as the
+       mascot grows). From 36 px it is aligned to the 42 px sidebar pixel grid (one pixel is
+       64/42 units) with a 2 px arrow shaft; from 32 px it is aligned to the 32 px grid with a
+       stepped arrowhead; below 32 px it is a plain card (a glyph off its pixel grid smears). -->
+  <g id="carrying" data-pose="carrying" data-origin="51.6 32.8" display="none">
+    <path id="card" data-min-size="36" data-token="AppAccent" fill="#6FCF97" data-light-fill="#2B8A57" d="M45.79 30.48H54.78Q56.38 30.48 56.38 32.08V41.07Q56.38 42.67 54.78 42.67H45.79Q44.19 42.67 44.19 41.07V32.08Q44.19 30.48 45.79 30.48Z"/>
+    <path id="card-arrow" data-min-size="36" data-token="AccentText" fill="#082014" data-light-fill="#FFFFFF" d="M48.76 32H51.81V36.57H54.86L50.29 41.14L45.71 36.57H48.76Z"/>
+    <path id="card-small" data-below-size="36" data-token="AppAccent" fill="#6FCF97" data-light-fill="#2B8A57" d="M45.5 30H54.5Q56 30 56 31.5V40.5Q56 42 54.5 42H45.5Q44 42 44 40.5V31.5Q44 30 45.5 30Z"/>
+    <path id="card-arrow-small" data-min-size="32" data-below-size="36" data-token="AccentText" fill="#082014" data-light-fill="#FFFFFF" d="M46 34H54V36H52V38H48V36H46Z"/>
+  </g>
+  <path id="beak-lower" data-mono="ink" fill="#5B524C" data-light-fill="#463D38" d="M43 22.2L48.2 23.8Q46.8 26.4 43.6 25.8Z"/>
+  <path id="beak" data-mono="ink" data-mono-gap="1.6" fill="#7D726B" data-light-fill="#5F544D" d="M40.2 13.2C45.8 11.2 52.6 13.4 54 19.6C55 24.2 54.2 28.8 51.6 32.8C50.9 28.8 49.6 25.2 45.6 22.9L42.8 22.4Z"/>
+  <circle id="eye" data-min-size="40" data-mono="hole" cx="36" cy="18.6" r="2.7" fill="#0E1611" data-light-fill="#13201A"/>
+  <!-- Pixel-snapped eyes: whole pixels at 32, 24, 20 and 16 px, so they stay one crisp dot. -->
+  <path id="eye-32" data-min-size="28" data-below-size="40" display="none" data-mono="hole" fill="#0E1611" data-light-fill="#13201A" d="M34 16H38V20H34Z"/>
+  <path id="eye-24" data-min-size="24" data-below-size="28" display="none" data-mono="hole" fill="#0E1611" data-light-fill="#13201A" d="M32 16H37.333V21.333H32Z"/>
+  <path id="eye-20" data-min-size="20" data-below-size="24" display="none" data-mono="hole" fill="#0E1611" data-light-fill="#13201A" d="M35.2 16H38.4V19.2H35.2Z"/>
+  <path id="eye-16" data-below-size="20" display="none" data-mono="hole" fill="#0E1611" data-light-fill="#13201A" d="M32 16H36V20H32Z"/>
+  <circle id="eye-highlight" data-min-size="48" cx="36.95" cy="17.65" r="1" fill="#FFFFFF"/>
+</svg>

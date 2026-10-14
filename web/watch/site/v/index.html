@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en" data-state="loading">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#0F1513">
+  <title>Shared video · KeaClip</title>
+  <link rel="icon" href="../assets/kea.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../assets/player.css">
+  <script type="module" src="../assets/player.js"></script>
+</head>
+<body>
+  <svg class="sprite" aria-hidden="true" focusable="false">
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.6v12.8a1 1 0 0 0 1.5.86l10.3-6.4a1 1 0 0 0 0-1.72L9.5 4.74A1 1 0 0 0 8 5.6Z" fill="currentColor"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><rect x="6.5" y="5" width="4" height="14" rx="1.2" fill="currentColor"/><rect x="13.5" y="5" width="4" height="14" rx="1.2" fill="currentColor"/></symbol>
+    <symbol id="i-expand" viewBox="0 0 24 24"><path d="M4.5 9V5.5a1 1 0 0 1 1-1H9M15 4.5h3.5a1 1 0 0 1 1 1V9M19.5 15v3.5a1 1 0 0 1-1 1H15M9 19.5H5.5a1 1 0 0 1-1-1V15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-shrink" viewBox="0 0 24 24"><path d="M9 4.5V8a1 1 0 0 1-1 1H4.5M19.5 9H16a1 1 0 0 1-1-1V4.5M15 19.5V16a1 1 0 0 1 1-1h3.5M4.5 15H8a1 1 0 0 1 1 1v3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11m-4.5-4.5L12 15l4.5-4.5M5 19.5h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="9.5" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4.5 3.5 19h17Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 10v4.2M12 16.8v.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-keyboard" viewBox="0 0 24 24"><rect x="3" y="6.5" width="18" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M7 10h.01M10.3 10h.01M13.7 10h.01M17 10h.01M8 14h8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-wave" viewBox="0 0 24 24"><path d="M4 12h1.5M7.5 8v8M11 5v14M14.5 9v6M18 7v10M20.5 11v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  </svg>
+
+  <header class="top">
+    <a class="brand" href="../" aria-label="KeaClip">
+      <img src="../assets/kea.svg" width="30" height="30" alt="">
+      <span>KeaClip</span>
+    </a>
+    <span class="badge" title="Encrypted on the sender's computer. Only this link can unlock it.">
+      <svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg>
+      End-to-end encrypted
+    </span>
+  </header>
+
+  <main class="page">
+    <div id="player" class="player paused" tabindex="-1" aria-label="Video player" aria-busy="true">
+      <video id="video" playsinline preload="auto"></video>
+      <div class="audio-art" aria-hidden="true">
+        <div class="audio-well"><svg class="icon"><use href="#i-wave"/></svg></div>
+        <p id="audio-title" class="audio-title"></p>
+      </div>
+      <div id="surface" class="surface"></div>
+      <div class="spinner" aria-hidden="true"></div>
+
+      <button id="big-play" class="big-play" type="button" aria-label="Play">
+        <svg class="icon" aria-hidden="true"><use href="#i-play"/></svg>
+      </button>
+
+      <div id="state" class="state loading" role="status" aria-live="polite">
+        <div class="state-card">
+          <svg class="icon state-icon" aria-hidden="true"><use href="#i-alert"/></svg>
+          <div class="state-ring" aria-hidden="true"></div>
+          <p id="state-title" class="state-title">Unlocking the video…</p>
+          <p id="state-message" class="state-message"></p>
+          <button id="state-retry" class="button" type="button" hidden>Try again</button>
+        </div>
+      </div>
+
+      <div id="controls" class="controls">
+        <div id="seek" class="seek" role="slider" tabindex="0" aria-label="Seek" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0" aria-valuetext="0:00">
+          <div class="seek-track">
+            <div id="seek-buffered" class="seek-buffered"></div>
+            <div id="seek-played" class="seek-played"></div>
+          </div>
+          <div id="seek-thumb" class="seek-thumb"></div>
+          <div id="seek-tip" class="seek-tip">0:00</div>
+        </div>
+        <div class="bar">
+          <button id="play" class="control" type="button" aria-label="Play (k)" title="Play (k)">
+            <svg class="icon show-paused" aria-hidden="true"><use href="#i-play"/></svg>
+            <svg class="icon show-playing" aria-hidden="true"><use href="#i-pause"/></svg>
+          </button>
+          <div class="volume-group">
+            <button id="mute" class="control" type="button" aria-label="Mute (m)" title="Mute (m)">
+              <!-- Inline (not a <use> reference) so the page CSS can show one, two or no waves. -->
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3l4.5-4v13L7 14.5H4z" fill="currentColor"/><path class="wave1" d="M15 9.2a4 4 0 0 1 0 5.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="wave2" d="M17.6 6.6a7.6 7.6 0 0 1 0 10.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="cross" d="M16 9.5l5 5m0-5l-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </button>
+            <input id="volume" class="volume" type="range" min="0" max="100" step="1" value="100" aria-label="Volume">
+          </div>
+          <div class="time"><span id="time-now">0:00</span><span class="time-sep">/</span><span id="time-total">0:00</span></div>
+          <span class="spacer"></span>
+          <button id="help" class="control hide-touch" type="button" aria-label="Keyboard shortcuts (?)" title="Keyboard shortcuts (?)">
+            <svg class="icon" aria-hidden="true"><use href="#i-keyboard"/></svg>
+          </button>
+          <button id="fullscreen" class="control" type="button" aria-label="Full screen (f)" title="Full screen (f)">
+            <svg class="icon show-window" aria-hidden="true"><use href="#i-expand"/></svg>
+            <svg class="icon show-full" aria-hidden="true"><use href="#i-shrink"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div id="shortcuts" class="shortcuts" role="dialog" aria-label="Keyboard shortcuts" hidden>
+        <div class="shortcuts-head"><strong>Keyboard shortcuts</strong><button id="shortcuts-close" class="control small" type="button" aria-label="Close">✕</button></div>
+        <dl>
+          <dt><kbd>Space</kbd> <kbd>K</kbd></dt><dd>Play or pause</dd>
+          <dt><kbd>←</kbd> <kbd>→</kbd></dt><dd>Back or forward 5 s</dd>
+          <dt><kbd>J</kbd> <kbd>L</kbd></dt><dd>Back or forward 10 s</dd>
+          <dt><kbd>↑</kbd> <kbd>↓</kbd></dt><dd>Volume</dd>
+          <dt><kbd>M</kbd></dt><dd>Mute</dd>
+          <dt><kbd>F</kbd></dt><dd>Full screen</dd>
+          <dt><kbd>0</kbd>–<kbd>9</kbd></dt><dd>Jump to 0–90%</dd>
+        </dl>
+      </div>
+    </div>
+
+    <section id="details" class="details">
+      <div class="details-text">
+        <h1 id="title" class="title skeleton">Shared video</h1>
+        <p id="facts" class="facts skeleton">Loading details</p>
+      </div>
+      <button id="download" class="button primary" type="button" disabled>
+        <svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>
+        <span id="download-label">Download</span>
+      </button>
+    </section>
+
+    <p class="privacy">
+      <svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg>
+      <span>This video was encrypted on the sender's computer. The key is the part of the link after <strong>#</strong>, which your browser never sends to any server, so the storage service can't see it.</span>
+    </p>
+  </main>
+
+  <footer class="footer">Shared with <a href="../">KeaClip</a></footer>
+</body>
+</html>

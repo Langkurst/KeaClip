@@ -1,0 +1,134 @@
+[
+  {
+    "Name": "avalonia-MIT.txt",
+    "Url": "https://raw.githubusercontent.com/AvaloniaUI/Avalonia/8eeda4f6f546165b3f72e63c9f42247abb306905/licence.md",
+    "Bytes": 1096,
+    "Sha256": "213814D306090074D234D760239FF0F67EB9B8D20EEFB4D5631BB39DBE0B769B",
+    "Status": "Collected"
+  },
+  {
+    "Name": "inter-OFL.txt",
+    "Url": "https://raw.githubusercontent.com/AvaloniaUI/Avalonia/8eeda4f6f546165b3f72e63c9f42247abb306905/src/Avalonia.Fonts.Inter/Assets/OFL.txt",
+    "Status": "Unavailable",
+    "Error": "HttpResponseException"
+  },
+  {
+    "Name": "libvlcsharp-LGPL-2.1.txt",
+    "Url": "https://raw.githubusercontent.com/videolan/libvlcsharp/4896d0e06d19ac40b46802cf7dc167d432f3fd63/LICENSE",
+    "Bytes": 26526,
+    "Sha256": "20C17D8B8C48A600800DFD14F95D5CB9FF47066A9641DDEAB48DC54AEC96E331",
+    "Status": "Collected"
+  },
+  {
+    "Name": "microcom-MIT.txt",
+    "Url": "https://raw.githubusercontent.com/kekekeks/MicroCom/76785efcafd91b5902fd19dd11145f6dd655b7b4/LICENSE",
+    "Bytes": 1072,
+    "Sha256": "6EE769C9AC4DAC9ABB16B98B1341E9528FF9F4AB685481410D3376D14148F3A9",
+    "Status": "Collected"
+  },
+  {
+    "Name": "tmds-dbus-MIT.txt",
+    "Url": "https://raw.githubusercontent.com/tmds/Tmds.DBus/b4a7fed0b878f74cb54f7cca84d2889af4e596ba/COPYING",
+    "Bytes": 1151,
+    "Sha256": "ACA3B49277ABCC7886CCB2F115603A9F5B15FC3F96019A10C00F2974098B210C",
+    "Status": "Collected"
+  },
+  {
+    "Name": "deno-MIT.txt",
+    "Url": "https://raw.githubusercontent.com/denoland/deno/v2.9.7/LICENSE.md",
+    "Bytes": 1074,
+    "Sha256": "F62497FFFECC0852960C8D3E6934B9DB86D16396E9B604072E923892CAE3A588",
+    "Status": "Collected"
+  },
+  {
+    "Name": "deno-Cargo.lock",
+    "Url": "https://raw.githubusercontent.com/denoland/deno/v2.9.7/Cargo.lock",
+    "Bytes": 294948,
+    "Sha256": "4B501F05A28BF12C453593F0B558407890575B5F34B9DCBB2DC8E172D58A0C95",
+    "Status": "Collected"
+  },
+  {
+    "Name": "yt-dlp-third-party.txt",
+    "Url": "https://raw.githubusercontent.com/yt-dlp/yt-dlp/2026.08.19/THIRD_PARTY_LICENSES.txt",
+    "Bytes": 243550,
+    "Sha256": "472AEFE951C7DB35E1657C1D13FD337140511ED6F2B329205105AD441C5A02B7",
+    "Status": "Collected"
+  },
+  {
+    "Name": "yt-dlp-Unlicense.txt",
+    "Url": "https://raw.githubusercontent.com/yt-dlp/yt-dlp/2026.08.19/LICENSE",
+    "Bytes": 1211,
+    "Sha256": "7E12E5DF4BAE12CB21581BA157CED20E1986A0508DD10D0E8A4AB9A4CF94E85C",
+    "Status": "Collected"
+  },
+  {
+    "Name": "yt-dlp-build.yml",
+    "Url": "https://raw.githubusercontent.com/yt-dlp/yt-dlp/2026.08.19/.github/workflows/build.yml",
+    "Bytes": 22091,
+    "Sha256": "CD9AAE06AFAA22166670BD7182D7279AE12DAD2C1034C1CBEB0DB3F5D993FC04",
+    "Status": "Collected"
+  },
+  {
+    "Name": "yt-dlp-pyinstaller.py",
+    "Url": "https://raw.githubusercontent.com/yt-dlp/yt-dlp/2026.08.19/bundle/pyinstaller.py",
+    "Bytes": 4739,
+    "Sha256": "792B2E882D469B46E46F15707BF1869A2C043F7E89C79BC75F8725014482759A",
+    "Status": "Collected"
+  },
+  {
+    "Name": "yt-dlp-win-x64-pyinstaller.txt",
+    "Url": "https://raw.githubusercontent.com/yt-dlp/yt-dlp/2026.08.19/bundle/requirements/win-x64-pyinstaller.txt",
+    "Bytes": 1855,
+    "Sha256": "473E6212FF85DA7320B55933EDF7FDC294B5DA7D8F4348D1863D7D06865A60C6",
+    "Status": "Collected"
+  },
+  {
+    "Name": "yt-dlp-curl-cffi.txt",
+    "Url": "https://raw.githubusercontent.com/yt-dlp/yt-dlp/2026.08.19/bundle/requirements/curl-cffi.txt",
+    "Bytes": 52256,
+    "Sha256": "898C4D3BF40A6F1CB59E8CB8184536C0B97C543367E3256621A5B6D791729632",
+    "Status": "Collected"
+  },
+  {
+    "Name": "vlc-COPYING-GPL.txt",
+    "Url": "https://raw.githubusercontent.com/videolan/vlc/3.0.24/COPYING",
+    "Bytes": 18092,
+    "Sha256": "8177F97513213526DF2CF6184D8FF986C675AFB514D4E68A404010521B880643",
+    "Status": "Collected"
+  },
+  {
+    "Name": "vlc-COPYING-LGPL.txt",
+    "Url": "https://raw.githubusercontent.com/videolan/vlc/3.0.24/COPYING.LIB",
+    "Bytes": 26530,
+    "Sha256": "DC626520DCD53A22F727AF3EE42C770E56C97A64FE3ADB063799D8AB032FE551",
+    "Status": "Collected"
+  },
+  {
+    "Name": "vlc-x264-module.c",
+    "Url": "https://raw.githubusercontent.com/videolan/vlc/3.0.24/modules/codec/x264.c",
+    "Bytes": 59760,
+    "Sha256": "6C5B3000A43AD36899C068CA2E32C7CBDFBB39A61DE690E4C0A4FB3FD1F23054",
+    "Status": "Collected"
+  },
+  {
+    "Name": "vlc-win64-build.sh",
+    "Url": "https://raw.githubusercontent.com/videolan/vlc/3.0.24/extras/package/win32/build.sh",
+    "Bytes": 16024,
+    "Sha256": "0A4681551843ED646E2FE5C85C598AE1506849BD33F0B9BB5C7601FB1D0AFD59",
+    "Status": "Collected"
+  },
+  {
+    "Name": "ffmpeg-LICENSE.md",
+    "Url": "https://raw.githubusercontent.com/FFmpeg/FFmpeg/946fcce07b/LICENSE.md",
+    "Bytes": 4346,
+    "Sha256": "2E1D16C72FD74E12063776371DA757322F8B77589386532F4FD8634BDE7DE1AF",
+    "Status": "Collected"
+  },
+  {
+    "Name": "ffmpeg-GPL3.txt",
+    "Url": "https://raw.githubusercontent.com/FFmpeg/FFmpeg/946fcce07b/COPYING.GPLv3",
+    "Bytes": 35147,
+    "Sha256": "8CEB4B9EE5ADEDDE47B31E975C1D90C73AD27B6B165A1DCD80C7C545EB65B903",
+    "Status": "Collected"
+  }
+]

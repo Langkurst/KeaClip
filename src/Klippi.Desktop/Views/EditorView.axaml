@@ -1,0 +1,655 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="using:Klippi.Desktop" xmlns:c="using:Klippi.Desktop.Controls" xmlns:v="using:Klippi.Desktop.Views" xmlns:vlc="clr-namespace:LibVLCSharp.Avalonia;assembly=LibVLCSharp.Avalonia" x:Class="Klippi.Desktop.Views.EditorView">
+  <UserControl.Resources>
+    <v:EditorChoiceConverter x:Key="EditorChoice" />
+    <v:EditorPresetLabelConverter x:Key="EditorPresetLabel" />
+  </UserControl.Resources>
+  <UserControl.Styles>
+    <!-- Drop zone: dashed outline that lights up while a file is dragged over it. -->
+    <Style Selector="Rectangle.drop-outline">
+      <Setter Property="Stroke" Value="{DynamicResource AppBorderStrong}" />
+      <Setter Property="Fill" Value="{DynamicResource AppInput}" />
+      <Setter Property="StrokeThickness" Value="1.5" />
+      <Setter Property="StrokeDashArray" Value="6,5" />
+      <Setter Property="RadiusX" Value="14" />
+      <Setter Property="RadiusY" Value="14" />
+      <Setter Property="Transitions">
+        <Transitions>
+          <BrushTransition Property="Fill" Duration="0:0:0.16" />
+          <BrushTransition Property="Stroke" Duration="0:0:0.16" />
+        </Transitions>
+      </Setter>
+    </Style>
+    <Style Selector="Panel.dropzone.dragover > Rectangle.drop-outline">
+      <Setter Property="Stroke" Value="{DynamicResource AppAccent}" />
+      <Setter Property="Fill" Value="{DynamicResource AppAccentSubtle}" />
+    </Style>
+    <!-- The drop icon turns solid accent (and lifts slightly) so it stays visible on the highlighted zone. -->
+    <Style Selector="Border.drop-icon">
+      <Setter Property="Background" Value="{DynamicResource AppAccentSubtle}" />
+      <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+      <Setter Property="RenderTransform" Value="scale(1)" />
+      <Setter Property="Transitions">
+        <Transitions><BrushTransition Property="Background" Duration="0:0:0.16" /></Transitions>
+      </Setter>
+    </Style>
+    <Style Selector="Window.motion Border.drop-icon">
+      <Setter Property="Transitions">
+        <Transitions>
+          <BrushTransition Property="Background" Duration="0:0:0.16" />
+          <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.18" Easing="CubicEaseOut" />
+        </Transitions>
+      </Setter>
+    </Style>
+    <Style Selector="Border.drop-icon > c|StrokeIcon"><Setter Property="Foreground" Value="{DynamicResource AppAccent}" /></Style>
+    <Style Selector="Panel.dropzone.dragover Border.drop-icon"><Setter Property="Background" Value="{DynamicResource AppAccent}" /><Setter Property="RenderTransform" Value="scale(1.08)" /></Style>
+    <Style Selector="Panel.dropzone.dragover Border.drop-icon > c|StrokeIcon"><Setter Property="Foreground" Value="{DynamicResource AccentText}" /></Style>
+    <!-- Segmented tiles: icon + title + one-line hint (shared text classes, no one-off sizes). -->
+    <Style Selector="RadioButton.tile TextBlock.tile-title"><Setter Property="FontWeight" Value="SemiBold" /></Style>
+    <Style Selector="RadioButton.tile"><Setter Property="Padding" Value="12,11" /><Setter Property="VerticalAlignment" Value="Stretch" /></Style>
+    <!-- Expander headers carry an icon, a title and a short summary. -->
+    <Style Selector="Expander TextBlock.expander-hint"><Setter Property="FontSize" Value="12" /><Setter Property="Foreground" Value="{DynamicResource AppMuted}" /><Setter Property="TextTrimming" Value="CharacterEllipsis" /></Style>
+    <!-- Recent media rows. -->
+    <Style Selector="Border.recent-row">
+      <Setter Property="Background" Value="{DynamicResource AppSurfaceRaised}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AppBorder}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="10" />
+      <Setter Property="Padding" Value="12,10" />
+    </Style>
+    <Style Selector="ToggleSwitch.trailing"><Setter Property="HorizontalAlignment" Value="Right" /><Setter Property="VerticalAlignment" Value="Center" /><Setter Property="MinWidth" Value="0" /></Style>
+    <!-- While the waveform is being drawn the skeleton stands in for the whole timeline (no grips or playhead peeking out). -->
+    <Style Selector="local|WaveformControl.loading"><Setter Property="Opacity" Value="0" /><Setter Property="IsHitTestVisible" Value="False" /></Style>
+  </UserControl.Styles>
+
+  <ScrollViewer Name="PageScroller" HorizontalScrollBarVisibility="Disabled" Padding="36,4,36,28">
+    <StackPanel Spacing="18" MaxWidth="1040">
+      <!--
+        One grid holds every editor state; EditorView.UpdateLayoutMode places the columns:
+        narrow with a file: workspace, then output below; wide: output beside the workspace;
+        no file: a result or share link (output) first, then the drop zone.
+      -->
+      <Grid Name="EditorLayout" ColumnDefinitions="*,0" RowDefinitions="Auto,Auto" RowSpacing="0">
+
+        <!-- ===== No file open: drop zone and recent media ===== -->
+        <StackPanel Name="StartColumn" Spacing="18" IsVisible="{Binding !HasEditor}">
+          <Border Name="EmptyState" Classes="card enter e1" Padding="14">
+            <Panel Name="DropZone" Classes="dropzone" MinHeight="340" DragDrop.AllowDrop="True">
+              <Rectangle Classes="drop-outline" />
+              <StackPanel Spacing="14" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="460" Margin="28,40" IsVisible="{Binding !IsOpeningEditor}">
+                <Border Classes="drop-icon" Width="76" Height="76" CornerRadius="38" HorizontalAlignment="Center">
+                  <c:StrokeIcon Data="{StaticResource IconScissors}" Size="32" />
+                </Border>
+                <TextBlock Text="Drop a video or audio file here" Classes="h1" TextAlignment="Center" TextWrapping="Wrap" HorizontalAlignment="Center" />
+                <TextBlock Text="Trim it, pull out the sound or shrink it to send. Your original is kept unless you say otherwise." Classes="muted" TextAlignment="Center" />
+                <Button Name="EmptyOpenButton" Classes="primary large" HorizontalAlignment="Center" Margin="0,6,0,0" Command="{Binding OpenMediaCommand}" ToolTip.Tip="Open a video or audio file · Ctrl+O" AutomationProperties.Name="Open media">
+                  <StackPanel Orientation="Horizontal" Spacing="9"><c:StrokeIcon Data="{StaticResource IconOpenFile}" /><TextBlock Text="Open media" VerticalAlignment="Center" /></StackPanel>
+                </Button>
+                <StackPanel Spacing="2">
+                  <TextBlock Text="Video: MP4, MKV, WebM, MOV, AVI, M4V" Classes="caption faint" TextAlignment="Center" TextWrapping="Wrap" />
+                  <TextBlock Text="Audio: MP3, M4A, FLAC, WAV, OGG, Opus, AAC" Classes="caption faint" TextAlignment="Center" TextWrapping="Wrap" />
+                </StackPanel>
+              </StackPanel>
+              <StackPanel Spacing="14" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="420" Margin="28,40" IsVisible="{Binding IsOpeningEditor}">
+                <c:ProgressRing Width="40" Height="40" Thickness="3.5" Value="0" IsIndeterminate="{Binding AnimateEditorLoading}" HorizontalAlignment="Center" />
+                <TextBlock Text="Opening your media…" Classes="h1" TextAlignment="Center" HorizontalAlignment="Center" />
+                <TextBlock Text="Reading its length and tracks, then drawing the waveform. Long files take a little longer." Classes="muted" TextAlignment="Center" />
+              </StackPanel>
+            </Panel>
+          </Border>
+
+          <!-- Your recordings: the newest game clips and captures in Videos (Xbox Game Bar, AMD ReLive, NVIDIA, OBS),
+               listed only, one click from the trim timeline. -->
+          <Border Name="RecordingsCard" Classes="card reveal" IsVisible="{Binding HasRecentRecordings}">
+            <StackPanel Spacing="12">
+              <StackPanel Spacing="3">
+                <TextBlock Text="Your recordings" Classes="section" />
+                <TextBlock Text="New game clips and captures in your Videos folder." Classes="caption muted" />
+              </StackPanel>
+              <ItemsControl Name="RecordingsList" ItemsSource="{Binding RecentRecordings}">
+                <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Spacing="8" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Border Classes="recent-row">
+                      <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                        <Border Classes="well warm" Width="34" Height="34" VerticalAlignment="Center"><c:StrokeIcon Data="{StaticResource IconFilm}" Size="16" /></Border>
+                        <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                          <TextBlock Text="{Binding Title}" FontWeight="Medium" TextTrimming="CharacterEllipsis" MaxLines="1" ToolTip.Tip="{Binding Title}" />
+                          <TextBlock Text="{Binding Detail}" Classes="caption faint" TextTrimming="CharacterEllipsis" MaxLines="1" />
+                        </StackPanel>
+                        <Button Grid.Column="2" Classes="small" Command="{Binding EditCommand}" VerticalAlignment="Center" AutomationProperties.Name="{Binding EditLabel}" ToolTip.Tip="{Binding EditLabel}">
+                          <StackPanel Orientation="Horizontal" Spacing="6"><c:StrokeIcon Data="{StaticResource IconScissors}" Size="14" /><TextBlock Text="Edit" VerticalAlignment="Center" /></StackPanel>
+                        </Button>
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+          <Border Classes="card reveal" IsVisible="{Binding HasRecentMedia}">
+            <StackPanel Spacing="12">
+              <StackPanel Spacing="3">
+                <TextBlock Text="Pick up where you left off" Classes="section" />
+                <TextBlock Text="Recent downloads and exports that are still on this PC." Classes="caption muted" />
+              </StackPanel>
+              <ItemsControl ItemsSource="{Binding RecentMedia}">
+                <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Spacing="8" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Border Classes="recent-row">
+                      <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                        <Border Classes="well" Width="34" Height="34" VerticalAlignment="Center">
+                          <Panel>
+                            <c:StrokeIcon Data="{StaticResource IconFilm}" Size="16" IsVisible="{Binding !IsAudio}" />
+                            <c:StrokeIcon Data="{StaticResource IconMusic}" Size="16" IsVisible="{Binding IsAudio}" />
+                          </Panel>
+                        </Border>
+                        <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                          <TextBlock Text="{Binding Title}" FontWeight="Medium" TextTrimming="CharacterEllipsis" MaxLines="1" ToolTip.Tip="{Binding Title}" />
+                          <TextBlock Text="{Binding Detail}" Classes="caption faint" TextTrimming="CharacterEllipsis" MaxLines="1" />
+                        </StackPanel>
+                        <Button Grid.Column="2" Classes="small" Command="{Binding EditCommand}" VerticalAlignment="Center" AutomationProperties.Name="{Binding EditLabel}" ToolTip.Tip="{Binding EditLabel}">
+                          <StackPanel Orientation="Horizontal" Spacing="6"><c:StrokeIcon Data="{StaticResource IconScissors}" Size="14" /><TextBlock Text="Edit" VerticalAlignment="Center" /></StackPanel>
+                        </Button>
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+
+        <!-- ===== Workspace: preview + timeline ===== -->
+        <StackPanel Name="WorkspaceColumn" Spacing="18" IsVisible="{Binding HasEditor}">
+
+          <!-- Preview -->
+          <Border Name="PreviewCard" Classes="card enter e1" Padding="18">
+            <StackPanel Spacing="14">
+              <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                <Border Classes="well large">
+                  <Panel>
+                    <c:StrokeIcon Data="{StaticResource IconFilm}" IsVisible="{Binding EditorHasVideo}" />
+                    <c:StrokeIcon Data="{StaticResource IconMusic}" IsVisible="{Binding IsAudioOnlyMedia}" />
+                  </Panel>
+                </Border>
+                <StackPanel Grid.Column="1" Spacing="7" VerticalAlignment="Center">
+                  <TextBlock Name="EditorFileTitle" Text="{Binding EditorTitle}" Classes="section" TextTrimming="CharacterEllipsis" MaxLines="1" ToolTip.Tip="{Binding EditorTitle}" />
+                  <ItemsControl ItemsSource="{Binding EditorFacts}">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel ItemSpacing="6" LineSpacing="6" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate><Border Classes="chip"><TextBlock Text="{Binding}" Classes="tabular" /></Border></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </StackPanel>
+                <Button Grid.Column="2" Classes="ghost small" Command="{Binding OpenMediaCommand}" VerticalAlignment="Top" ToolTip.Tip="Open a different video or audio file · Ctrl+O" AutomationProperties.Name="Open media">
+                  <StackPanel Orientation="Horizontal" Spacing="7"><c:StrokeIcon Data="{StaticResource IconOpenFile}" Size="15" /><TextBlock Text="Open media" VerticalAlignment="Center" /></StackPanel>
+                </Button>
+              </Grid>
+
+              <!-- Full-width frame (edges line up with the card content); the video letterboxes inside it. -->
+              <c:AspectFrame Name="PreviewFrame" Ratio="{Binding PreviewAspect}" MaxHeight="460">
+                <Panel>
+                  <Border Classes="media-frame">
+                    <StackPanel Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.75">
+                      <c:StrokeIcon Data="{StaticResource IconFilm}" Size="28" Classes="faint" />
+                      <TextBlock Text="Press play to preview" Classes="caption faint" HorizontalAlignment="Center" />
+                    </StackPanel>
+                  </Border>
+                  <Border Name="InlinePreviewHost" CornerRadius="12" ClipToBounds="True" IsVisible="{Binding ShowPreviewSurface}">
+                    <vlc:VideoView Name="VideoPreview" MediaPlayer="{Binding Playback.NativePlayer}" />
+                  </Border>
+                  <Border Classes="media-frame" Background="{DynamicResource AppSurfaceRaised}" BorderBrush="{DynamicResource AppBorder}" BorderThickness="1" IsVisible="{Binding IsAudioOnlyMedia}">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="20" Margin="28,0" VerticalAlignment="Center" HorizontalAlignment="Center">
+                      <Border Width="84" Height="84" CornerRadius="42" Background="{DynamicResource AppAccentSubtle}">
+                        <c:StrokeIcon Data="{StaticResource IconMusic}" Size="36" Classes="accent" />
+                      </Border>
+                      <StackPanel Grid.Column="1" Spacing="5" VerticalAlignment="Center">
+                        <TextBlock Text="AUDIO ONLY" Classes="overline" />
+                        <TextBlock Text="{Binding EditorTitle}" Classes="h1" TextTrimming="CharacterEllipsis" MaxLines="1" />
+                        <TextBlock Text="{Binding EditorAudioText}" Classes="caption muted" />
+                      </StackPanel>
+                    </Grid>
+                  </Border>
+                  <!-- The preview could not decode the file: say so instead of leaving a black box. -->
+                  <Border Name="PreviewErrorPanel" Classes="media-frame reveal" Background="{DynamicResource AppSurfaceRaised}" BorderBrush="{DynamicResource AppBorder}" BorderThickness="1" IsVisible="{Binding HasPreviewError}">
+                    <StackPanel Spacing="8" Margin="28,0" MaxWidth="420" HorizontalAlignment="Center" VerticalAlignment="Center">
+                      <c:StrokeIcon Data="{StaticResource IconAlert}" Size="26" Foreground="{DynamicResource AppWarning}" />
+                      <TextBlock Text="{Binding PreviewError}" Classes="strong" TextAlignment="Center" TextWrapping="Wrap" />
+                      <TextBlock Text="Trimming and export still work: they use the original file, not the preview." Classes="caption muted" TextAlignment="Center" />
+                    </StackPanel>
+                  </Border>
+                </Panel>
+              </c:AspectFrame>
+
+              <!-- Transport -->
+              <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto,Auto" ColumnSpacing="6">
+                <Button Name="PlayButton" Classes="icon round large primary" Command="{Binding PlayCommand}" ToolTip.Tip="Play or pause · Space" AutomationProperties.Name="{Binding PlayLabel}">
+                  <Panel>
+                    <c:StrokeIcon Data="{StaticResource IconPlay}" IsFilled="True" Size="20" Margin="2,0,0,0" IsVisible="{Binding !IsPlaying}" />
+                    <c:StrokeIcon Data="{StaticResource IconPause}" IsFilled="True" Size="20" IsVisible="{Binding IsPlaying}" />
+                  </Panel>
+                </Button>
+                <Button Grid.Column="1" Classes="icon ghost" Command="{Binding StopPlaybackCommand}" ToolTip.Tip="Stop" AutomationProperties.Name="Stop playback">
+                  <c:StrokeIcon Data="{StaticResource IconStop}" Size="18" IsFilled="True" />
+                </Button>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" Margin="8,0,0,0">
+                  <TextBlock Name="PlaybackClock" Text="{Binding PlaybackClockText}" Classes="tabular strong" ToolTip.Tip="{Binding PlaybackTime}" />
+                  <TextBlock Text="/" Classes="faint" />
+                  <TextBlock Text="{Binding DurationClockText}" Classes="tabular faint" />
+                </StackPanel>
+                <Button Grid.Column="4" Classes="icon ghost" Command="{Binding ToggleMuteCommand}" ToolTip.Tip="{Binding MuteLabel}" AutomationProperties.Name="{Binding MuteLabel}">
+                  <Panel>
+                    <c:StrokeIcon Data="{StaticResource IconVolume}" IsVisible="{Binding !ShowMutedIcon}" />
+                    <c:StrokeIcon Data="{StaticResource IconMute}" Classes="muted" IsVisible="{Binding ShowMutedIcon}" />
+                  </Panel>
+                </Button>
+                <Slider Grid.Column="5" Width="96" Minimum="0" Maximum="100" Value="{Binding Volume, Mode=TwoWay}" VerticalAlignment="Center" AutomationProperties.Name="Playback volume" ToolTip.Tip="Volume" />
+                <Button Grid.Column="6" Classes="icon ghost" Click="ToggleFullscreen" IsEnabled="{Binding EditorHasVideo}" Margin="4,0,0,0" ToolTip.Tip="Fullscreen preview · F11" AutomationProperties.Name="Fullscreen preview">
+                  <c:StrokeIcon Data="{StaticResource IconFullscreen}" />
+                </Button>
+              </Grid>
+            </StackPanel>
+          </Border>
+
+          <!-- Timeline + range -->
+          <Border Name="TimelineCard" Classes="card enter e2" Padding="18">
+            <StackPanel Spacing="14">
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <StackPanel Spacing="3">
+                  <TextBlock Text="Keep the good part" Classes="section" />
+                  <TextBlock Text="Drag the orange handles, or press I and O to mark at the playhead." Classes="caption muted" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+                  <Button Name="ZoomOutButton" Classes="icon small ghost" Click="ZoomTimelineOut" IsEnabled="{Binding #Waveform.CanZoomOut}" ToolTip.Tip="Zoom out · −" AutomationProperties.Name="Zoom timeline out">
+                    <c:StrokeIcon Data="{StaticResource IconZoomOut}" Size="16" />
+                  </Button>
+                  <Button Classes="ghost small" MinWidth="44" Padding="6,0" Click="ResetTimelineZoom" ToolTip.Tip="Fit the whole file" AutomationProperties.Name="Fit timeline">
+                    <TextBlock Text="{Binding #Waveform.Zoom, StringFormat='{}{0:0.#}×'}" Classes="tabular caption" />
+                  </Button>
+                  <Button Name="ZoomInButton" Classes="icon small ghost" Click="ZoomTimelineIn" IsEnabled="{Binding #Waveform.CanZoomIn}" ToolTip.Tip="Zoom in · + or Ctrl+scroll" AutomationProperties.Name="Zoom timeline in">
+                    <c:StrokeIcon Data="{StaticResource IconZoomIn}" Size="16" />
+                  </Button>
+                </StackPanel>
+              </Grid>
+
+              <Panel>
+                <local:WaveformControl Name="Waveform" Height="128" Classes.loading="{Binding IsWaveformLoading}" Samples="{Binding Waveform}" StartRatio="{Binding ClipStartRatio, Mode=TwoWay}" EndRatio="{Binding ClipEndRatio, Mode=TwoWay}" PlayheadRatio="{Binding PlaybackPosition}" IsPlaying="{Binding IsPlaying}" Duration="{Binding EditorDuration}" PlaceholderText="{Binding WaveformPlaceholder}" AutomationProperties.Name="Trim timeline" AutomationProperties.HelpText="Click to move the playhead. Drag the handles to trim. I and O set the start and end at the playhead; arrow keys nudge; Ctrl and scroll zooms." />
+                <Border Classes="skeleton" CornerRadius="10" IsVisible="{Binding IsWaveformLoading}" />
+                <StackPanel Orientation="Horizontal" Spacing="9" HorizontalAlignment="Center" VerticalAlignment="Center" IsVisible="{Binding IsWaveformLoading}">
+                  <c:ProgressRing Width="16" Height="16" Thickness="2" Value="0" IsIndeterminate="{Binding AnimateEditorLoading}" />
+                  <TextBlock Text="Drawing the waveform…" Classes="caption muted" VerticalAlignment="Center" />
+                </StackPanel>
+              </Panel>
+
+              <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="12">
+                <StackPanel>
+                  <TextBlock Text="Start" Classes="label" />
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+                    <TextBox Name="StartTimeBox" Classes="mono" Text="{Binding StartTime, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" AutomationProperties.Name="Clip start time" ToolTip.Tip="hh:mm:ss.mmm, mm:ss or seconds · Enter applies" />
+                    <Button Name="MarkStartButton" Grid.Column="1" Classes="icon" Click="MarkStartAtPlayhead" ToolTip.Tip="Set start to the playhead · I" AutomationProperties.Name="Set start to playhead">
+                      <c:StrokeIcon Data="{StaticResource IconSetStart}" Classes="warm" />
+                    </Button>
+                  </Grid>
+                </StackPanel>
+                <StackPanel Grid.Column="1">
+                  <TextBlock Text="End" Classes="label" />
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+                    <TextBox Name="EndTimeBox" Classes="mono" Text="{Binding EndTime, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" AutomationProperties.Name="Clip end time" ToolTip.Tip="hh:mm:ss.mmm, mm:ss or seconds · Enter applies" />
+                    <Button Name="MarkEndButton" Grid.Column="1" Classes="icon" Click="MarkEndAtPlayhead" ToolTip.Tip="Set end to the playhead · O" AutomationProperties.Name="Set end to playhead">
+                      <c:StrokeIcon Data="{StaticResource IconSetEnd}" Classes="warm" />
+                    </Button>
+                  </Grid>
+                </StackPanel>
+                <StackPanel Grid.Column="2">
+                  <TextBlock Text="Length" Classes="label" />
+                  <Border Classes="chip warm" Height="40" Padding="12,0" CornerRadius="8" Classes.danger="{Binding !IsSelectionValid}">
+                    <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+                      <c:StrokeIcon Data="{StaticResource IconClock}" Size="15" />
+                      <TextBlock Name="SelectionLength" Text="{Binding SelectionDurationText}" Classes="tabular strong" VerticalAlignment="Center" />
+                    </StackPanel>
+                  </Border>
+                </StackPanel>
+              </Grid>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+
+        <!-- ===== Output: export, result and share ===== -->
+        <StackPanel Name="OutputColumn" Grid.Row="1" Spacing="18" IsVisible="{Binding ShowShareCard}">
+
+          <!-- Export -->
+          <Border Name="ExportCard" Classes="card enter e3" IsVisible="{Binding HasEditor}">
+            <StackPanel Spacing="16">
+              <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                <Border Classes="well large"><c:StrokeIcon Data="{StaticResource IconScissors}" /></Border>
+                <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
+                  <TextBlock Text="Export" Classes="section" />
+                  <TextBlock Text="Choose what to keep and how to cut it." Classes="caption muted" />
+                </StackPanel>
+              </Grid>
+
+              <StackPanel Spacing="8">
+                <TextBlock Text="OUTPUT" Classes="overline" />
+                <Grid Name="OutputTiles" ColumnDefinitions="*,*" ColumnSpacing="2" Margin="-4">
+                  <RadioButton Name="VideoOutputTile" Classes="tile" GroupName="EditorOutput" IsEnabled="{Binding EditorHasVideo}" IsChecked="{Binding AudioOnly, Mode=TwoWay, Converter={StaticResource EditorChoice}, ConverterParameter=False}" ToolTip.Tip="{Binding VideoOutputTip}" ToolTip.ShowOnDisabled="True" AutomationProperties.Name="Video clip">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                      <c:StrokeIcon Data="{StaticResource IconFilm}" Size="18" VerticalAlignment="Top" Margin="0,1,0,0" />
+                      <StackPanel Grid.Column="1" Spacing="2"><TextBlock Text="Video clip" Classes="tile-title" /><TextBlock Text="Picture and sound" Classes="caption muted" /></StackPanel>
+                    </Grid>
+                  </RadioButton>
+                  <RadioButton Name="AudioOutputTile" Grid.Column="1" Classes="tile" GroupName="EditorOutput" IsEnabled="{Binding EditorHasAudio}" IsChecked="{Binding AudioOnly, Mode=TwoWay, Converter={StaticResource EditorChoice}, ConverterParameter=True}" ToolTip.Tip="{Binding AudioOutputTip}" ToolTip.ShowOnDisabled="True" AutomationProperties.Name="Audio clip">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                      <c:StrokeIcon Data="{StaticResource IconMusic}" Size="18" VerticalAlignment="Top" Margin="0,1,0,0" />
+                      <StackPanel Grid.Column="1" Spacing="2"><TextBlock Text="Audio clip" Classes="tile-title" /><TextBlock Text="Sound only" Classes="caption muted" /></StackPanel>
+                    </Grid>
+                  </RadioButton>
+                </Grid>
+                <!-- The soundboard preset is a common one-step job, so it sits with the output choice. -->
+                <Button Name="SoundboardShortcut" Classes="link small" HorizontalAlignment="Left" Padding="0,2" Command="{Binding SoundboardCommand}" IsVisible="{Binding EditorHasAudio}" ToolTip.Tip="Audio clip, MP3 128 kbps mono, within the soundboard length and size limits from Settings" AutomationProperties.Name="Apply Discord soundboard preset">
+                  <StackPanel Orientation="Horizontal" Spacing="6"><c:StrokeIcon Data="{StaticResource IconSparkle}" Size="14" /><TextBlock Text="Make a Discord soundboard sound" VerticalAlignment="Center" /></StackPanel>
+                </Button>
+              </StackPanel>
+
+              <!-- Fit for: one click aims the clip just under a sharing limit (an exact cut with a 5% size margin,
+                   checked after export). Clicking the active one turns the size target off again. -->
+              <StackPanel Name="FitForRow" Spacing="8">
+                <TextBlock Text="FIT FOR" Classes="overline" />
+                <!-- Two by two: tidy in the narrow side column and the full-width layout alike. -->
+                <UniformGrid Columns="2" ColumnSpacing="8" RowSpacing="8">
+                  <Button Name="FitDiscordButton" Classes="fit" Classes.selected="{Binding FitTargetMb, Converter={StaticResource EditorChoice}, ConverterParameter=10}" Command="{Binding FitForCommand}" CommandParameter="10" ToolTip.Tip="Under Discord's 10 MB free upload limit" AutomationProperties.Name="Fit for Discord, 10 MB">
+                    <StackPanel Spacing="1"><TextBlock Text="Discord" Classes="tile-title" /><TextBlock Text="10 MB" Classes="caption muted" /></StackPanel>
+                  </Button>
+                  <Button Name="FitEmailButton" Classes="fit" Classes.selected="{Binding FitTargetMb, Converter={StaticResource EditorChoice}, ConverterParameter=25}" Command="{Binding FitForCommand}" CommandParameter="25" ToolTip.Tip="Under the usual 25 MB email attachment limit" AutomationProperties.Name="Fit for Email, 25 MB">
+                    <StackPanel Spacing="1"><TextBlock Text="Email" Classes="tile-title" /><TextBlock Text="25 MB" Classes="caption muted" /></StackPanel>
+                  </Button>
+                  <Button Name="FitNitroBasicButton" Classes="fit" Classes.selected="{Binding FitTargetMb, Converter={StaticResource EditorChoice}, ConverterParameter=50}" Command="{Binding FitForCommand}" CommandParameter="50" ToolTip.Tip="Under the 50 MB Discord Nitro Basic limit" AutomationProperties.Name="Fit for Nitro Basic, 50 MB">
+                    <StackPanel Spacing="1"><TextBlock Text="Nitro Basic" Classes="tile-title" /><TextBlock Text="50 MB" Classes="caption muted" /></StackPanel>
+                  </Button>
+                  <Button Name="FitNitroButton" Classes="fit" Classes.selected="{Binding FitTargetMb, Converter={StaticResource EditorChoice}, ConverterParameter=500}" Command="{Binding FitForCommand}" CommandParameter="500" ToolTip.Tip="Under the 500 MB Discord Nitro limit" AutomationProperties.Name="Fit for Nitro, 500 MB">
+                    <StackPanel Spacing="1"><TextBlock Text="Nitro" Classes="tile-title" /><TextBlock Text="500 MB" Classes="caption muted" /></StackPanel>
+                  </Button>
+                </UniformGrid>
+              </StackPanel>
+
+              <StackPanel Spacing="8">
+                <TextBlock Text="CUT" Classes="overline" />
+                <Grid Name="CutTiles" ColumnDefinitions="*,*" ColumnSpacing="2" Margin="-4">
+                  <RadioButton Name="LosslessTile" Classes="tile" GroupName="EditorClipMode" IsChecked="{Binding ClipMode, Mode=TwoWay, Converter={StaticResource EditorChoice}, ConverterParameter=Lossless}" AutomationProperties.Name="Lossless clip">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                      <c:StrokeIcon Data="{StaticResource IconSparkle}" Size="18" VerticalAlignment="Top" Margin="0,1,0,0" />
+                      <StackPanel Grid.Column="1" Spacing="2"><TextBlock Text="Lossless" Classes="tile-title" /><TextBlock Text="Fast, no re-encode" Classes="caption muted" /></StackPanel>
+                    </Grid>
+                  </RadioButton>
+                  <RadioButton Name="ExactTile" Grid.Column="1" Classes="tile" GroupName="EditorClipMode" IsChecked="{Binding ClipMode, Mode=TwoWay, Converter={StaticResource EditorChoice}, ConverterParameter=Exact}" AutomationProperties.Name="Exact clip">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                      <c:StrokeIcon Data="{StaticResource IconScissors}" Size="18" VerticalAlignment="Top" Margin="0,1,0,0" />
+                      <StackPanel Grid.Column="1" Spacing="2"><TextBlock Text="Exact" Classes="tile-title" /><TextBlock Text="Frame-accurate" Classes="caption muted" /></StackPanel>
+                    </Grid>
+                  </RadioButton>
+                </Grid>
+                <TextBlock Classes="caption muted reveal" TextWrapping="Wrap" IsVisible="{Binding !IsExactClip}" Text="Lossless is fastest and keeps full quality, but cuts can land slightly off. Choose Exact for precise cuts, a new size or format, fades or soundboard clips." />
+              </StackPanel>
+
+              <!-- Size targets for sharing are the Fit for buttons above; a custom size is Compression, Target size. -->
+              <Grid RowDefinitions="Auto,Auto" IsEnabled="{Binding IsExactClip}">
+                <StackPanel>
+                  <TextBlock Text="Compression" Classes="label" />
+                  <ComboBox ItemsSource="{Binding Compressions}" SelectedItem="{Binding Compression, Mode=TwoWay}" AutomationProperties.Name="Compression" />
+                </StackPanel>
+                <StackPanel Grid.Row="1" Classes="reveal" Margin="0,10,0,0" IsVisible="{Binding IsTargetSizeCompression}">
+                  <TextBlock Text="Target size (MB)" Classes="label" />
+                  <TextBox Classes="mono" Text="{Binding TargetSizeMb, Mode=TwoWay}" AutomationProperties.Name="Target size in megabytes" />
+                </StackPanel>
+              </Grid>
+
+              <!-- Estimate (an honest "known after export" when the size cannot be predicted) -->
+              <Border Name="EstimateCard" Classes="inset" Padding="16,14" IsVisible="{Binding HasEditorEstimate}">
+                <StackPanel Spacing="10">
+                  <Grid ColumnDefinitions="*,Auto,*" ColumnSpacing="12" IsVisible="{Binding HasEstimatedSize}">
+                    <StackPanel Spacing="3">
+                      <TextBlock Text="ORIGINAL" Classes="overline" />
+                      <TextBlock Text="{Binding EstimateOriginalText}" Classes="h1 tabular" />
+                    </StackPanel>
+                    <c:StrokeIcon Grid.Column="1" Data="{StaticResource IconChevronRight}" Classes="faint" VerticalAlignment="Bottom" Margin="0,0,0,4" />
+                    <StackPanel Grid.Column="2" Spacing="3">
+                      <TextBlock Text="ESTIMATED" Classes="overline" />
+                      <TextBlock Name="EstimateOutput" Text="{Binding EstimateOutputText}" Classes="h1 tabular accent" />
+                    </StackPanel>
+                  </Grid>
+                  <Grid ColumnDefinitions="Auto,*" ColumnSpacing="32" IsVisible="{Binding HasUnknownSize}">
+                    <StackPanel Spacing="3">
+                      <TextBlock Text="ORIGINAL" Classes="overline" />
+                      <TextBlock Text="{Binding EstimateOriginalText}" Classes="h1 tabular" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Bottom">
+                      <TextBlock Text="CLIP SIZE" Classes="overline" />
+                      <TextBlock Name="EstimateUnknown" Text="Known after export" Classes="muted strong" Margin="0,0,0,2" />
+                    </StackPanel>
+                  </Grid>
+                  <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                    <Border Classes="chip accent" VerticalAlignment="Top"><TextBlock Text="{Binding EstimateQualityText}" /></Border>
+                    <TextBlock Grid.Column="1" Text="{Binding EstimateDetailText}" Classes="caption muted" TextWrapping="Wrap" VerticalAlignment="Center" />
+                  </Grid>
+                </StackPanel>
+              </Border>
+              <Border Name="EstimateProblem" Classes="notice warning reveal" Padding="14,12" IsVisible="{Binding HasEstimateProblem}">
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                  <c:StrokeIcon Data="{StaticResource IconAlert}" Size="16" Foreground="{DynamicResource AppWarning}" VerticalAlignment="Top" Margin="0,1,0,0" />
+                  <TextBlock Grid.Column="1" Text="{Binding EstimateText}" Classes="caption" TextWrapping="Wrap" />
+                </Grid>
+              </Border>
+
+              <!-- Advanced -->
+              <Expander Name="AdvancedExpander" AutomationProperties.Name="Advanced export settings">
+                <Expander.Header>
+                  <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                    <c:StrokeIcon Data="{StaticResource IconSettings}" Size="16" Classes="muted" />
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                      <TextBlock Text="Advanced" FontWeight="SemiBold" VerticalAlignment="Center" />
+                      <TextBlock Text="codec, encoder, size, FPS" Classes="expander-hint" VerticalAlignment="Center" />
+                    </StackPanel>
+                  </Grid>
+                </Expander.Header>
+                <StackPanel Spacing="16" Margin="0,4,0,2">
+                  <Grid Name="ExportConversionControls" ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="12" IsEnabled="{Binding IsExactClip}">
+                    <StackPanel><TextBlock Text="Video codec" Classes="label" /><ComboBox ItemsSource="{Binding VideoCodecs}" SelectedItem="{Binding ExportCodec, Mode=TwoWay}" AutomationProperties.Name="Video codec" /></StackPanel>
+                    <StackPanel Grid.Column="1"><TextBlock Text="Encoder" Classes="label" /><ComboBox ItemsSource="{Binding EncoderPreferences}" SelectedItem="{Binding Encoder, Mode=TwoWay}" AutomationProperties.Name="Encoder preference" /></StackPanel>
+                    <StackPanel Grid.Row="1"><TextBlock Text="Maximum height" Classes="label" /><ComboBox ItemsSource="{Binding HeightChoices}" SelectedItem="{Binding ExportHeight, Mode=TwoWay}" AutomationProperties.Name="Maximum height" /></StackPanel>
+                    <StackPanel Grid.Row="1" Grid.Column="1"><TextBlock Text="Frame rate" Classes="label" /><ComboBox ItemsSource="{Binding FpsChoices}" SelectedItem="{Binding ExportFps, Mode=TwoWay}" AutomationProperties.Name="Frame rate" /></StackPanel>
+                    <Grid Name="ExportHdrRow" Grid.Row="2" Grid.ColumnSpan="2" ColumnDefinitions="*,Auto" ColumnSpacing="12" IsEnabled="{Binding EditorSourceIsHdr}">
+                      <StackPanel Spacing="2" VerticalAlignment="Center">
+                        <TextBlock Text="Convert HDR to SDR" FontWeight="Medium" />
+                        <TextBlock Text="For HDR sources that look washed out on regular screens." Classes="caption muted" TextWrapping="Wrap" IsVisible="{Binding EditorSourceIsHdr}" />
+                        <TextBlock Text="This file is already SDR, so there is nothing to convert." Classes="caption muted" TextWrapping="Wrap" IsVisible="{Binding !EditorSourceIsHdr}" />
+                      </StackPanel>
+                      <ToggleSwitch Grid.Column="1" Classes="trailing" IsChecked="{Binding ExportHdr, Mode=TwoWay}" AutomationProperties.Name="Convert HDR to SDR" />
+                    </Grid>
+                  </Grid>
+                  <StackPanel Spacing="8">
+                    <TextBlock Text="DETECTED ENCODERS" Classes="overline" />
+                    <ItemsControl ItemsSource="{Binding Encoders}">
+                      <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel ItemSpacing="6" LineSpacing="6" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                          <Border Classes="chip" Classes.accent="{Binding IsHardware}" ToolTip.Tip="{Binding Name}">
+                            <TextBlock Text="{Binding Description}" />
+                          </Border>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock Text="Highlighted chips use your graphics card and are very fast. CPU is slower but usually makes smaller files." Classes="caption muted" />
+                  </StackPanel>
+                </StackPanel>
+              </Expander>
+
+              <!-- Audio clip -->
+              <Expander Name="AudioClipExpander" AutomationProperties.Name="Audio clip settings">
+                <Expander.Header>
+                  <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                    <c:StrokeIcon Data="{StaticResource IconWaveform}" Size="16" Classes="muted" />
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                      <TextBlock Text="Audio clip" FontWeight="SemiBold" VerticalAlignment="Center" />
+                      <TextBlock Text="format, fades, soundboard" Classes="expander-hint" VerticalAlignment="Center" />
+                    </StackPanel>
+                  </Grid>
+                </Expander.Header>
+                <!-- Audio conversion needs Exact mode; the section stays readable while Lossless is chosen. -->
+                <StackPanel Name="AudioClipControls" Spacing="14" Margin="0,4,0,2" IsEnabled="{Binding IsExactClip}">
+                  <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="12">
+                    <StackPanel><TextBlock Text="Audio format" Classes="label" /><ComboBox ItemsSource="{Binding AudioFormats}" SelectedItem="{Binding ExportAudioFormat, Mode=TwoWay}" AutomationProperties.Name="Audio format" /></StackPanel>
+                    <StackPanel Grid.Column="1"><TextBlock Text="Bitrate (kbps)" Classes="label" /><ComboBox Name="ExportBitratePicker" ItemsSource="{Binding ExportBitrates}" SelectedItem="{Binding ExportAudioKbps, Mode=TwoWay}" AutomationProperties.Name="Audio bitrate" /><TextBlock Name="ExportBitrateNoteText" Text="{Binding ExportBitrateNote}" IsVisible="{Binding HasExportBitrateNote}" Classes="caption muted" TextWrapping="Wrap" Margin="0,4,0,0" /></StackPanel>
+                    <StackPanel Grid.Row="1"><TextBlock Text="Sample rate" Classes="label" /><ComboBox ItemsSource="{Binding SampleRates}" SelectedItem="{Binding SampleRate, Mode=TwoWay}" AutomationProperties.Name="Sample rate" /></StackPanel>
+                    <StackPanel Grid.Row="1" Grid.Column="1"><TextBlock Text="Volume ×" Classes="label" /><NumericUpDown Minimum="0" Maximum="4" Increment="0.1" FormatString="0.0" Value="{Binding ExportVolume, Mode=TwoWay}" AutomationProperties.Name="Volume multiplier" /></StackPanel>
+                    <StackPanel Grid.Row="2"><TextBlock Text="Fade in (seconds)" Classes="label" /><TextBox Classes="mono" Text="{Binding FadeIn, Mode=TwoWay}" AutomationProperties.Name="Fade in seconds" /></StackPanel>
+                    <StackPanel Grid.Row="2" Grid.Column="1"><TextBlock Text="Fade out (seconds)" Classes="label" /><TextBox Classes="mono" Text="{Binding FadeOut, Mode=TwoWay}" AutomationProperties.Name="Fade out seconds" /></StackPanel>
+                  </Grid>
+                  <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="16" RowSpacing="4">
+                    <CheckBox Content="Even out loudness" IsChecked="{Binding Normalize, Mode=TwoWay}" />
+                    <CheckBox Name="TrimSilenceCheck" Grid.Column="1" IsChecked="{Binding TrimSilence, Mode=TwoWay}" ToolTip.Tip="Removes silence only at the start and end. On video clips, picture and sound are cut together." AutomationProperties.Name="Trim silence at start and end"><TextBlock Text="Trim silence at start and end" TextWrapping="Wrap" /></CheckBox>
+                    <CheckBox Grid.Row="1" Content="Mono" IsChecked="{Binding Mono, Mode=TwoWay}" />
+                    <CheckBox Grid.Row="1" Grid.Column="1" Content="Soundboard limits" IsChecked="{Binding Soundboard, Mode=TwoWay}" ToolTip.Tip="Keep the clip within the soundboard length and size limits from Settings" />
+                  </Grid>
+                  <Border Classes="notice accent" Padding="14,12">
+                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="10">
+                      <StackPanel Spacing="3">
+                        <TextBlock Text="Discord soundboard" FontWeight="SemiBold" />
+                        <TextBlock Text="{Binding SoundboardLimitText}" Classes="caption muted" TextWrapping="Wrap" />
+                      </StackPanel>
+                      <Button Grid.Row="1" Classes="small" Command="{Binding SoundboardCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Apply Discord soundboard preset">
+                        <StackPanel Orientation="Horizontal" Spacing="6"><c:StrokeIcon Data="{StaticResource IconSparkle}" Size="14" /><TextBlock Text="Apply preset" VerticalAlignment="Center" /></StackPanel>
+                      </Button>
+                    </Grid>
+                  </Border>
+                </StackPanel>
+              </Expander>
+
+              <!-- Keep or delete the original -->
+              <Border Classes="inset" Padding="14,12">
+                <StackPanel Spacing="10">
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                    <StackPanel Spacing="2" VerticalAlignment="Center">
+                      <TextBlock Text="Delete the original afterwards" FontWeight="Medium" />
+                      <TextBlock Text="Only after the new file exports and passes verification." Classes="caption muted" />
+                    </StackPanel>
+                    <ToggleSwitch Name="DeleteOriginalSwitch" Grid.Column="1" Classes="trailing" IsChecked="{Binding DeleteOriginal, Mode=TwoWay}" AutomationProperties.Name="Delete the original after a verified export" />
+                  </Grid>
+                  <Border Classes="notice danger reveal" Padding="12,10" IsVisible="{Binding DeleteOriginal}">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                      <c:StrokeIcon Data="{StaticResource IconAlert}" Size="16" Classes="danger" VerticalAlignment="Top" />
+                      <TextBlock Grid.Column="1" Text="The original is permanently deleted, not moved to the Recycle Bin. Leave this off if you might want the full file later." Classes="caption" TextWrapping="Wrap" Foreground="{DynamicResource AppDanger}" />
+                    </Grid>
+                  </Border>
+                </StackPanel>
+              </Border>
+
+              <!-- Export action + progress (steps back to secondary once a clip is ready to share) -->
+              <StackPanel Spacing="10">
+                <Button Name="ExportButton" Classes="large" Classes.primary="{Binding IsExportPrimary}" Classes.cta="{Binding IsExportPrimary}" HorizontalAlignment="Stretch" Command="{Binding ExportCommand}" IsEnabled="{Binding CanExport}" AutomationProperties.Name="{Binding ExportButtonText}" ToolTip.Tip="Choose where to save, then export the selected range">
+                  <StackPanel Orientation="Horizontal" Spacing="9"><c:StrokeIcon Data="{StaticResource IconScissors}" /><TextBlock Text="{Binding ExportButtonText}" VerticalAlignment="Center" /></StackPanel>
+                </Button>
+                <!-- A GIF is a quiet second choice: the same selection, silent and looping. -->
+                <Button Name="ExportGifButton" Classes="link small" HorizontalAlignment="Center" Command="{Binding ExportGifCommand}" IsEnabled="{Binding CanExportGif}" IsVisible="{Binding EditorHasVideo}" ToolTip.Tip="A silent, looping GIF of the selection, up to 60 seconds and 480 pixels wide" AutomationProperties.Name="Export the selection as a GIF">
+                  <TextBlock Text="Export the selection as a GIF" />
+                </Button>
+                <Grid Classes="reveal" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10" IsVisible="{Binding IsExporting}">
+                  <ProgressBar Minimum="0" Maximum="100" Value="{Binding ExportPercent}" IsIndeterminate="{Binding ExportProgressIndeterminate}" VerticalAlignment="Center" />
+                  <c:AnimatedNumberText Grid.Column="1" Classes="count tabular caption" Value="{Binding ExportPercent}" Format="{}{0:0}%" IsVisible="{Binding HasExportPercent}" VerticalAlignment="Center" />
+                  <Button Grid.Column="2" Classes="ghost small" Content="Cancel" Command="{Binding CancelEditorOperationCommand}" AutomationProperties.Name="Cancel export" />
+                </Grid>
+              </StackPanel>
+            </StackPanel>
+          </Border>
+
+          <!-- Latest export: stays after the editor closes (for example when the original was deleted). -->
+          <Border Name="ResultCard" Classes="card reveal" IsVisible="{Binding HasLastExport}">
+            <StackPanel Spacing="14">
+              <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                <Border Width="38" Height="38" CornerRadius="19" Background="{DynamicResource AppAccent}" VerticalAlignment="Top" Classes="pop">
+                  <c:StrokeIcon Data="{StaticResource IconCheck}" Size="20" StrokeThickness="2.4" Foreground="{DynamicResource AccentText}" />
+                </Border>
+                <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
+                  <TextBlock Text="Your clip is ready" Classes="section" />
+                  <TextBlock Name="LastExportTitle" Text="{Binding LastExportName}" Classes="strong" TextTrimming="CharacterEllipsis" MaxLines="1" ToolTip.Tip="{Binding LastExportName}" />
+                  <TextBlock Text="{Binding LastExportDetail}" Classes="caption muted" />
+                </StackPanel>
+              </Grid>
+              <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10" IsVisible="{Binding ShowOriginalDeletedNote}">
+                <c:StrokeIcon Data="{StaticResource IconTrash}" Size="15" Classes="faint" VerticalAlignment="Top" Margin="0,1,0,0" />
+                <TextBlock Grid.Column="1" Text="The original was deleted after the clip passed verification, as you asked." Classes="caption muted" />
+              </Grid>
+              <WrapPanel ItemSpacing="8" LineSpacing="8">
+                <Button Classes="small" Command="{Binding OpenLastExportCommand}" AutomationProperties.Name="Open the exported clip"><StackPanel Orientation="Horizontal" Spacing="6"><c:StrokeIcon Data="{StaticResource IconPlay}" Size="13" IsFilled="True" /><TextBlock Text="Open" VerticalAlignment="Center" /></StackPanel></Button>
+                <Button Classes="small" Command="{Binding RevealLastExportCommand}" AutomationProperties.Name="Show the exported clip in its folder"><StackPanel Orientation="Horizontal" Spacing="6"><c:StrokeIcon Data="{StaticResource IconFolder}" Size="14" /><TextBlock Text="Show in folder" VerticalAlignment="Center" /></StackPanel></Button>
+                <Button Name="EditLastExportButton" Classes="small" Command="{Binding EditLastExportCommand}" IsEnabled="{Binding CanEdit}" AutomationProperties.Name="Edit the exported clip"><StackPanel Orientation="Horizontal" Spacing="6"><c:StrokeIcon Data="{StaticResource IconScissors}" Size="14" /><TextBlock Text="Edit this clip" VerticalAlignment="Center" /></StackPanel></Button>
+              </WrapPanel>
+            </StackPanel>
+          </Border>
+
+          <!-- Share -->
+          <Border Name="ShareCard" Classes="card enter e4" IsVisible="{Binding ShowShareCard}">
+            <StackPanel Spacing="14">
+              <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                <Border Classes="well large"><c:StrokeIcon Data="{StaticResource IconShare}" /></Border>
+                <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
+                  <TextBlock Text="Share" Classes="section" />
+                  <TextBlock Text="Encrypted on this PC, then uploaded to File.Kiwi. Links expire." Classes="caption muted" TextWrapping="Wrap" />
+                </StackPanel>
+              </Grid>
+
+              <StackPanel Spacing="8" IsVisible="{Binding HasLastExport}">
+                <Button Name="ShareExportButton" Classes="primary" HorizontalAlignment="Stretch" Command="{Binding ShareLastExportCommand}" IsEnabled="{Binding CanShare}" AutomationProperties.Name="Share the exported clip">
+                  <StackPanel Orientation="Horizontal" Spacing="8"><c:StrokeIcon Data="{StaticResource IconShare}" Size="16" /><TextBlock Text="Share exported clip" VerticalAlignment="Center" /></StackPanel>
+                </Button>
+                <Button Classes="link small" HorizontalAlignment="Center" Command="{Binding ShareCommand}" IsEnabled="{Binding CanShare}" IsVisible="{Binding ShowShareOriginalInstead}" Content="Share the original file instead" />
+              </StackPanel>
+              <Button Name="ShareButton" HorizontalAlignment="Stretch" Command="{Binding ShareCommand}" IsEnabled="{Binding CanShare}" IsVisible="{Binding CanShareEditorFile}" AutomationProperties.Name="Share current file">
+                <StackPanel Orientation="Horizontal" Spacing="8"><c:StrokeIcon Data="{StaticResource IconShare}" Size="16" /><TextBlock Text="Share this file" VerticalAlignment="Center" /></StackPanel>
+              </Button>
+              <!-- Watch link: plays in the browser with KeaClip's player, stored in the user's own bucket (set up in Settings). -->
+              <Button Name="WatchLinkButton" HorizontalAlignment="Stretch" Command="{Binding ShareWatchLinkCommand}" IsEnabled="{Binding CanShare}" IsVisible="{Binding WatchLinksAvailable}"
+                      ToolTip.Tip="Make a link that plays in any browser. Encrypted on this PC; stored in your own storage (Settings, Watch links)." ToolTip.ShowOnDisabled="True" AutomationProperties.Name="Create a watch link">
+                <StackPanel Orientation="Horizontal" Spacing="8"><c:StrokeIcon Data="{StaticResource IconPlay}" Size="16" /><TextBlock Text="Create watch link" VerticalAlignment="Center" /></StackPanel>
+              </Button>
+
+              <!-- Shown before a very large upload: links last 36 hours and an interrupted upload cannot resume. -->
+              <Border Name="LargeShareNotice" Classes="notice warning reveal" Padding="14,12" IsVisible="{Binding HasPendingLargeShare}" AutomationProperties.LiveSetting="Assertive" AutomationProperties.Name="{Binding LargeShareTitle}">
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                  <c:StrokeIcon Data="{StaticResource IconAlert}" Size="16" Foreground="{DynamicResource AppWarning}" VerticalAlignment="Top" Margin="0,1,0,0" />
+                  <StackPanel Grid.Column="1" Spacing="4">
+                    <TextBlock Text="{Binding LargeShareTitle}" Classes="strong" />
+                    <TextBlock Text="{Binding LargeShareWarning}" Classes="caption muted" TextWrapping="Wrap" />
+                    <WrapPanel ItemSpacing="8" LineSpacing="8" Margin="0,6,0,0">
+                      <Button Name="ConfirmLargeShareButton" Classes="small primary" Command="{Binding ConfirmLargeShareCommand}" IsEnabled="{Binding CanShare}" Content="Upload anyway" AutomationProperties.Name="Upload the large file anyway" />
+                      <Button Name="CancelLargeShareButton" Classes="small ghost" Command="{Binding CancelLargeShareCommand}" Content="Cancel" AutomationProperties.Name="Cancel the large upload" />
+                    </WrapPanel>
+                  </StackPanel>
+                </Grid>
+              </Border>
+
+              <Grid Classes="reveal" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10" IsVisible="{Binding IsSharing}">
+                <ProgressBar Minimum="0" Maximum="100" Value="{Binding SharePercent}" IsIndeterminate="{Binding ShareProgressIndeterminate}" VerticalAlignment="Center" />
+                <c:AnimatedNumberText Grid.Column="1" Classes="count tabular caption" Value="{Binding SharePercent}" Format="{}{0:0}%" IsVisible="{Binding HasSharePercent}" VerticalAlignment="Center" />
+                <Button Grid.Column="2" Classes="ghost small" Content="Cancel" Command="{Binding CancelShareOperationCommand}" AutomationProperties.Name="Cancel upload" />
+              </Grid>
+              <TextBlock Name="ShareProgressDetail" Text="{Binding ShareProgressText}" Classes="caption muted tabular" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding ShareProgressText}" IsVisible="{Binding IsSharing}" Margin="0,-4,0,0" />
+
+              <StackPanel Classes="reveal" Spacing="6" IsVisible="{Binding HasShareUrl}">
+                <TextBlock Name="ShareLinkLabelText" Text="{Binding ShareLinkLabel}" Classes="label" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding ShareLinkLabel}" />
+                <TextBlock Name="ShareLinkOtherFileNote" Text="{Binding ShareLinkOtherFileText}" IsVisible="{Binding ShareLinkIsForOtherFile}" Classes="caption muted" TextWrapping="Wrap" />
+                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="6">
+                  <TextBox Name="ShareLinkBox" Classes="mono" Text="{Binding ShareUrl}" IsReadOnly="True" AutomationProperties.Name="{Binding ShareLinkLabel}" />
+                  <Button Grid.Column="1" Classes="icon" Command="{Binding CopyShareCommand}" ToolTip.Tip="Copy link" AutomationProperties.Name="Copy share link"><c:StrokeIcon Data="{StaticResource IconCopy}" Size="16" /></Button>
+                  <Button Grid.Column="2" Classes="icon" Command="{Binding OpenShareCommand}" ToolTip.Tip="Open link in your browser" AutomationProperties.Name="Open share link"><c:StrokeIcon Data="{StaticResource IconExternal}" Size="16" /></Button>
+                </Grid>
+              </StackPanel>
+
+              <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                <c:StrokeIcon Data="{StaticResource IconClock}" Size="15" Classes="faint" VerticalAlignment="Top" Margin="0,1,0,0" />
+                <TextBlock Grid.Column="1" Text="{Binding ShareInfo}" Classes="caption muted" TextWrapping="Wrap" />
+              </Grid>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </Grid>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

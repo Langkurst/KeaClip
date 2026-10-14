@@ -1,0 +1,9 @@
+{
+  "manifest_version": 3,
+  "name": "Send to KeaClip",
+  "version": "0.1.0",
+  "description": "Send a media link to your local KeaClip app. Downloads start only in the app.",
+  "permissions": ["contextMenus", "activeTab"],
+  "background": { "service_worker": "background.js" },
+  "action": { "default_title": "Open in KeaClip" }
+}

@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework><UseWindowsForms>true</UseWindowsForms><OutputType>WinExe</OutputType>
+    <AssemblyName>KeaClip.Setup</AssemblyName><ApplicationIcon>../Klippi.Desktop/Assets/kea.ico</ApplicationIcon>
+    <RuntimeFrameworkVersion>10.0.12</RuntimeFrameworkVersion><EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier><SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile><IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(PayloadZip)' != ''"><EmbeddedResource Include="$(PayloadZip)" LogicalName="KeaClip.Payload.zip" /></ItemGroup>
+</Project>

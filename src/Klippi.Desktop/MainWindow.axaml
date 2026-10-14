@@ -1,0 +1,141 @@
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="using:Klippi.Desktop" xmlns:c="using:Klippi.Desktop.Controls" xmlns:v="using:Klippi.Desktop.Views" x:Class="Klippi.Desktop.MainWindow" Title="KeaClip" Width="1180" Height="800" MinWidth="880" MinHeight="420" WindowStartupLocation="CenterScreen" Icon="/Assets/kea.ico" ExtendClientAreaToDecorationsHint="True" ExtendClientAreaTitleBarHeightHint="36" WindowDecorations="BorderOnly">
+  <Grid ColumnDefinitions="232,*" RowDefinitions="36,*,Auto">
+    <!-- Title bar: the sidebar and page surfaces continue under the window controls.
+         TitleBar role gives native drag, double-click maximise and Windows Snap. -->
+    <Border Name="SidebarTitleBar" Background="{DynamicResource AppSidebar}" BorderBrush="{DynamicResource AppBorder}" BorderThickness="0,0,1,0" WindowDecorationProperties.ElementRole="TitleBar" />
+    <Border Name="ContentTitleBar" Grid.Column="1" Background="{DynamicResource AppBackground}" WindowDecorationProperties.ElementRole="TitleBar">
+      <!-- Caption buttons: the roles let Windows treat them natively (Snap Layouts on maximise). -->
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+        <Button Classes="caption" Click="MinimizeWindow" WindowDecorationProperties.ElementRole="MinimizeButton" ToolTip.Tip="Minimise" AutomationProperties.Name="Minimise">
+          <c:StrokeIcon Data="{StaticResource IconCaptionMinimize}" Size="16" StrokeThickness="1.2" />
+        </Button>
+        <Button Classes="caption" Click="ToggleMaximize" WindowDecorationProperties.ElementRole="MaximizeButton" ToolTip.Tip="Maximise" AutomationProperties.Name="Maximise or restore">
+          <Panel>
+            <c:StrokeIcon Name="MaximizeGlyph" Data="{StaticResource IconCaptionMaximize}" Size="16" StrokeThickness="1.2" />
+            <c:StrokeIcon Name="RestoreGlyph" Data="{StaticResource IconCaptionRestore}" Size="16" StrokeThickness="1.2" IsVisible="False" />
+          </Panel>
+        </Button>
+        <Button Classes="caption close" Click="CloseWindow" WindowDecorationProperties.ElementRole="CloseButton" ToolTip.Tip="Close" AutomationProperties.Name="Close">
+          <c:StrokeIcon Data="{StaticResource IconCaptionClose}" Size="16" StrokeThickness="1.2" />
+        </Button>
+      </StackPanel>
+    </Border>
+    <!-- The extended client area has no top resize border, so add the usual thin one. -->
+    <Border Grid.ColumnSpan="2" Height="4" VerticalAlignment="Top" Background="Transparent" ZIndex="5" WindowDecorationProperties.ElementRole="ResizeN" />
+    <!-- Sidebar -->
+    <Border Grid.Row="1" Grid.RowSpan="2" Background="{DynamicResource AppSidebar}" BorderBrush="{DynamicResource AppBorder}" BorderThickness="0,0,1,0">
+      <ScrollViewer Name="NavigationScroll" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <Grid RowDefinitions="Auto,*,Auto" MinHeight="{Binding $parent[ScrollViewer].Bounds.Height}">
+          <StackPanel Orientation="Horizontal" Spacing="12" Margin="20,4,16,26">
+            <c:KeaMascot Classes="mascot" Size="42" VerticalAlignment="Center" Background="{DynamicResource AppAccentSubtle}" RenderTransformOrigin="50%,85%" AutomationProperties.Name="KeaClip" />
+            <StackPanel VerticalAlignment="Center" Spacing="1">
+              <TextBlock Text="{Binding AppName}" Classes="wordmark" />
+              <TextBlock Text="Save. Shape. Share." Classes="caption faint" />
+            </StackPanel>
+          </StackPanel>
+
+          <Panel Grid.Row="1" Margin="12,0">
+            <Border Name="NavIndicator" Classes="nav-indicator"><Border /></Border>
+            <StackPanel Name="NavPanel" Spacing="4">
+              <Button Name="DownloadNav" Classes="nav" Tag="0" Click="Navigate" ToolTip.Tip="Download · Ctrl+1" AutomationProperties.Name="Download">
+                <StackPanel Orientation="Horizontal" Spacing="12"><c:StrokeIcon Data="{StaticResource IconDownload}" /><TextBlock Text="Download" VerticalAlignment="Center" /></StackPanel>
+              </Button>
+              <Button Name="QueueNav" Classes="nav" Tag="1" Click="Navigate" HorizontalContentAlignment="Stretch" ToolTip.Tip="Queue · Ctrl+2" AutomationProperties.Name="Queue">
+                <Grid ColumnDefinitions="*,Auto">
+                  <StackPanel Orientation="Horizontal" Spacing="12"><c:StrokeIcon Data="{StaticResource IconQueue}" /><TextBlock Text="Queue" VerticalAlignment="Center" /></StackPanel>
+                  <Border Grid.Column="1" Classes="chip accent pop" Padding="7,1" IsVisible="{Binding HasActiveQueue}" Margin="0,0,4,0">
+                    <TextBlock Text="{Binding ActiveQueueCount}" FontSize="11" FontWeight="SemiBold" />
+                  </Border>
+                </Grid>
+              </Button>
+              <Button Name="LibraryNav" Classes="nav" Tag="2" Click="Navigate" ToolTip.Tip="Library · Ctrl+3" AutomationProperties.Name="Library">
+                <StackPanel Orientation="Horizontal" Spacing="12"><c:StrokeIcon Data="{StaticResource IconLibrary}" /><TextBlock Text="Library" VerticalAlignment="Center" /></StackPanel>
+              </Button>
+              <Button Name="EditorNav" Classes="nav" Tag="3" Click="Navigate" ToolTip.Tip="Editor · Ctrl+4" AutomationProperties.Name="Editor">
+                <StackPanel Orientation="Horizontal" Spacing="12"><c:StrokeIcon Data="{StaticResource IconScissors}" /><TextBlock Text="Editor" VerticalAlignment="Center" /></StackPanel>
+              </Button>
+              <Button Name="SettingsNav" Classes="nav" Tag="4" Click="Navigate" HorizontalContentAlignment="Stretch" ToolTip.Tip="Settings · Ctrl+5" AutomationProperties.Name="Settings">
+                <Grid ColumnDefinitions="*,Auto">
+                  <StackPanel Orientation="Horizontal" Spacing="12"><c:StrokeIcon Data="{StaticResource IconSettings}" /><TextBlock Text="Settings" VerticalAlignment="Center" /></StackPanel>
+                  <!-- Settings has changes that are not saved yet (the page's own "not saved" colour). -->
+                  <Border Name="SettingsUnsavedDot" Grid.Column="1" Classes="nav-dot pop" IsVisible="{Binding HasUnsavedSettings}" ToolTip.Tip="Settings has unsaved changes" />
+                </Grid>
+              </Button>
+            </StackPanel>
+          </Panel>
+
+          <StackPanel Grid.Row="2" Spacing="12" Margin="16,12,16,18">
+            <!-- Beta builds only: the tester's checklist, with how far they are through it. -->
+            <Button Name="BetaTestButton" Classes="beta-nav" Tag="5" Click="Navigate" IsVisible="{Binding IsBeta}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" ToolTip.Tip="What to try, and how to send your notes" AutomationProperties.Name="Beta test">
+              <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Orientation="Horizontal" Spacing="9"><c:StrokeIcon Data="{StaticResource IconSparkle}" Size="16" Classes="warm" /><TextBlock Text="Beta test" VerticalAlignment="Center" /></StackPanel>
+                <TextBlock Name="BetaProgressShortText" Grid.Column="1" Text="{Binding BetaProgressShort}" Classes="caption muted tabular" VerticalAlignment="Center" />
+              </Grid>
+            </Button>
+            <Button HorizontalAlignment="Stretch" Command="{Binding OpenMediaCommand}" ToolTip.Tip="Open a video or audio file · Ctrl+O">
+              <StackPanel Orientation="Horizontal" Spacing="9"><c:StrokeIcon Data="{StaticResource IconOpenFile}" Size="16" /><TextBlock Text="Open local media" VerticalAlignment="Center" /></StackPanel>
+            </Button>
+            <!-- A newer release was found: a quiet way to it from any page (Settings, About has the details). -->
+            <Button Name="UpdateAvailableButton" Classes="small reveal" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Command="{Binding ShowUpdateCommand}" IsVisible="{Binding ShowUpdateBadge}" ToolTip.Tip="{Binding UpdateTitle}" AutomationProperties.Name="{Binding UpdateTitle}">
+              <StackPanel Orientation="Horizontal" Spacing="8"><c:StrokeIcon Data="{StaticResource IconSparkle}" Size="14" Classes="accent" /><TextBlock Name="UpdateBadgeText" Text="{Binding UpdateBadgeText}" VerticalAlignment="Center" /></StackPanel>
+            </Button>
+            <TextBlock Text="{Binding AppVersion}" Classes="caption faint" Margin="4,0" />
+          </StackPanel>
+        </Grid>
+      </ScrollViewer>
+    </Border>
+
+    <!-- Header + pages -->
+    <Grid Grid.Column="1" Grid.Row="1" RowDefinitions="Auto,*">
+      <!-- Same 1040px centred column as the pages, so the heading lines up on wide screens.
+           Cancel operation shares the title's line. No explainer under the title: each page says what matters in place. -->
+      <Grid Name="PageHeader" ColumnDefinitions="*,Auto" ColumnSpacing="16" Margin="36,10,36,20" MaxWidth="1040">
+        <TextBlock Name="PageTitleText" Text="{Binding PageTitle}" Classes="title" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+        <!-- Always in layout (only faded and disabled while idle), so the header never reflows when work starts.
+             The negative margin centres the 36px button on the title line without making that line taller. -->
+        <Button Name="CancelOperationButton" Grid.Column="1" Classes="danger shell-cancel" Classes.active="{Binding IsBusy}" Command="{Binding CancelOperationCommand}" IsEnabled="{Binding IsBusy}" IsHitTestVisible="{Binding IsBusy}" VerticalAlignment="Center" Margin="0,-4" ToolTip.Tip="Stop the current operation. A running upload keeps going unless it is the only task; stop it from Share." AutomationProperties.Name="Cancel operation">
+          <StackPanel Orientation="Horizontal" Spacing="8"><c:StrokeIcon Data="{StaticResource IconClose}" Size="16" /><TextBlock Text="Cancel operation" VerticalAlignment="Center" /></StackPanel>
+        </Button>
+      </Grid>
+      <Panel Grid.Row="1">
+        <v:DownloadView Name="DownloadPage" Classes="page" IsVisible="{Binding IsDownload}" />
+        <v:QueueView Name="QueuePage" Classes="page" IsVisible="{Binding IsQueue}" />
+        <v:LibraryView Name="LibraryPage" Classes="page" IsVisible="{Binding IsHistory}" />
+        <v:EditorView Name="EditorPage" Classes="page" IsVisible="{Binding IsEditor}" />
+        <v:SettingsView Name="SettingsPage" Classes="page" IsVisible="{Binding IsSettings}" />
+        <v:BetaTestView Name="BetaTestPage" Classes="page" IsVisible="{Binding IsBetaTest}" />
+      </Panel>
+    </Grid>
+
+    <!-- Status bar -->
+    <Border Grid.Column="1" Grid.Row="2" BorderBrush="{DynamicResource AppBorder}" BorderThickness="0,1,0,0" Padding="36,0" MinHeight="44" Background="{DynamicResource AppBackground}">
+      <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+        <c:ProgressRing Width="14" Height="14" Thickness="2" IsIndeterminate="{Binding AnimateBusyIndicator}" IsVisible="{Binding IsBusy}" VerticalAlignment="Center" />
+        <TextBlock Name="StatusText" Grid.Column="1" Text="{Binding Status}" Classes="caption muted" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" ToolTip.Tip="{Binding Status}" />
+      </Grid>
+    </Border>
+
+    <!-- Fullscreen preview overlay. Video is always shown on the dark palette (like any player),
+         so the controls use the dark theme in both themes and AppOnScrim for text and glyphs. -->
+    <ThemeVariantScope Name="FullscreenOverlay" Grid.ColumnSpan="2" Grid.RowSpan="3" ZIndex="10" RequestedThemeVariant="Dark" IsVisible="{Binding PreviewFullscreen}">
+      <Border Background="{DynamicResource AppVideoBackdrop}">
+        <Grid RowDefinitions="*,Auto">
+          <Border Name="FullscreenPreviewHost" Background="{DynamicResource AppVideoBackdrop}" />
+          <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="15" Margin="22,16">
+            <Button Name="FullscreenPlayButton" Classes="icon round on-scrim" Command="{Binding PlayCommand}" ToolTip.Tip="Play or pause · Space" AutomationProperties.Name="{Binding PlayLabel}">
+              <Panel>
+                <c:StrokeIcon Data="{StaticResource IconPlay}" IsFilled="True" Margin="2,0,0,0" IsVisible="{Binding !IsPlaying}" />
+                <c:StrokeIcon Data="{StaticResource IconPause}" IsFilled="True" IsVisible="{Binding IsPlaying}" />
+              </Panel>
+            </Button>
+            <Slider Grid.Column="1" Minimum="0" Maximum="1" SmallChange="0.005" LargeChange="0.05" Value="{Binding PlaybackPosition, Mode=TwoWay}" AutomationProperties.Name="Fullscreen playback position" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="2" Text="{Binding PlaybackTime}" Classes="tabular" Foreground="{DynamicResource AppOnScrim}" VerticalAlignment="Center" />
+            <Button Name="ExitFullscreenButton" Grid.Column="3" Classes="icon on-scrim" Click="ToggleFullscreen" ToolTip.Tip="Exit fullscreen · Esc" AutomationProperties.Name="Exit fullscreen">
+              <c:StrokeIcon Data="{StaticResource IconExitFullscreen}" />
+            </Button>
+          </Grid>
+        </Grid>
+      </Border>
+    </ThemeVariantScope>
+  </Grid>
+</Window>

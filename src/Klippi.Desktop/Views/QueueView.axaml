@@ -1,0 +1,392 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="using:Klippi.Desktop" xmlns:c="using:Klippi.Desktop.Controls" xmlns:v="using:Klippi.Desktop.Views" x:Class="Klippi.Desktop.Views.QueueView">
+  <UserControl.Resources>
+    <v:QueueModeIconConverter x:Key="QueueModeIcon" />
+  </UserControl.Resources>
+
+  <UserControl.Styles>
+    <!-- Job cards: the border warms on hover (colour fades stay in reduced motion). -->
+    <Style Selector="Border.job">
+      <Setter Property="Transitions">
+        <Transitions><BrushTransition Property="BorderBrush" Duration="0:0:0.16" /></Transitions>
+      </Setter>
+    </Style>
+    <Style Selector="Border.job:pointerover"><Setter Property="BorderBrush" Value="{DynamicResource AppBorderStrong}" /></Style>
+
+    <!-- State chip: queued neutral, running/finished accent, failed danger, cancelled/removing quiet (outline only). -->
+    <Style Selector="Border.chip">
+      <Setter Property="Transitions">
+        <Transitions><BrushTransition Property="Background" Duration="0:0:0.2" /></Transitions>
+      </Setter>
+    </Style>
+    <Style Selector="Border.chip.quiet"><Setter Property="Background" Value="Transparent" /></Style>
+    <!-- The running dot breathes only while its job works and the page is on screen, so it stops when idle. -->
+    <Style Selector="Window.motion Ellipse.live[IsVisible=True]">
+      <Style.Animations>
+        <Animation Duration="0:0:1.1" IterationCount="Infinite" PlaybackDirection="Alternate" Easing="SineEaseInOut">
+          <KeyFrame Cue="0%"><Setter Property="Opacity" Value="1" /></KeyFrame>
+          <KeyFrame Cue="100%"><Setter Property="Opacity" Value="0.3" /></KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
+
+    <!-- Stage stepper: icons and connectors carry the state; every label stays at readable contrast. -->
+    <Style Selector="Border.step-line">
+      <Setter Property="Width" Value="16" />
+      <Setter Property="Height" Value="1.5" />
+      <Setter Property="CornerRadius" Value="1" />
+      <Setter Property="Margin" Value="4,0" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Background" Value="{DynamicResource AppBorderStrong}" />
+      <Setter Property="Transitions">
+        <Transitions><BrushTransition Property="Background" Duration="0:0:0.25" /></Transitions>
+      </Setter>
+    </Style>
+    <Style Selector="Border.step-line.reached"><Setter Property="Background" Value="{DynamicResource AppAccent}" /></Style>
+    <Style Selector="Ellipse.step-pending"><Setter Property="Stroke" Value="{DynamicResource AppBorderStrong}" /><Setter Property="StrokeThickness" Value="1.5" /></Style>
+    <Style Selector="TextBlock.step">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Foreground" Value="{DynamicResource AppMuted}" />
+      <Setter Property="Transitions">
+        <Transitions><BrushTransition Property="Foreground" Duration="0:0:0.25" /></Transitions>
+      </Setter>
+    </Style>
+    <Style Selector="TextBlock.step.current"><Setter Property="Foreground" Value="{DynamicResource AppText}" /><Setter Property="FontWeight" Value="SemiBold" /></Style>
+
+    <!-- Icon actions: muted glyphs that brighten on hover; destructive ones warn in danger. -->
+    <Style Selector="Button.act c|StrokeIcon"><Setter Property="Foreground" Value="{DynamicResource AppMuted}" /></Style>
+    <Style Selector="Button.act:pointerover c|StrokeIcon"><Setter Property="Foreground" Value="{DynamicResource AppText}" /></Style>
+    <Style Selector="Button.act.destructive:pointerover c|StrokeIcon"><Setter Property="Foreground" Value="{DynamicResource AppDanger}" /></Style>
+    <Style Selector="Button.act.destructive:pointerover /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="{DynamicResource AppDangerSubtle}" /></Style>
+    <Style Selector="Button.act:disabled c|StrokeIcon"><Setter Property="Opacity" Value="0.35" /></Style>
+
+    <!-- Header summary: zero counts step back to regular-weight muted digits. -->
+    <Style Selector="StackPanel.stat"><Setter Property="Orientation" Value="Horizontal" /><Setter Property="Spacing" Value="6" /><Setter Property="Margin" Value="0,6" /></Style>
+    <Style Selector="StackPanel.stat > TextBlock"><Setter Property="VerticalAlignment" Value="Center" /><Setter Property="Foreground" Value="{DynamicResource AppMuted}" /></Style>
+    <Style Selector="StackPanel.stat > TextBlock.stat-count"><Setter Property="Foreground" Value="{DynamicResource AppText}" /><Setter Property="FontWeight" Value="SemiBold" /></Style>
+    <Style Selector="StackPanel.stat > TextBlock.stat-count.zero"><Setter Property="Foreground" Value="{DynamicResource AppMuted}" /><Setter Property="FontWeight" Value="Normal" /></Style>
+    <Style Selector="Ellipse.stat-dot"><Setter Property="Fill" Value="{DynamicResource AppFaint}" /></Style>
+    <Style Selector="Ellipse.stat-dot.on"><Setter Property="Fill" Value="{DynamicResource AppAccent}" /></Style>
+
+    <!-- Finished files: the size never trims; the name keeps its start and its end (with the extension). -->
+    <Style Selector="Grid.finish"><Setter Property="RowSpacing" Value="0" /></Style>
+    <Style Selector="StackPanel.finish-actions"><Setter Property="Grid.Column" Value="1" /><Setter Property="VerticalAlignment" Value="Center" /></Style>
+
+    <!-- Narrow cards: Open, Edit and Share move under the file line instead of squeezing the file name. -->
+    <ContainerQuery Name="QueueCard" Query="max-width:620">
+      <Style Selector="Grid.finish"><Setter Property="RowSpacing" Value="10" /></Style>
+      <Style Selector="StackPanel.finish-actions">
+        <Setter Property="Grid.Row" Value="1" />
+        <Setter Property="Grid.Column" Value="0" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+      </Style>
+    </ContainerQuery>
+  </UserControl.Styles>
+
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled" Padding="36,4,36,28">
+    <StackPanel Spacing="18" MaxWidth="1040">
+
+      <!-- Toolbar: summary, pause/resume new starts (also before anything is queued), clear finished.
+           When space runs short, the Clear finished label folds away before the summary would wrap. -->
+      <v:QueueToolbarPanel Name="QueueToolbar" Spacing="12">
+        <WrapPanel Name="QueueSummary" ItemSpacing="18" IsVisible="{Binding HasQueueItems}">
+          <StackPanel Classes="stat" ToolTip.Tip="Downloading now or waiting to start">
+            <Ellipse Classes="stat-dot" Classes.on="{Binding HasQueueActive}" Width="8" Height="8" VerticalAlignment="Center" />
+            <TextBlock Text="{Binding QueueActiveTotal}" Classes="stat-count tabular" Classes.zero="{Binding !HasQueueActive}" />
+            <TextBlock Text="active" />
+          </StackPanel>
+          <StackPanel Classes="stat" ToolTip.Tip="Finished in this session">
+            <c:StrokeIcon Data="{StaticResource IconCheck}" Size="14" StrokeThickness="2.4" Classes.accent="{Binding HasQueueFinished}" Classes.faint="{Binding !HasQueueFinished}" VerticalAlignment="Center" />
+            <TextBlock Text="{Binding QueueFinishedCount}" Classes="stat-count tabular" Classes.zero="{Binding !HasQueueFinished}" />
+            <TextBlock Text="finished" />
+          </StackPanel>
+          <StackPanel Classes="stat" ToolTip.Tip="Stopped with an error; each one can be retried">
+            <c:StrokeIcon Data="{StaticResource IconAlert}" Size="14" StrokeThickness="2.2" Classes.danger="{Binding HasQueueFailures}" Classes.faint="{Binding !HasQueueFailures}" VerticalAlignment="Center" />
+            <TextBlock Text="{Binding QueueFailedCount}" Classes="stat-count tabular" Classes.zero="{Binding !HasQueueFailures}" />
+            <TextBlock Text="failed" />
+          </StackPanel>
+        </WrapPanel>
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <Button Name="PauseQueueButton" Classes="small" Classes.primary="{Binding QueuePaused}" Command="{Binding PauseQueueCommand}" ToolTip.Tip="Hold or resume new downloads. Jobs already running keep going." AutomationProperties.Name="{Binding PauseQueueLabel}">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <Panel VerticalAlignment="Center">
+                <c:StrokeIcon Data="{StaticResource IconPause}" IsFilled="True" Size="13" IsVisible="{Binding !QueuePaused}" />
+                <c:StrokeIcon Data="{StaticResource IconPlay}" IsFilled="True" Size="13" IsVisible="{Binding QueuePaused}" />
+              </Panel>
+              <TextBlock Text="{Binding PauseQueueLabel}" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+          <Button Name="ClearFinishedButton" Classes="small" Command="{Binding ClearCompletedCommand}" IsEnabled="{Binding CanClearFinished}" IsVisible="{Binding HasQueueItems}" ToolTip.Tip="Remove finished and cancelled items from this list. Saved files stay where they are." AutomationProperties.Name="Clear finished">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <c:StrokeIcon Data="{StaticResource IconBroom}" Size="14" VerticalAlignment="Center" />
+              <TextBlock Name="ClearFinishedLabel" Text="Clear finished" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+        </StackPanel>
+      </v:QueueToolbarPanel>
+
+      <!-- Paused: one calm band instead of a chip that would wrap the summary -->
+      <Border Name="QueuePausedNotice" Classes="notice warning reveal" IsVisible="{Binding QueuePaused}" Padding="16,11">
+        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="11">
+          <c:StrokeIcon Data="{StaticResource IconPause}" IsFilled="True" Size="13" Foreground="{DynamicResource AppWarning}" VerticalAlignment="Center" />
+          <TextBlock Grid.Column="1" Classes="caption" TextWrapping="Wrap" VerticalAlignment="Center">
+            <Run Text="New starts are paused." FontWeight="SemiBold" />
+            <Run Text="Running downloads continue; the rest wait for Resume." Foreground="{DynamicResource AppMuted}" />
+          </TextBlock>
+        </Grid>
+      </Border>
+
+      <!-- Empty state -->
+      <Border Name="QueueEmptyState" Classes="card reveal" IsVisible="{Binding !HasQueueItems}" Padding="32,40,32,36">
+        <StackPanel Spacing="12" HorizontalAlignment="Center" MaxWidth="440">
+          <!-- Decorative: the vector kea follows the light/dark palette. -->
+          <c:KeaMascot Size="88" Pose="Idle" Background="{DynamicResource AppAccentSubtle}" HorizontalAlignment="Center" Margin="0,0,0,4" />
+          <TextBlock Text="Nothing queued yet" Classes="h1" HorizontalAlignment="Center" />
+          <TextBlock Text="Paste a link on the Download page and press Download. Your downloads show up here and keep going while you use the rest of the app." Classes="muted" TextAlignment="Center" />
+          <Button Name="QueueGoToDownload" Classes="primary" Command="{Binding QueueGoToDownloadCommand}" HorizontalAlignment="Center" Margin="0,8,0,0" ToolTip.Tip="Go to Download · Ctrl+1" AutomationProperties.Name="Go to Download">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <c:StrokeIcon Data="{StaticResource IconDownload}" Size="16" VerticalAlignment="Center" />
+              <TextBlock Text="Go to Download" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+        </StackPanel>
+      </Border>
+
+      <!-- Jobs -->
+      <ItemsControl Name="QueueItems" ItemsSource="{Binding Queue}">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate><VirtualizingStackPanel /></ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Border Classes="card compact job reveal" Margin="0,0,0,12" Container.Name="QueueCard" Container.Sizing="Width">
+              <StackPanel Spacing="14">
+
+                <!-- Header: thumbnail, title with icon actions, then state chip and source details across the full width -->
+                <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="14" RowSpacing="7">
+                  <Border Grid.RowSpan="2" Classes="media-frame" Classes.placeholder="{Binding !HasThumbnail}" Width="96" Height="54" VerticalAlignment="Center">
+                    <Panel>
+                      <Image Source="{Binding Thumbnail}" Stretch="UniformToFill" IsVisible="{Binding HasThumbnail}" RenderOptions.BitmapInterpolationMode="HighQuality" />
+                      <c:StrokeIcon Data="{Binding Mode, Converter={StaticResource QueueModeIcon}}" Size="22" Classes="muted" IsVisible="{Binding !HasThumbnail}" />
+                    </Panel>
+                  </Border>
+
+                  <TextBlock Grid.Column="1" Text="{Binding DisplayTitle}" Classes="section job-title" TextWrapping="Wrap" MaxLines="2" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" ToolTip.Tip="{Binding DisplayTitle}" />
+
+                  <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2" VerticalAlignment="Top">
+                    <Button Classes="icon small ghost act" Command="{Binding MoveUpCommand}" IsVisible="{Binding CanMove}" IsEnabled="{Binding Slot.CanMoveUp}" ToolTip.Tip="Move up" AutomationProperties.Name="{Binding DisplayTitle, StringFormat='Move {0} up the queue'}">
+                      <c:StrokeIcon Data="{StaticResource IconArrowUp}" Size="16" />
+                    </Button>
+                    <Button Classes="icon small ghost act" Command="{Binding MoveDownCommand}" IsVisible="{Binding CanMove}" IsEnabled="{Binding Slot.CanMoveDown}" ToolTip.Tip="Move down" AutomationProperties.Name="{Binding DisplayTitle, StringFormat='Move {0} down the queue'}">
+                      <c:StrokeIcon Data="{StaticResource IconArrowDown}" Size="16" />
+                    </Button>
+                    <Button Classes="icon small ghost act" Command="{Binding RevealCommand}" IsVisible="{Binding HasResult}" ToolTip.Tip="Show in folder" AutomationProperties.Name="{Binding DisplayTitle, StringFormat='Show {0} in its folder'}">
+                      <c:StrokeIcon Data="{StaticResource IconFolder}" Size="16" />
+                    </Button>
+                    <Button Classes="icon small ghost act destructive" Command="{Binding CancelCommand}" IsVisible="{Binding ShowCancel}" ToolTip.Tip="Cancel download" AutomationProperties.Name="{Binding DisplayTitle, StringFormat='Cancel downloading {0}'}">
+                      <c:StrokeIcon Data="{StaticResource IconClose}" Size="16" />
+                    </Button>
+                    <Button Classes="icon small ghost act destructive" Command="{Binding RemoveCommand}" IsVisible="{Binding CanRemove}" ToolTip.Tip="{Binding RemoveHint}" AutomationProperties.Name="{Binding DisplayTitle, StringFormat='Remove {0} from the queue'}">
+                      <c:StrokeIcon Data="{StaticResource IconTrash}" Size="16" />
+                    </Button>
+                  </StackPanel>
+
+                  <Grid Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                    <Border Classes="chip" Classes.accent="{Binding IsChipAccent}" Classes.danger="{Binding IsFailed}" Classes.quiet="{Binding IsChipQuiet}">
+                      <StackPanel Orientation="Horizontal" Spacing="6">
+                        <Ellipse Classes="live" Width="6" Height="6" Fill="{DynamicResource AppAccent}" VerticalAlignment="Center">
+                          <Ellipse.IsVisible>
+                            <MultiBinding Converter="{x:Static BoolConverters.And}">
+                              <Binding Path="IsLive" />
+                              <Binding Path="IsOnScreen" RelativeSource="{RelativeSource AncestorType=v:QueueView}" />
+                            </MultiBinding>
+                          </Ellipse.IsVisible>
+                        </Ellipse>
+                        <c:StrokeIcon Data="{StaticResource IconCheck}" Size="12" StrokeThickness="2.8" Classes="pop" IsVisible="{Binding IsFinished}" VerticalAlignment="Center" />
+                        <c:StrokeIcon Data="{StaticResource IconAlert}" Size="12" StrokeThickness="2.4" IsVisible="{Binding IsFailed}" VerticalAlignment="Center" />
+                        <c:StrokeIcon Data="{StaticResource IconClock}" Size="12" StrokeThickness="2.4" IsVisible="{Binding IsQueued}" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding StateLabel}" VerticalAlignment="Center" AutomationProperties.LiveSetting="Polite" />
+                      </StackPanel>
+                    </Border>
+                    <TextBlock Grid.Column="1" Text="{Binding Meta}" Classes="caption" Foreground="{DynamicResource AppMuted}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Meta}" />
+                  </Grid>
+                </Grid>
+
+                <!-- State body -->
+                <Panel>
+
+                  <!-- Queued: place in line, or on hold while new starts are paused -->
+                  <Panel IsVisible="{Binding IsQueued}">
+                    <TextBlock Text="{Binding Slot.Caption}" Classes="caption" Foreground="{DynamicResource AppMuted}" IsVisible="{Binding !DataContext.QueuePaused, RelativeSource={RelativeSource AncestorType=v:QueueView}}" />
+                    <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding DataContext.QueuePaused, RelativeSource={RelativeSource AncestorType=v:QueueView}}">
+                      <c:StrokeIcon Data="{StaticResource IconPause}" IsFilled="True" Size="11" Foreground="{DynamicResource AppWarning}" VerticalAlignment="Center" />
+                      <TextBlock Text="On hold · new starts are paused" Classes="caption" Foreground="{DynamicResource AppMuted}" VerticalAlignment="Center" />
+                    </StackPanel>
+                  </Panel>
+
+                  <!-- Running: stage stepper, percent or activity ring, progress, speed and ETA -->
+                  <StackPanel Spacing="9" IsVisible="{Binding IsRunning}">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                      <ItemsControl ItemsSource="{Binding Steps}" VerticalAlignment="Center" ClipToBounds="False">
+                        <ItemsControl.ItemsPanel>
+                          <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="6" AutomationProperties.Name="{Binding AutomationName}">
+                              <Border Classes="step-line" Classes.reached="{Binding IsReached}" IsVisible="{Binding !IsFirst}" />
+                              <Panel Width="12" Height="12" VerticalAlignment="Center">
+                                <Ellipse Classes="step-pending" Width="10" Height="10" IsVisible="{Binding IsPending}" />
+                                <Panel IsVisible="{Binding IsCurrent}" Classes="pop">
+                                  <Ellipse Width="12" Height="12" Fill="{DynamicResource AppAccentSubtle}" />
+                                  <Ellipse Width="6" Height="6" Fill="{DynamicResource AppAccent}" />
+                                </Panel>
+                                <Panel IsVisible="{Binding IsDone}" Classes="pop">
+                                  <Ellipse Width="12" Height="12" Fill="{DynamicResource AppAccent}" />
+                                  <c:StrokeIcon Data="{StaticResource IconCheck}" Size="12" StrokeThickness="3.4" Foreground="{DynamicResource AccentText}" />
+                                </Panel>
+                              </Panel>
+                              <TextBlock Text="{Binding Label}" Classes="step" Classes.current="{Binding IsCurrent}" />
+                            </StackPanel>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                      <Panel Grid.Column="1" MinWidth="44" Height="22" VerticalAlignment="Center">
+                        <c:AnimatedNumberText Classes="count tabular section" v:QueueProgress.Percent="{Binding DisplayPercent}" Format="{}{0:0}%" IsVisible="{Binding HasPercent}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                        <c:ProgressRing Width="16" Height="16" Thickness="2" IsVisible="{Binding IsIndeterminate}" HorizontalAlignment="Right" VerticalAlignment="Center" ToolTip.Tip="Working · this step has no measurable percent">
+                          <c:ProgressRing.IsIndeterminate>
+                            <MultiBinding Converter="{x:Static BoolConverters.And}">
+                              <Binding Path="IsIndeterminate" />
+                              <Binding Path="IsOnScreen" RelativeSource="{RelativeSource AncestorType=v:QueueView}" />
+                            </MultiBinding>
+                          </c:ProgressRing.IsIndeterminate>
+                        </c:ProgressRing>
+                        <c:StrokeIcon Data="{StaticResource IconClock}" Size="16" Classes="muted" IsVisible="{Binding ShowWaitIcon}" HorizontalAlignment="Right" VerticalAlignment="Center" ToolTip.Tip="Working · this step has no measurable percent" />
+                      </Panel>
+                    </Grid>
+                    <!-- With no measurable percent the fill empties and the track stays, so the card never shows a gap. -->
+                    <ProgressBar Classes="job-bar" Minimum="0" Maximum="100" v:QueueProgress.Percent="{Binding Percent}" AutomationProperties.Name="{Binding DisplayTitle, StringFormat='Progress of {0}'}" />
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                      <TextBlock Text="{Binding StageCaption}" Classes="caption" Foreground="{DynamicResource AppMuted}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" ToolTip.Tip="{Binding StageCaption}" />
+                      <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="14" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Spacing="5" IsVisible="{Binding HasSpeed}" ToolTip.Tip="Current download speed">
+                          <c:StrokeIcon Data="{StaticResource IconGauge}" Size="13" Classes="faint" VerticalAlignment="Center" />
+                          <TextBlock Text="{Binding SpeedText}" Classes="caption tabular" Foreground="{DynamicResource AppMuted}" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="5" IsVisible="{Binding HasEta}" ToolTip.Tip="Estimated time remaining">
+                          <c:StrokeIcon Data="{StaticResource IconClock}" Size="13" Classes="faint" VerticalAlignment="Center" />
+                          <TextBlock Text="{Binding EtaText}" Classes="caption tabular" Foreground="{DynamicResource AppMuted}" VerticalAlignment="Center" />
+                        </StackPanel>
+                      </StackPanel>
+                    </Grid>
+                  </StackPanel>
+
+                  <!-- Finished: what was saved and what to do next -->
+                  <StackPanel Spacing="12" IsVisible="{Binding IsFinished}">
+                    <Grid Classes="finish" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12">
+                      <Grid ColumnDefinitions="Auto,Auto,Auto,*" ColumnSpacing="6" VerticalAlignment="Center" ToolTip.Tip="{Binding FilePath}">
+                        <c:StrokeIcon Data="{StaticResource IconFile}" Size="14" Classes="muted" VerticalAlignment="Center" Margin="0,0,2,0" />
+                        <TextBlock Grid.Column="1" Text="{Binding ResultSize}" Classes="caption tabular" Foreground="{DynamicResource AppMuted}" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="2" Text="·" Classes="caption" Foreground="{DynamicResource AppMuted}" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="3" Text="{Binding ResultFileName}" Classes="caption" Foreground="{DynamicResource AppMuted}" TextTrimming="PrefixCharacterEllipsis" VerticalAlignment="Center" />
+                      </Grid>
+                      <StackPanel Classes="finish-actions" Orientation="Horizontal" Spacing="8" IsVisible="{Binding HasResult}">
+                        <Button Classes="small" Command="{Binding OpenCommand}" ToolTip.Tip="Open with your default player" AutomationProperties.Name="{Binding DisplayTitle, StringFormat='Open {0}'}">
+                          <StackPanel Orientation="Horizontal" Spacing="8">
+                            <c:StrokeIcon Data="{StaticResource IconPlay}" IsFilled="True" Size="12" VerticalAlignment="Center" />
+                            <TextBlock Text="Open" VerticalAlignment="Center" />
+                          </StackPanel>
+                        </Button>
+                        <Button Classes="small" Command="{Binding EditCommand}" ToolTip.Tip="Trim, convert or compress in the editor" AutomationProperties.Name="{Binding DisplayTitle, StringFormat='Edit {0} in the editor'}">
+                          <StackPanel Orientation="Horizontal" Spacing="8">
+                            <c:StrokeIcon Data="{StaticResource IconScissors}" Size="14" VerticalAlignment="Center" />
+                            <TextBlock Text="Edit" VerticalAlignment="Center" />
+                          </StackPanel>
+                        </Button>
+                        <Button Classes="small" Command="{Binding ShareCommand}" ToolTip.Tip="Upload an expiring File.Kiwi share link" AutomationProperties.Name="{Binding DisplayTitle, StringFormat='Share {0} with a link'}">
+                          <StackPanel Orientation="Horizontal" Spacing="8">
+                            <c:StrokeIcon Data="{StaticResource IconShare}" Size="14" VerticalAlignment="Center" />
+                            <TextBlock Text="Share" VerticalAlignment="Center" />
+                          </StackPanel>
+                        </Button>
+                      </StackPanel>
+                    </Grid>
+                    <Border Classes="notice warning" IsVisible="{Binding HasFinishWarning}" Padding="14,10">
+                      <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                        <c:StrokeIcon Data="{StaticResource IconInfo}" Size="16" Foreground="{DynamicResource AppWarning}" VerticalAlignment="Top" />
+                        <TextBlock Grid.Column="1" Text="{Binding FinishWarning}" Classes="caption" TextWrapping="Wrap" />
+                      </Grid>
+                    </Border>
+                    <!-- Share when finished: waiting or uploading, a large file waiting for confirmation, a failed share, or the link. -->
+                    <Grid Name="ShareProgressLine" Classes="reveal" ColumnDefinitions="Auto,*" ColumnSpacing="8" IsVisible="{Binding ShowShareProgress}">
+                      <c:StrokeIcon Data="{StaticResource IconShare}" Size="14" Classes="accent" VerticalAlignment="Center" />
+                      <TextBlock Grid.Column="1" Text="{Binding ShareProgressText}" Classes="caption" Foreground="{DynamicResource AppMuted}" TextWrapping="Wrap" VerticalAlignment="Center" />
+                    </Grid>
+                    <Border Name="ShareConfirmNotice" Classes="notice warning reveal" IsVisible="{Binding ShowShareConfirm}" Padding="14,10">
+                      <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                        <c:StrokeIcon Data="{StaticResource IconInfo}" Size="16" Foreground="{DynamicResource AppWarning}" VerticalAlignment="Top" />
+                        <TextBlock Grid.Column="1" Text="{Binding ShareConfirmText}" Classes="caption" TextWrapping="Wrap" />
+                      </Grid>
+                    </Border>
+                    <Border Name="ShareFailedNotice" Classes="notice warning reveal" IsVisible="{Binding ShowShareFailed}" Padding="14,10">
+                      <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                        <c:StrokeIcon Data="{StaticResource IconAlert}" Size="16" Foreground="{DynamicResource AppWarning}" VerticalAlignment="Top" />
+                        <TextBlock Grid.Column="1" Text="{Binding ShareFailureText}" Classes="caption" TextWrapping="Wrap" VerticalAlignment="Center" />
+                        <Button Name="RetryShareButton" Grid.Column="2" Classes="small" Command="{Binding RetryShareCommand}" VerticalAlignment="Center" ToolTip.Tip="Try the encrypted upload again" AutomationProperties.Name="{Binding DisplayTitle, StringFormat='Retry sharing {0}'}">
+                          <StackPanel Orientation="Horizontal" Spacing="8">
+                            <c:StrokeIcon Data="{StaticResource IconRetry}" Size="14" VerticalAlignment="Center" />
+                            <TextBlock Text="Retry share" VerticalAlignment="Center" />
+                          </StackPanel>
+                        </Button>
+                      </Grid>
+                    </Border>
+                    <Grid Name="ShareLinkLine" Classes="reveal" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" IsVisible="{Binding HasShareLink}">
+                      <c:StrokeIcon Data="{StaticResource IconLink}" Size="14" Classes="accent" VerticalAlignment="Center" />
+                      <TextBlock Grid.Column="1" Text="Shared with an expiring File.Kiwi link. Keep the full link private." Classes="caption" Foreground="{DynamicResource AppMuted}" TextWrapping="Wrap" VerticalAlignment="Center" />
+                      <Button Name="CopyShareLinkButton" Grid.Column="2" Classes="small" Command="{Binding CopyLinkCommand}" VerticalAlignment="Center" ToolTip.Tip="Copy the full share link" AutomationProperties.Name="{Binding DisplayTitle, StringFormat='Copy the share link for {0}'}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                          <c:StrokeIcon Data="{StaticResource IconCopy}" Size="14" VerticalAlignment="Center" />
+                          <TextBlock Text="Copy link" VerticalAlignment="Center" />
+                        </StackPanel>
+                      </Button>
+                    </Grid>
+                  </StackPanel>
+
+                  <!-- Failed: friendly reason and Retry -->
+                  <Border Classes="notice danger" IsVisible="{Binding IsFailed}" Padding="14,12">
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                      <c:StrokeIcon Data="{StaticResource IconAlert}" Size="18" Classes="danger" VerticalAlignment="Top" Margin="0,1,0,0" />
+                      <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
+                        <TextBlock Text="This download couldn't finish" Classes="strong" />
+                        <TextBlock Text="{Binding FailureReason}" Classes="caption" Foreground="{DynamicResource AppMuted}" TextWrapping="Wrap" />
+                      </StackPanel>
+                      <Button Grid.Column="2" Classes="small" Command="{Binding RetryCommand}" IsEnabled="{Binding CanRetry}" VerticalAlignment="Center" ToolTip.Tip="Queue this download again with the same choices" AutomationProperties.Name="{Binding DisplayTitle, StringFormat='Retry {0}'}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                          <c:StrokeIcon Data="{StaticResource IconRetry}" Size="14" VerticalAlignment="Center" />
+                          <TextBlock Text="Retry" VerticalAlignment="Center" />
+                        </StackPanel>
+                      </Button>
+                    </Grid>
+                  </Border>
+
+                  <!-- Cancelled: the same labelled Retry as a failure -->
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" IsVisible="{Binding IsCancelled}">
+                    <TextBlock Text="Cancelled before it finished. Retry starts it again with the same choices." Classes="caption" Foreground="{DynamicResource AppMuted}" TextWrapping="Wrap" VerticalAlignment="Center" />
+                    <Button Grid.Column="1" Classes="small" Command="{Binding RetryCommand}" IsVisible="{Binding ShowRetry}" VerticalAlignment="Center" ToolTip.Tip="Queue this download again with the same choices" AutomationProperties.Name="{Binding DisplayTitle, StringFormat='Retry {0}'}">
+                      <StackPanel Orientation="Horizontal" Spacing="8">
+                        <c:StrokeIcon Data="{StaticResource IconRetry}" Size="14" VerticalAlignment="Center" />
+                        <TextBlock Text="Retry" VerticalAlignment="Center" />
+                      </StackPanel>
+                    </Button>
+                  </Grid>
+                </Panel>
+              </StackPanel>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+
+      <TextBlock Text="Pause stops new downloads starting; running ones carry on. Failed items can be retried. Removing an item never deletes its file." Classes="caption" Foreground="{DynamicResource AppMuted}" TextWrapping="Wrap" IsVisible="{Binding HasQueueItems}" />
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

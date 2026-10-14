@@ -1,0 +1,47 @@
+# IDE and build outputs
+.vs/
+.idea/
+**/bin/
+**/obj/
+**/TestResults/
+*.user
+*.suo
+*.nupkg
+*.snupkg
+node_modules/
+__pycache__/
+.DS_Store
+Thumbs.db
+
+# Local runs, generated packages, managed engine binaries and user data
+/artifacts/
+/downloads/
+/scratch/
+/tmp/
+/local/
+/tools/runtime/
+*.log
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# Secrets and browser-session exports (ignore is not a security audit)
+.env
+.env.*
+!.env.example
+secrets.json
+*.pfx
+*.p12
+*.key
+*.pem
+cookies.txt
+cookies.*.txt
+*.cookies.txt
+
+# Agent worktrees created during coordinated work
+
+# Cloudflare wrangler local cache (holds account name/email)
+.wrangler/

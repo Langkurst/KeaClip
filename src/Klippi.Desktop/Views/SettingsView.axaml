@@ -1,0 +1,848 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="using:Klippi.Desktop" xmlns:c="using:Klippi.Desktop.Controls" xmlns:views="using:Klippi.Desktop.Views" x:Class="Klippi.Desktop.Views.SettingsView">
+  <UserControl.Resources>
+    <views:SettingsEqualityConverter x:Key="SettingsEquals" />
+    <views:SettingsResourceConverter x:Key="SettingsResource" />
+    <!-- A miniature KeaClip window drawn from the theme tokens of whichever ThemeVariantScope hosts it. -->
+    <DataTemplate x:Key="ThemePreviewTemplate">
+      <Grid ColumnDefinitions="22,*" Background="{DynamicResource AppBackground}">
+        <Border Background="{DynamicResource AppSidebar}" BorderBrush="{DynamicResource AppBorder}" BorderThickness="0,0,1,0">
+          <StackPanel Spacing="5" Margin="6,11,6,0">
+            <Border Height="4" CornerRadius="2" Background="{DynamicResource AppAccent}" />
+            <Border Height="4" CornerRadius="2" Background="{DynamicResource AppBorderStrong}" />
+            <Border Height="4" CornerRadius="2" Background="{DynamicResource AppBorderStrong}" />
+          </StackPanel>
+        </Border>
+        <Border Grid.Column="1" Margin="8,9,8,0" Padding="7" VerticalAlignment="Top" CornerRadius="5" Background="{DynamicResource AppSurface}" BorderBrush="{DynamicResource AppBorder}" BorderThickness="1">
+          <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="5">
+            <Grid ColumnDefinitions="3*,2*"><Border Height="5" CornerRadius="2.5" Background="{DynamicResource AppText}" /></Grid>
+            <Grid Grid.Row="1" ColumnDefinitions="5*,1*"><Border Height="4" CornerRadius="2" Background="{DynamicResource AppFaint}" /></Grid>
+            <Border Grid.Row="2" Width="26" Height="9" CornerRadius="4.5" HorizontalAlignment="Right" Background="{DynamicResource AppAccent}" />
+          </Grid>
+        </Border>
+      </Grid>
+    </DataTemplate>
+  </UserControl.Resources>
+
+  <UserControl.Styles>
+    <!-- Card header: the shared large icon well, title and one-line description (centred on the text). -->
+    <Style Selector="Grid.section-head"><Setter Property="ColumnSpacing" Value="14" /></Style>
+    <Style Selector="Grid.section-head > Border.well"><Setter Property="VerticalAlignment" Value="Center" /></Style>
+
+    <!-- Setting rows: text on the left, control on the right. Type comes from the design-system
+         classes (caption, muted, faint, danger); row-title is the one page-local weight. -->
+    <Style Selector="Grid.row"><Setter Property="ColumnSpacing" Value="24" /><Setter Property="MinHeight" Value="44" /></Style>
+    <Style Selector="Grid.row > StackPanel"><Setter Property="Spacing" Value="3" /><Setter Property="VerticalAlignment" Value="Center" /></Style>
+    <Style Selector="TextBlock.row-title"><Setter Property="FontWeight" Value="Medium" /><Setter Property="TextWrapping" Value="Wrap" /></Style>
+    <!-- A row that does nothing right now (Start minimized without Start with Windows) dims its title with its switch. -->
+    <Style Selector="Grid.row:disabled TextBlock.row-title"><Setter Property="Foreground" Value="{DynamicResource AppFaint}" /></Style>
+    <Style Selector="TextBlock.caption.muted"><Setter Property="TextWrapping" Value="Wrap" /></Style>
+    <Style Selector="TextBlock.caption.danger"><Setter Property="TextWrapping" Value="Wrap" /></Style>
+    <Style Selector="TextBlock.field-error"><Setter Property="Margin" Value="2,6,0,0" /></Style>
+    <Style Selector="TextBlock.suffix"><Setter Property="VerticalAlignment" Value="Center" /><Setter Property="Margin" Value="0,0,12,0" /></Style>
+    <Style Selector="ToggleSwitch"><Setter Property="HorizontalAlignment" Value="Right" /><Setter Property="VerticalAlignment" Value="Center" /></Style>
+    <Style Selector="TextBox.invalid /template/ Border#PART_BorderElement"><Setter Property="BorderBrush" Value="{DynamicResource AppDanger}" /></Style>
+    <Style Selector="Button.field"><Setter Property="MinHeight" Value="40" /></Style>
+    <Style Selector="Button.icon.field"><Setter Property="Width" Value="40" /><Setter Property="Height" Value="40" /></Style>
+    <!-- Field label with an optional "not saved yet" dot. -->
+    <Style Selector="StackPanel.field-label"><Setter Property="Orientation" Value="Horizontal" /><Setter Property="Spacing" Value="7" /><Setter Property="Margin" Value="0,0,0,6" /></Style>
+    <Style Selector="StackPanel.field-label > TextBlock.label"><Setter Property="Margin" Value="0" /></Style>
+    <Style Selector="Border.change-dot">
+      <Setter Property="Width" Value="7" />
+      <Setter Property="Height" Value="7" />
+      <Setter Property="CornerRadius" Value="3.5" />
+      <Setter Property="Background" Value="{DynamicResource AppWarm}" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+      <Setter Property="ToolTip.Tip" Value="Changed, not saved yet" />
+    </Style>
+
+    <!-- Choice tiles: a check badge on the chosen one; compact tiles for short choices. -->
+    <Style Selector="RadioButton.tile"><Setter Property="VerticalAlignment" Value="Stretch" /></Style>
+    <!-- Same header height whether or not the check badge shows, so titles line up across tiles. -->
+    <Style Selector="Grid.tile-head"><Setter Property="MinHeight" Value="20" /></Style>
+    <Style Selector="RadioButton.tile.compact"><Setter Property="Padding" Value="8,9" /></Style>
+    <Style Selector="RadioButton.tile.compact TextBlock"><Setter Property="HorizontalAlignment" Value="Center" /><Setter Property="TextAlignment" Value="Center" /></Style>
+    <Style Selector="RadioButton.tile.compact:checked TextBlock"><Setter Property="Foreground" Value="{DynamicResource AppAccentSubtleText}" /></Style>
+    <Style Selector="Border.theme-preview">
+      <Setter Property="Height" Value="74" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="ClipToBounds" Value="True" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AppBorder}" />
+      <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <Style Selector="Border.tile-check">
+      <Setter Property="Width" Value="20" />
+      <Setter Property="Height" Value="20" />
+      <Setter Property="CornerRadius" Value="10" />
+      <Setter Property="Background" Value="{DynamicResource AppAccent}" />
+      <Setter Property="HorizontalAlignment" Value="Right" />
+      <Setter Property="VerticalAlignment" Value="Top" />
+      <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+    </Style>
+    <Style Selector="Border.tile-check.overlay"><Setter Property="Margin" Value="0,6,6,0" /></Style>
+    <Style Selector="Border.tile-check > c|StrokeIcon"><Setter Property="Foreground" Value="{DynamicResource AccentText}" /></Style>
+
+    <!-- Downloads-at-once stepper: a NumericUpDown (typing, Up/Down keys) with − and + inside. -->
+    <Style Selector="NumericUpDown.stepper"><Setter Property="Width" Value="132" /><Setter Property="FontFeatures" Value="+tnum" /></Style>
+    <Style Selector="NumericUpDown.stepper Button"><Setter Property="Width" Value="30" /><Setter Property="Height" Value="30" /><Setter Property="Margin" Value="4,0" /></Style>
+
+    <!-- Component rows. -->
+    <Style Selector="Border.component">
+      <Setter Property="Background" Value="{DynamicResource AppSurfaceRaised}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AppBorder}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="10" />
+      <Setter Property="Padding" Value="14,11" />
+    </Style>
+    <Style Selector="Border.component-icon">
+      <Setter Property="Width" Value="32" />
+      <Setter Property="Height" Value="32" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="Background" Value="{DynamicResource AppSurface}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AppBorder}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <!-- Sticky save bar and the short-lived saved confirmation. -->
+    <Style Selector="Border.save-bar">
+      <Setter Property="Background" Value="{DynamicResource AppSurfaceRaised}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AppBorderStrong}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="12" />
+      <Setter Property="BoxShadow" Value="{DynamicResource ShadowRaised}" />
+      <Setter Property="Padding" Value="18,10,10,10" />
+      <Setter Property="MinHeight" Value="58" />
+    </Style>
+    <Style Selector="Border.save-dot"><Setter Property="Width" Value="9" /><Setter Property="Height" Value="9" /><Setter Property="CornerRadius" Value="5" /><Setter Property="Background" Value="{DynamicResource AppWarm}" /><Setter Property="VerticalAlignment" Value="Center" /></Style>
+    <Style Selector="Border.save-dot.attention"><Setter Property="Background" Value="{DynamicResource AppDanger}" /></Style>
+    <Style Selector="Border.saved-toast">
+      <Setter Property="Background" Value="{DynamicResource AppSurfaceRaised}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AppBorderStrong}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="{StaticResource RadiusPill}" />
+      <Setter Property="BoxShadow" Value="{DynamicResource ShadowRaised}" />
+      <Setter Property="Padding" Value="8,6,16,6" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+      <Setter Property="VerticalAlignment" Value="Bottom" />
+    </Style>
+    <Style Selector="Border.saved-tick">
+      <Setter Property="Width" Value="24" />
+      <Setter Property="Height" Value="24" />
+      <Setter Property="CornerRadius" Value="12" />
+      <Setter Property="Background" Value="{DynamicResource AppAccentSubtle}" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+    </Style>
+  </UserControl.Styles>
+
+  <Grid RowDefinitions="*,Auto">
+    <ScrollViewer Name="SettingsScroll" HorizontalScrollBarVisibility="Disabled" Padding="36,4,36,28">
+      <!-- The column is at most 1040px wide and centred, in line with the centred page title. -->
+      <Grid>
+        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="100000*" MaxWidth="1040" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+        <StackPanel Name="SettingsColumn" Grid.Column="1" Spacing="18">
+
+          <!-- ===== Appearance ===== -->
+          <Border Name="AppearanceCard" Classes="card enter e1"><StackPanel Spacing="20">
+            <Grid Classes="section-head" ColumnDefinitions="Auto,*">
+              <Border Classes="well large"><c:StrokeIcon Data="{StaticResource IconMoon}" /></Border>
+              <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                <TextBlock Text="Appearance" Classes="section" />
+                <TextBlock Text="Pick a look. Your choice applies and is saved straight away." Classes="caption muted" />
+              </StackPanel>
+            </Grid>
+            <Grid Name="ThemePicker" ColumnDefinitions="*,*,*" ColumnSpacing="4" Margin="-4" AutomationProperties.Name="Theme">
+              <RadioButton Name="ThemeSystemTile" Classes="tile" Padding="8" GroupName="SettingsTheme" IsChecked="{Binding Theme, Mode=TwoWay, Converter={StaticResource SettingsEquals}, ConverterParameter=System}" AutomationProperties.Name="Follow the Windows theme">
+                <StackPanel Spacing="9">
+                  <Panel>
+                    <!-- Left half of the dark window beside the right half of the light one. -->
+                    <Border Classes="theme-preview">
+                      <Grid ColumnDefinitions="*,*">
+                        <ThemeVariantScope Name="SystemDarkPreview" Grid.ColumnSpan="2" RequestedThemeVariant="Dark"><ContentControl Content="{Binding}" ContentTemplate="{StaticResource ThemePreviewTemplate}" /></ThemeVariantScope>
+                        <Border Grid.Column="1" ClipToBounds="True" BorderBrush="{DynamicResource AppBorderStrong}" BorderThickness="1,0,0,0">
+                          <ThemeVariantScope RequestedThemeVariant="Light" HorizontalAlignment="Right" Width="{Binding #SystemDarkPreview.Bounds.Width}"><ContentControl Content="{Binding}" ContentTemplate="{StaticResource ThemePreviewTemplate}" /></ThemeVariantScope>
+                        </Border>
+                      </Grid>
+                    </Border>
+                    <Border Classes="tile-check overlay pop" IsVisible="{Binding $parent[RadioButton].IsChecked}"><c:StrokeIcon Data="{StaticResource IconCheck}" Size="12" StrokeThickness="2.6" /></Border>
+                  </Panel>
+                  <StackPanel Spacing="1" Margin="4,0,4,2">
+                    <TextBlock Text="System" Classes="row-title" />
+                    <TextBlock Text="Follows Windows" Classes="caption muted" />
+                  </StackPanel>
+                </StackPanel>
+              </RadioButton>
+              <RadioButton Name="ThemeDarkTile" Grid.Column="1" Classes="tile" Padding="8" GroupName="SettingsTheme" IsChecked="{Binding Theme, Mode=TwoWay, Converter={StaticResource SettingsEquals}, ConverterParameter=Dark}" AutomationProperties.Name="Dark theme">
+                <StackPanel Spacing="9">
+                  <Panel>
+                    <Border Classes="theme-preview"><ThemeVariantScope RequestedThemeVariant="Dark"><ContentControl Content="{Binding}" ContentTemplate="{StaticResource ThemePreviewTemplate}" /></ThemeVariantScope></Border>
+                    <Border Classes="tile-check overlay pop" IsVisible="{Binding $parent[RadioButton].IsChecked}"><c:StrokeIcon Data="{StaticResource IconCheck}" Size="12" StrokeThickness="2.6" /></Border>
+                  </Panel>
+                  <StackPanel Spacing="1" Margin="4,0,4,2">
+                    <TextBlock Text="Dark" Classes="row-title" />
+                    <TextBlock Text="Alpine night" Classes="caption muted" />
+                  </StackPanel>
+                </StackPanel>
+              </RadioButton>
+              <RadioButton Name="ThemeLightTile" Grid.Column="2" Classes="tile" Padding="8" GroupName="SettingsTheme" IsChecked="{Binding Theme, Mode=TwoWay, Converter={StaticResource SettingsEquals}, ConverterParameter=Light}" AutomationProperties.Name="Light theme">
+                <StackPanel Spacing="9">
+                  <Panel>
+                    <Border Classes="theme-preview"><ThemeVariantScope RequestedThemeVariant="Light"><ContentControl Content="{Binding}" ContentTemplate="{StaticResource ThemePreviewTemplate}" /></ThemeVariantScope></Border>
+                    <Border Classes="tile-check overlay pop" IsVisible="{Binding $parent[RadioButton].IsChecked}"><c:StrokeIcon Data="{StaticResource IconCheck}" Size="12" StrokeThickness="2.6" /></Border>
+                  </Panel>
+                  <StackPanel Spacing="1" Margin="4,0,4,2">
+                    <TextBlock Text="Light" Classes="row-title" />
+                    <TextBlock Text="Limestone day" Classes="caption muted" />
+                  </StackPanel>
+                </StackPanel>
+              </RadioButton>
+            </Grid>
+            <Border Classes="divider" />
+            <Grid Classes="row" ColumnDefinitions="*,Auto">
+              <StackPanel>
+                <TextBlock Text="Reduce motion" Classes="row-title" />
+                <TextBlock Text="{Binding MotionPreferenceStatus}" Classes="caption muted" />
+              </StackPanel>
+              <ToggleSwitch Name="ReducedMotionSwitch" Grid.Column="1" IsChecked="{Binding ReducedMotion, Mode=TwoWay}" AutomationProperties.Name="Reduce motion" />
+            </Grid>
+          </StackPanel></Border>
+
+          <!-- ===== Downloads & folders ===== -->
+          <Border Name="DownloadsCard" Classes="card enter e2"><StackPanel Spacing="20">
+            <Grid Classes="section-head" ColumnDefinitions="Auto,*">
+              <Border Classes="well large"><c:StrokeIcon Data="{StaticResource IconFolder}" /></Border>
+              <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                <TextBlock Text="Downloads &amp; folders" Classes="section" />
+                <TextBlock Text="Where your media is saved and how downloads start." Classes="caption muted" />
+              </StackPanel>
+            </Grid>
+            <StackPanel>
+              <StackPanel Classes="field-label">
+                <TextBlock Text="Default download folder" Classes="label" />
+                <Border Classes="change-dot pop" IsVisible="{Binding DownloadDirectoryChanged}" />
+              </StackPanel>
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                <TextBox Name="DownloadFolderBox" Text="{Binding DownloadDirectory, Mode=TwoWay}" Classes.invalid="{Binding DownloadDirectoryInvalid}" PlaceholderText="Choose a folder" AutomationProperties.Name="Default download folder" AutomationProperties.HelpText="Use a complete folder path, for example C:\Media\KeaClip." />
+                <Button Grid.Column="1" Classes="field" Command="{Binding ChooseFolderCommand}" ToolTip.Tip="Choose the default download folder">
+                  <StackPanel Orientation="Horizontal" Spacing="8"><c:StrokeIcon Data="{StaticResource IconFolder}" Size="16" /><TextBlock Text="Choose…" VerticalAlignment="Center" /></StackPanel>
+                </Button>
+              </Grid>
+              <StackPanel Orientation="Horizontal" Spacing="6" Margin="2,8,0,0" IsVisible="{Binding !DownloadDirectoryInvalid}">
+                <c:StrokeIcon Data="{StaticResource IconDrive}" Size="14" Classes="faint" />
+                <TextBlock Name="DefaultFolderSpaceText" Text="{Binding DefaultFolderSpace}" Classes="caption muted tabular" Classes.faint="{Binding DefaultFolderSpacePending}" VerticalAlignment="Center" />
+              </StackPanel>
+              <TextBlock Text="Use a complete folder path, for example C:\Media\KeaClip." Classes="caption danger field-error" IsVisible="{Binding DownloadDirectoryInvalid}" />
+            </StackPanel>
+
+            <Expander Name="SeparateFoldersExpander" IsExpanded="{Binding SeparateFoldersExpanded, Mode=TwoWay}">
+              <Expander.Header>
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                  <c:StrokeIcon Data="{StaticResource IconArchive}" Size="16" Classes="muted" VerticalAlignment="Center" />
+                  <StackPanel Grid.Column="1" Spacing="1">
+                    <TextBlock Text="Separate folders" Classes="row-title" />
+                    <TextBlock Text="{Binding SeparateFoldersSummary}" Classes="caption muted" />
+                  </StackPanel>
+                </Grid>
+              </Expander.Header>
+              <StackPanel Spacing="12" Margin="0,12,0,4">
+                <TextBlock Text="{Binding SeparateFoldersHint}" Classes="caption muted" />
+                <Grid ColumnDefinitions="Auto,Auto,*,Auto,40" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="10">
+                  <c:StrokeIcon Data="{StaticResource IconMusic}" Size="16" Classes="muted" VerticalAlignment="Center" />
+                  <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" Margin="0,0,8,0">
+                    <TextBlock Text="Music" Classes="row-title" />
+                    <Border Classes="change-dot pop" IsVisible="{Binding AudioDirectoryChanged}" />
+                  </StackPanel>
+                  <TextBox Name="AudioFolderBox" Grid.Column="2" Text="{Binding AudioDirectory, Mode=TwoWay}" Classes.invalid="{Binding AudioDirectoryInvalid}" PlaceholderText="Uses the default folder" AutomationProperties.Name="Music folder" AutomationProperties.HelpText="A complete folder path, or blank to use the default folder." />
+                  <Button Grid.Column="3" Classes="field" Content="Choose…" Command="{Binding ChooseAudioFolderCommand}" ToolTip.Tip="Choose a folder for music" AutomationProperties.Name="Choose music folder" />
+                  <Button Grid.Column="4" Classes="icon ghost field" Command="{Binding ClearAudioFolderCommand}" IsVisible="{Binding AudioDirectory, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" ToolTip.Tip="Use the default folder for music" AutomationProperties.Name="Clear music folder"><c:StrokeIcon Data="{StaticResource IconClose}" Size="16" /></Button>
+
+                  <c:StrokeIcon Grid.Row="1" Data="{StaticResource IconScissors}" Size="16" Classes="muted" VerticalAlignment="Center" />
+                  <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" Margin="0,0,8,0">
+                    <TextBlock Text="Clips" Classes="row-title" />
+                    <Border Classes="change-dot pop" IsVisible="{Binding ClipsDirectoryChanged}" />
+                  </StackPanel>
+                  <TextBox Name="ClipsFolderBox" Grid.Row="1" Grid.Column="2" Text="{Binding ClipsDirectory, Mode=TwoWay}" Classes.invalid="{Binding ClipsDirectoryInvalid}" PlaceholderText="Uses the default folder" AutomationProperties.Name="Clips folder" AutomationProperties.HelpText="A complete folder path, or blank to use the default folder." />
+                  <Button Grid.Row="1" Grid.Column="3" Classes="field" Content="Choose…" Command="{Binding ChooseClipsFolderCommand}" ToolTip.Tip="Choose a folder for exported clips" AutomationProperties.Name="Choose clips folder" />
+                  <Button Grid.Row="1" Grid.Column="4" Classes="icon ghost field" Command="{Binding ClearClipsFolderCommand}" IsVisible="{Binding ClipsDirectory, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" ToolTip.Tip="Use the default folder for clips" AutomationProperties.Name="Clear clips folder"><c:StrokeIcon Data="{StaticResource IconClose}" Size="16" /></Button>
+
+                  <c:StrokeIcon Grid.Row="2" Data="{StaticResource IconArchive}" Size="16" Classes="muted" VerticalAlignment="Center" />
+                  <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" Margin="0,0,8,0">
+                    <TextBlock Text="Archives" Classes="row-title" />
+                    <Border Classes="change-dot pop" IsVisible="{Binding ArchivesDirectoryChanged}" />
+                  </StackPanel>
+                  <TextBox Name="ArchivesFolderBox" Grid.Row="2" Grid.Column="2" Text="{Binding ArchivesDirectory, Mode=TwoWay}" Classes.invalid="{Binding ArchivesDirectoryInvalid}" PlaceholderText="Uses the default folder" AutomationProperties.Name="Archives folder" AutomationProperties.HelpText="A complete folder path, or blank to use the default folder." />
+                  <Button Grid.Row="2" Grid.Column="3" Classes="field" Content="Choose…" Command="{Binding ChooseArchivesFolderCommand}" ToolTip.Tip="Choose a folder for preservation archives" AutomationProperties.Name="Choose archives folder" />
+                  <Button Grid.Row="2" Grid.Column="4" Classes="icon ghost field" Command="{Binding ClearArchivesFolderCommand}" IsVisible="{Binding ArchivesDirectory, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" ToolTip.Tip="Use the default folder for archives" AutomationProperties.Name="Clear archives folder"><c:StrokeIcon Data="{StaticResource IconClose}" Size="16" /></Button>
+                </Grid>
+                <TextBlock Text="Separate folders must be complete paths, or blank to use the default folder." Classes="caption danger" IsVisible="{Binding SeparateFoldersInvalid}" />
+              </StackPanel>
+            </Expander>
+            <Border Classes="divider" />
+            <Grid Classes="row" ColumnDefinitions="*,Auto">
+              <StackPanel>
+                <TextBlock Text="Downloads at the same time" Classes="row-title" />
+                <TextBlock Text="From 1 to 8. More at once can make each download slower. Applies straight away." Classes="caption muted" />
+              </StackPanel>
+              <NumericUpDown Name="ConcurrentDownloadsBox" Grid.Column="1" Classes="stepper" VerticalAlignment="Center" Value="{Binding ConcurrentDownloads, Mode=TwoWay}" Minimum="1" Maximum="8" Increment="1" FormatString="0" ParsingNumberStyle="Integer" ClipValueToMinMax="True" ShowButtonSpinner="False" TextAlignment="Center" AutomationProperties.Name="Downloads at the same time" AutomationProperties.HelpText="A whole number from 1 to 8. Use the Up and Down arrow keys to change it." ToolTip.Tip="{Binding ConcurrentDownloadsDescription}">
+                <NumericUpDown.InnerLeftContent>
+                  <Button Name="FewerDownloadsButton" Classes="icon ghost small" Command="{Binding DecreaseConcurrentDownloadsCommand}" ToolTip.Tip="Fewer at once" AutomationProperties.Name="Fewer downloads at the same time" Focusable="False"><c:StrokeIcon Data="{StaticResource IconMinus}" Size="16" /></Button>
+                </NumericUpDown.InnerLeftContent>
+                <NumericUpDown.InnerRightContent>
+                  <Button Name="MoreDownloadsButton" Classes="icon ghost small" Command="{Binding IncreaseConcurrentDownloadsCommand}" ToolTip.Tip="More at once" AutomationProperties.Name="More downloads at the same time" Focusable="False"><c:StrokeIcon Data="{StaticResource IconPlus}" Size="16" /></Button>
+                </NumericUpDown.InnerRightContent>
+              </NumericUpDown>
+            </Grid>
+            <Border Classes="divider" />
+            <Grid Classes="row" ColumnDefinitions="*,Auto">
+              <StackPanel>
+                <TextBlock Text="Detect copied links" Classes="row-title" />
+                <TextBlock Text="When you switch to KeaClip, a copied media link fills the empty link box. Detection never starts a download." Classes="caption muted" />
+              </StackPanel>
+              <ToggleSwitch Name="DetectClipboardSwitch" Grid.Column="1" IsChecked="{Binding DetectClipboard, Mode=TwoWay}" AutomationProperties.Name="Detect copied links" />
+            </Grid>
+          </StackPanel></Border>
+
+          <!-- ===== About ===== -->
+          <Border Name="AboutCard" Classes="card enter e3"><StackPanel Spacing="20">
+            <Grid Classes="section-head" ColumnDefinitions="Auto,*">
+              <Border Classes="well large"><c:StrokeIcon Data="{StaticResource IconInfo}" /></Border>
+              <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                <TextBlock Text="About" Classes="section" />
+                <TextBlock Text="Version, updates, where your settings live, and licences." Classes="caption muted" />
+              </StackPanel>
+            </Grid>
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16">
+              <Image Source="/Assets/kea-128.png" Width="52" Height="52" VerticalAlignment="Center" />
+              <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
+                <TextBlock Text="{Binding AppName}" Classes="h1" />
+                <TextBlock Name="AppVersionText" Text="{Binding AppVersion}" Classes="caption muted tabular" />
+                <StackPanel Orientation="Horizontal" Spacing="6"><c:StrokeIcon Data="{StaticResource IconDrive}" Size="14" Classes="faint" /><TextBlock Name="DataModeText" Text="{Binding DataMode}" Classes="caption muted" VerticalAlignment="Center" /></StackPanel>
+              </StackPanel>
+            </Grid>
+            <WrapPanel ItemSpacing="8" LineSpacing="8">
+              <Button Name="OpenSettingsFolderButton" Classes="small" Command="{Binding OpenSettingsFolderCommand}" ToolTip.Tip="{Binding SettingsLocation}">
+                <StackPanel Orientation="Horizontal" Spacing="7"><c:StrokeIcon Data="{StaticResource IconFolder}" Size="14" /><TextBlock Text="Open settings folder" VerticalAlignment="Center" /></StackPanel>
+              </Button>
+              <Button Name="OpenLicensesButton" Classes="small" Command="{Binding OpenLicensesCommand}" IsVisible="{Binding HasLicensesFolder}" ToolTip.Tip="Licences and notices for the bundled open-source tools">
+                <StackPanel Orientation="Horizontal" Spacing="7"><c:StrokeIcon Data="{StaticResource IconFile}" Size="14" /><TextBlock Text="Open licences" VerticalAlignment="Center" /></StackPanel>
+              </Button>
+              <!-- KeaClip is free; this is the only place it asks for anything, and only when the button is pressed. -->
+              <Button Name="SupportButton" Classes="small support" Command="{Binding OpenSupportPageCommand}" IsVisible="{Binding HasSupportLink}" ToolTip.Tip="KeaClip is free. If it helps you, you can shout the developer a coffee on Ko-fi." AutomationProperties.Name="Support KeaClip on Ko-fi">
+                <StackPanel Orientation="Horizontal" Spacing="7"><c:StrokeIcon Data="{StaticResource IconHeart}" Size="14" Classes="warm" /><TextBlock Text="Support KeaClip" VerticalAlignment="Center" /></StackPanel>
+              </Button>
+            </WrapPanel>
+            <Border Classes="divider" />
+            <!-- ===== Updates: a quiet daily check; nothing installs without Update now ===== -->
+            <StackPanel Name="UpdatesSection" Spacing="14">
+              <Grid Classes="row" ColumnDefinitions="*,Auto">
+                <StackPanel>
+                  <TextBlock Text="Check for updates automatically" Classes="row-title" />
+                  <TextBlock Text="Once a day KeaClip asks its release page whether a newer version exists. Nothing is downloaded or installed until you choose Update now." Classes="caption muted" />
+                </StackPanel>
+                <ToggleSwitch Name="CheckForUpdatesSwitch" Grid.Column="1" IsChecked="{Binding CheckForUpdates, Mode=TwoWay}" AutomationProperties.Name="Check for updates automatically" />
+              </Grid>
+              <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                <Panel Width="16" Height="16" VerticalAlignment="Center">
+                  <c:ProgressRing Width="16" Height="16" Thickness="2" IsIndeterminate="{Binding AnimateUpdateRing}" IsVisible="{Binding AnimateUpdateRing}" />
+                  <c:StrokeIcon Data="{StaticResource IconClock}" Size="14" Classes="faint" IsVisible="{Binding !AnimateUpdateRing}" />
+                </Panel>
+                <TextBlock Name="UpdateStatusText" Grid.Column="1" Text="{Binding UpdateStatusText}" Classes="caption muted" VerticalAlignment="Center" AutomationProperties.LiveSetting="Polite" />
+                <Button Name="CheckForUpdatesButton" Grid.Column="2" Classes="small" Command="{Binding CheckForUpdatesCommand}" VerticalAlignment="Center" ToolTip.Tip="Ask the release page now">
+                  <StackPanel Orientation="Horizontal" Spacing="7"><c:StrokeIcon Data="{StaticResource IconRetry}" Size="14" /><TextBlock Text="Check for updates" VerticalAlignment="Center" /></StackPanel>
+                </Button>
+              </Grid>
+              <Border Name="UpdateOfferNotice" Classes="notice accent reveal" IsVisible="{Binding HasUpdateOffer}">
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                  <c:StrokeIcon Data="{StaticResource IconSparkle}" Size="18" Classes="accent" VerticalAlignment="Top" />
+                  <StackPanel Grid.Column="1" Spacing="10">
+                    <StackPanel Spacing="3">
+                      <TextBlock Name="UpdateTitleText" Text="{Binding UpdateTitle}" Classes="row-title" AutomationProperties.LiveSetting="Polite" />
+                      <TextBlock Name="UpdateDetailText" Text="{Binding UpdateDetail}" Classes="caption muted" />
+                    </StackPanel>
+                    <Border Classes="inset" Padding="12,10" IsVisible="{Binding HasUpdateNotes}">
+                      <ScrollViewer MaxHeight="160" HorizontalScrollBarVisibility="Disabled">
+                        <SelectableTextBlock Name="UpdateNotesText" Text="{Binding UpdateNotes}" FontSize="12" LineHeight="18" Foreground="{DynamicResource AppMuted}" TextWrapping="Wrap" AutomationProperties.Name="Release notes" />
+                      </ScrollViewer>
+                    </Border>
+                    <!-- Download progress, with its own Cancel. -->
+                    <StackPanel Name="UpdateProgressPanel" Spacing="8" IsVisible="{Binding IsDownloadingUpdate}">
+                      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                        <ProgressBar Classes="thin" Minimum="0" Maximum="100" Value="{Binding UpdatePercent}" IsIndeterminate="{Binding !HasUpdatePercent}" VerticalAlignment="Center" />
+                        <Button Name="CancelUpdateButton" Grid.Column="1" Classes="small ghost" Command="{Binding CancelUpdateCommand}" Content="Cancel" ToolTip.Tip="Stop the download. Nothing is installed." />
+                      </Grid>
+                    </StackPanel>
+                    <!-- Restarting would stop work or lose unsaved settings: the user decides. -->
+                    <Border Name="UpdateRestartConfirm" Classes="notice warning reveal" IsVisible="{Binding NeedsUpdateRestartConfirmation}">
+                      <StackPanel Spacing="10">
+                        <TextBlock Name="UpdateRestartWarningText" Text="{Binding UpdateRestartWarning}" Classes="caption muted" AutomationProperties.LiveSetting="Assertive" />
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                          <Button Name="KeepUpdateForLaterButton" Classes="small" Command="{Binding KeepUpdateForLaterCommand}" Content="Not yet" ToolTip.Tip="Keep working; restart and update later" />
+                          <Button Name="RestartAnywayButton" Classes="small danger" Command="{Binding RestartToUpdateCommand}" Content="Restart anyway" ToolTip.Tip="Stop the listed work and install the update now" />
+                        </StackPanel>
+                      </StackPanel>
+                    </Border>
+                    <Button Name="RestartToUpdateButton" Classes="small primary" Command="{Binding RestartToUpdateCommand}" IsVisible="{Binding IsUpdateReadyToRestart}" HorizontalAlignment="Left" ToolTip.Tip="KeaClip closes, installs the verified update and opens again">
+                      <StackPanel Orientation="Horizontal" Spacing="7"><c:StrokeIcon Data="{StaticResource IconRetry}" Size="14" /><TextBlock Text="Restart and update" VerticalAlignment="Center" /></StackPanel>
+                    </Button>
+                    <!-- Portable copies: the one manual step. -->
+                    <StackPanel Name="PortableUpdateSteps" Spacing="8" IsVisible="{Binding ShowPortableUpdateSteps}">
+                      <TextBlock Name="PortableUpdateStepsText" Text="{Binding PortableUpdateSteps}" Classes="caption muted" />
+                      <Button Name="RevealPortableUpdateButton" Classes="small" Command="{Binding RevealPortableUpdateCommand}" HorizontalAlignment="Left" ToolTip.Tip="Show the verified ZIP in File Explorer">
+                        <StackPanel Orientation="Horizontal" Spacing="7"><c:StrokeIcon Data="{StaticResource IconFolder}" Size="14" /><TextBlock Text="Show the ZIP" VerticalAlignment="Center" /></StackPanel>
+                      </Button>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding ShowUpdateActions}">
+                      <Button Name="UpdateNowButton" Classes="small primary" Command="{Binding UpdateNowCommand}" ToolTip.Tip="{Binding UpdateNowHint}" ToolTip.ShowOnDisabled="True">
+                        <StackPanel Orientation="Horizontal" Spacing="7"><c:StrokeIcon Data="{StaticResource IconDownload}" Size="14" /><TextBlock Text="{Binding UpdateNowLabel}" VerticalAlignment="Center" /></StackPanel>
+                      </Button>
+                      <Button Name="UpdateLaterButton" Classes="small ghost" Command="{Binding UpdateLaterCommand}" Content="Later" ToolTip.Tip="Hide this until the next check" />
+                    </StackPanel>
+                  </StackPanel>
+                </Grid>
+              </Border>
+            </StackPanel>
+            <Border Classes="divider" />
+            <StackPanel Spacing="6">
+              <TextBlock Text="KeaClip works with open-source tools including yt-dlp, FFmpeg, LibVLC, Deno and Avalonia. Their licences and notices ship with the app in its Licenses folder." Classes="caption muted" />
+              <TextBlock Text="Download only media you own or are allowed to save. KeaClip never bypasses DRM." Classes="caption muted" />
+            </StackPanel>
+          </StackPanel></Border>
+
+          <!-- ===== Advanced: tucked away so the everyday page stays short. It opens by itself when one of its
+               settings needs attention (SettingsView.RevealSetting). ===== -->
+          <Button Name="AdvancedSettingsToggle" Classes="advanced-row enter e4" Classes.open="{Binding ShowAdvancedSettings}" Command="{Binding ToggleAdvancedSettingsCommand}" AutomationProperties.Name="{Binding AdvancedSettingsLabel}" ToolTip.Tip="{Binding AdvancedSettingsLabel}">
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
+              <Border Classes="well large neutral" VerticalAlignment="Center"><c:StrokeIcon Data="{StaticResource IconSettings}" /></Border>
+              <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                <TextBlock Text="Advanced settings" Classes="section" />
+                <TextBlock Text="Startup and notifications, history, editor presets, components and storage" Classes="caption muted" TextWrapping="Wrap" />
+              </StackPanel>
+              <c:StrokeIcon Grid.Column="2" Classes="chevron muted" Data="{StaticResource IconChevronDown}" VerticalAlignment="Center" />
+            </Grid>
+          </Button>
+          <StackPanel Name="AdvancedSettingsPanel" Classes="reveal" Spacing="18" IsVisible="{Binding ShowAdvancedSettings}">
+          <!-- ===== Window & startup ===== -->
+          <Border Name="WindowCard" Classes="card enter e3"><StackPanel Spacing="20">
+            <Grid Classes="section-head" ColumnDefinitions="Auto,*">
+              <Border Classes="well large"><c:StrokeIcon Data="{StaticResource IconScreen}" /></Border>
+              <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                <TextBlock Text="Window &amp; startup" Classes="section" />
+                <TextBlock Text="What happens when you close KeaClip or sign in to Windows." Classes="caption muted" />
+              </StackPanel>
+            </Grid>
+            <StackPanel>
+              <TextBlock Text="When you close the window" Classes="label" />
+              <Grid Name="CloseBehaviorPicker" ColumnDefinitions="*,*,*" ColumnSpacing="2" Margin="-4" AutomationProperties.Name="When you close the window">
+                <RadioButton Name="CloseExitTile" Classes="tile" GroupName="SettingsClose" IsChecked="{Binding CloseBehavior, Mode=TwoWay, Converter={StaticResource SettingsEquals}, ConverterParameter=Exit}" AutomationProperties.Name="Exit the app when closing">
+                  <StackPanel Spacing="4">
+                    <Grid Classes="tile-head" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                      <c:StrokeIcon Data="{StaticResource IconPower}" Size="16" VerticalAlignment="Center" />
+                      <TextBlock Grid.Column="1" Text="Exit app" Classes="row-title" VerticalAlignment="Center" />
+                      <Border Grid.Column="2" Classes="tile-check pop" IsVisible="{Binding $parent[RadioButton].IsChecked}"><c:StrokeIcon Data="{StaticResource IconCheck}" Size="12" StrokeThickness="2.6" /></Border>
+                    </Grid>
+                    <TextBlock Text="Stops any active work" Classes="caption muted" />
+                  </StackPanel>
+                </RadioButton>
+                <RadioButton Name="CloseTrayTile" Grid.Column="1" Classes="tile" GroupName="SettingsClose" IsChecked="{Binding CloseBehavior, Mode=TwoWay, Converter={StaticResource SettingsEquals}, ConverterParameter=Tray}" AutomationProperties.Name="Keep running in the tray when closing">
+                  <StackPanel Spacing="4">
+                    <Grid Classes="tile-head" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                      <c:StrokeIcon Data="{StaticResource IconTray}" Size="16" VerticalAlignment="Center" />
+                      <TextBlock Grid.Column="1" Text="Keep in tray" Classes="row-title" VerticalAlignment="Center" />
+                      <Border Grid.Column="2" Classes="tile-check pop" IsVisible="{Binding $parent[RadioButton].IsChecked}"><c:StrokeIcon Data="{StaticResource IconCheck}" Size="12" StrokeThickness="2.6" /></Border>
+                    </Grid>
+                    <TextBlock Text="Downloads keep going" Classes="caption muted" />
+                  </StackPanel>
+                </RadioButton>
+                <RadioButton Name="CloseAskTile" Grid.Column="2" Classes="tile" GroupName="SettingsClose" IsChecked="{Binding CloseBehavior, Mode=TwoWay, Converter={StaticResource SettingsEquals}, ConverterParameter=Ask}" AutomationProperties.Name="Ask each time when closing">
+                  <StackPanel Spacing="4">
+                    <Grid Classes="tile-head" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                      <c:StrokeIcon Data="{StaticResource IconQuestion}" Size="16" VerticalAlignment="Center" />
+                      <TextBlock Grid.Column="1" Text="Ask each time" Classes="row-title" VerticalAlignment="Center" />
+                      <Border Grid.Column="2" Classes="tile-check pop" IsVisible="{Binding $parent[RadioButton].IsChecked}"><c:StrokeIcon Data="{StaticResource IconCheck}" Size="12" StrokeThickness="2.6" /></Border>
+                    </Grid>
+                    <TextBlock Text="Choose when you close" Classes="caption muted" />
+                  </StackPanel>
+                </RadioButton>
+              </Grid>
+            </StackPanel>
+            <Border Classes="divider" />
+            <Grid Classes="row" ColumnDefinitions="*,Auto">
+              <StackPanel>
+                <WrapPanel ItemSpacing="8" LineSpacing="4">
+                  <TextBlock Text="Start with Windows" Classes="row-title" VerticalAlignment="Center" />
+                  <Border Classes="chip warm pop" Padding="8,1" IsVisible="{Binding StartupChangePending}"><TextBlock Text="Applies when saved" /></Border>
+                </WrapPanel>
+                <TextBlock Text="Off by default. KeaClip adds or removes its startup entry only when you choose Save." Classes="caption muted" />
+              </StackPanel>
+              <ToggleSwitch Name="StartWithWindowsSwitch" Grid.Column="1" IsChecked="{Binding StartWithWindows, Mode=TwoWay}" AutomationProperties.Name="Start with Windows" />
+            </Grid>
+            <Border Classes="divider" />
+            <!-- Only the Windows startup entry passes the minimized flag, so this choice works
+                 only together with Start with Windows; a manual launch always shows the window. -->
+            <Grid Name="StartMinimizedRow" Classes="row" ColumnDefinitions="*,Auto" Background="Transparent" IsEnabled="{Binding StartWithWindows}" ToolTip.Tip="{Binding StartMinimizedHint}" ToolTip.ShowOnDisabled="True">
+              <StackPanel>
+                <TextBlock Text="Start minimised" Classes="row-title" />
+                <TextBlock Name="StartMinimizedHintText" Text="{Binding StartMinimizedHint}" Classes="caption muted" />
+              </StackPanel>
+              <ToggleSwitch Name="StartMinimizedSwitch" Grid.Column="1" IsChecked="{Binding StartMinimized, Mode=TwoWay}" AutomationProperties.Name="Start minimised when KeaClip starts with Windows" AutomationProperties.HelpText="{Binding StartMinimizedHint}" />
+            </Grid>
+            <Border Classes="divider" />
+            <Grid Classes="row" ColumnDefinitions="*,Auto">
+              <StackPanel>
+                <TextBlock Text="Completion notices" Classes="row-title" />
+                <TextBlock Text="Show a small in-app notice when a download finishes." Classes="caption muted" />
+              </StackPanel>
+              <ToggleSwitch Name="NotifyCompletedSwitch" Grid.Column="1" IsChecked="{Binding NotifyCompleted, Mode=TwoWay}" AutomationProperties.Name="Completion notices" />
+            </Grid>
+            <Border Classes="divider" />
+            <Grid Name="ShareWhenFinishedDefaultRow" Classes="row" ColumnDefinitions="*,Auto">
+              <StackPanel>
+                <TextBlock Text="Share when finished" Classes="row-title" />
+                <TextBlock Text="Off by default. When on, the Download page starts with Share when finished switched on: each finished download is encrypted, uploaded to File.Kiwi and its link copied." Classes="caption muted" />
+              </StackPanel>
+              <ToggleSwitch Name="ShareWhenFinishedDefaultSwitch" Grid.Column="1" IsChecked="{Binding ShareWhenFinishedDefault, Mode=TwoWay}" AutomationProperties.Name="Share downloads when finished by default" />
+            </Grid>
+          </StackPanel></Border>
+
+          <!-- ===== Editor presets ===== -->
+          <Border Name="EditorPresetsCard" Classes="card enter e4"><StackPanel Spacing="20">
+            <Grid Classes="section-head" ColumnDefinitions="Auto,*">
+              <Border Classes="well large"><c:StrokeIcon Data="{StaticResource IconWaveform}" /></Border>
+              <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                <TextBlock Text="Editor presets" Classes="section" />
+                <TextBlock Text="Limits the soundboard preset aims for when you export a clip." Classes="caption muted" />
+              </StackPanel>
+            </Grid>
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
+              <StackPanel>
+                <StackPanel Classes="field-label">
+                  <TextBlock Text="Soundboard maximum length" Classes="label" />
+                  <Border Classes="change-dot pop" IsVisible="{Binding SoundboardSecondsChanged}" />
+                </StackPanel>
+                <TextBox Name="SoundboardSecondsBox" Classes="mono" Classes.invalid="{Binding SoundboardSecondsInvalid}" Text="{Binding SoundboardSeconds, Mode=TwoWay}" AutomationProperties.Name="Soundboard maximum length in seconds" AutomationProperties.HelpText="A number of seconds above 0 and up to 300.">
+                  <TextBox.InnerRightContent><TextBlock Text="seconds" Classes="caption faint suffix" /></TextBox.InnerRightContent>
+                </TextBox>
+                <TextBlock Text="Use a number above 0 and up to 300." Classes="caption danger field-error" IsVisible="{Binding SoundboardSecondsInvalid}" />
+              </StackPanel>
+              <StackPanel Grid.Column="1">
+                <StackPanel Classes="field-label">
+                  <TextBlock Text="Soundboard target size" Classes="label" />
+                  <Border Classes="change-dot pop" IsVisible="{Binding SoundboardBytesChanged}" />
+                </StackPanel>
+                <TextBox Name="SoundboardBytesBox" Classes="mono" Classes.invalid="{Binding SoundboardBytesInvalid}" Text="{Binding SoundboardBytes, Mode=TwoWay}" AutomationProperties.Name="Soundboard target size in bytes" AutomationProperties.HelpText="A whole number of bytes from 1 KB (1024) to 100 MB (100000000).">
+                  <TextBox.InnerRightContent><TextBlock Text="bytes" Classes="caption faint suffix" /></TextBox.InnerRightContent>
+                </TextBox>
+                <TextBlock Text="{Binding SoundboardBytesHint}" Classes="caption muted tabular field-error" IsVisible="{Binding !SoundboardBytesInvalid}" />
+                <TextBlock Text="Use a whole number of bytes from 1 KB (1024) to 100 MB (100000000)." Classes="caption danger field-error" IsVisible="{Binding SoundboardBytesInvalid}" />
+              </StackPanel>
+            </Grid>
+            <Border Classes="notice">
+              <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                <c:StrokeIcon Data="{StaticResource IconInfo}" Size="18" Foreground="{DynamicResource AppInfo}" VerticalAlignment="Top" />
+                <TextBlock Grid.Column="1" Text="{Binding SoundboardCheckedNote}" Classes="caption muted" VerticalAlignment="Center" />
+                <Button Name="ResetSoundboardButton" Grid.Column="2" Classes="link" Content="Reset to defaults" Command="{Binding ResetSoundboardDefaultsCommand}" VerticalAlignment="Center" />
+              </Grid>
+            </Border>
+          </StackPanel></Border>
+
+          <!-- ===== Privacy & history ===== -->
+          <Border Name="PrivacyCard" Classes="card enter e4"><StackPanel Spacing="20">
+            <Grid Classes="section-head" ColumnDefinitions="Auto,*">
+              <Border Classes="well large"><c:StrokeIcon Data="{StaticResource IconShield}" /></Border>
+              <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                <TextBlock Text="Privacy &amp; history" Classes="section" />
+                <TextBlock Text="Your library history and settings stay on this device." Classes="caption muted" />
+              </StackPanel>
+            </Grid>
+            <Grid Classes="row" ColumnDefinitions="*,Auto">
+              <StackPanel>
+                <TextBlock Text="Show my recordings in the Editor" Classes="row-title" />
+                <TextBlock Text="Lists new game clips and captures from your Videos folder so they are one click from trimming. KeaClip only reads the list; nothing is opened or sent." Classes="caption muted" TextWrapping="Wrap" />
+              </StackPanel>
+              <ToggleSwitch Name="ShowRecordingsSwitch" Grid.Column="1" IsChecked="{Binding ShowRecentRecordings, Mode=TwoWay}" AutomationProperties.Name="Show my recordings in the Editor" />
+            </Grid>
+            <Border Classes="divider" />            <StackPanel Spacing="12">
+              <StackPanel Spacing="3">
+                <StackPanel Orientation="Horizontal" Spacing="7">
+                  <TextBlock Text="Keep history records" Classes="row-title" />
+                  <Border Classes="change-dot pop" IsVisible="{Binding RetentionDaysChanged}" />
+                </StackPanel>
+                <TextBlock Text="Older records are removed when you save and each time KeaClip starts. Removing records never deletes your media." Classes="caption muted" />
+              </StackPanel>
+              <Grid Name="RetentionPicker" ColumnDefinitions="*,*,*,*,*" ColumnSpacing="0" Margin="-4" AutomationProperties.Name="Keep history records">
+                <RadioButton Name="RetentionAllTile" Classes="tile compact" GroupName="SettingsRetention" IsChecked="{Binding RetentionChoice, Mode=TwoWay, Converter={StaticResource SettingsEquals}, ConverterParameter=All}" AutomationProperties.Name="Keep all history records"><TextBlock Text="Keep all" /></RadioButton>
+                <RadioButton Name="Retention30Tile" Grid.Column="1" Classes="tile compact" GroupName="SettingsRetention" IsChecked="{Binding RetentionChoice, Mode=TwoWay, Converter={StaticResource SettingsEquals}, ConverterParameter=30}" AutomationProperties.Name="Keep history for 30 days"><TextBlock Text="30 days" /></RadioButton>
+                <RadioButton Name="Retention90Tile" Grid.Column="2" Classes="tile compact" GroupName="SettingsRetention" IsChecked="{Binding RetentionChoice, Mode=TwoWay, Converter={StaticResource SettingsEquals}, ConverterParameter=90}" AutomationProperties.Name="Keep history for 90 days"><TextBlock Text="90 days" /></RadioButton>
+                <RadioButton Name="Retention180Tile" Grid.Column="3" Classes="tile compact" GroupName="SettingsRetention" IsChecked="{Binding RetentionChoice, Mode=TwoWay, Converter={StaticResource SettingsEquals}, ConverterParameter=180}" AutomationProperties.Name="Keep history for 180 days"><TextBlock Text="180 days" /></RadioButton>
+                <RadioButton Name="RetentionCustomTile" Grid.Column="4" Classes="tile compact" GroupName="SettingsRetention" IsChecked="{Binding RetentionChoice, Mode=TwoWay, Converter={StaticResource SettingsEquals}, ConverterParameter=Custom}" AutomationProperties.Name="Choose a custom number of days"><TextBlock Text="Custom" /></RadioButton>
+              </Grid>
+              <StackPanel Classes="reveal" IsVisible="{Binding IsCustomRetention}">
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                  <TextBox Name="RetentionDaysBox" Width="160" Classes="mono" Classes.invalid="{Binding RetentionDaysInvalid}" Text="{Binding RetentionDays, Mode=TwoWay}" PlaceholderText="Keep all" AutomationProperties.Name="History retention in days" AutomationProperties.HelpText="A whole number of days from 1 to 36,500, or blank to keep everything.">
+                    <TextBox.InnerRightContent><TextBlock Text="days" Classes="caption faint suffix" IsVisible="{Binding RetentionDays, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" /></TextBox.InnerRightContent>
+                  </TextBox>
+                  <TextBlock Grid.Column="1" Text="Records older than this many days are removed." Classes="caption muted" VerticalAlignment="Center" />
+                </Grid>
+                <TextBlock Name="RetentionDaysError" Text="Use a whole number of days from 1 to 36,500, or leave it blank to keep everything." Classes="caption danger field-error" IsVisible="{Binding RetentionDaysInvalid}" />
+              </StackPanel>
+              <Button Name="PruneHistoryButton" Classes="link" Content="{Binding PruneHistoryNowLabel}" Command="{Binding PruneHistoryNowCommand}" IsEnabled="{Binding CanRunSettingsTask}" IsVisible="{Binding CanPruneHistoryNow}" HorizontalAlignment="Left" ToolTip.Tip="Removes history records only. Your media files are kept." />
+            </StackPanel>
+            <Border Classes="notice accent">
+              <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                <c:StrokeIcon Data="{StaticResource IconShield}" Size="18" Classes="accent" VerticalAlignment="Top" />
+                <StackPanel Grid.Column="1" Spacing="3">
+                  <TextBlock Text="Private by design" Classes="row-title" />
+                  <TextBlock Text="No analytics, ads or account. Settings and history are stored only on this device, browser sign-in stays local, and nothing is uploaded unless you choose Share." Classes="caption muted" />
+                </StackPanel>
+              </Grid>
+            </Border>
+          </StackPanel></Border>
+
+          <!-- ===== Watch links ===== -->
+          <!-- Saved with its own button: the secret goes straight to DPAPI-protected storage and is never shown again. -->
+          <Border Name="WatchLinksCard" Classes="card enter e4" IsVisible="{Binding WatchLinksAvailable}"><StackPanel Spacing="20">
+            <Grid Classes="section-head" ColumnDefinitions="Auto,*,Auto">
+              <Border Classes="well large"><c:StrokeIcon Data="{StaticResource IconPlay}" /></Border>
+              <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                <TextBlock Text="Watch links" Classes="section" />
+                <TextBlock Text="Links that play in any browser with KeaClip's player. Videos are encrypted on this PC and kept in your own Cloudflare R2 bucket." Classes="caption muted" TextWrapping="Wrap" />
+              </StackPanel>
+              <Border Name="WatchLinksReadyChip" Grid.Column="2" Classes="chip accent" VerticalAlignment="Center" IsVisible="{Binding IsWatchLinkReady}">
+                <TextBlock Text="Ready" />
+              </Border>
+            </Grid>
+            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="14" RowSpacing="14">
+              <StackPanel Spacing="6">
+                <TextBlock Text="Storage endpoint" Classes="label" />
+                <TextBox Name="WatchEndpointBox" Classes="mono" Text="{Binding WatchEndpoint, Mode=TwoWay}" PlaceholderText="https://&lt;account id&gt;.r2.cloudflarestorage.com" AutomationProperties.Name="Storage endpoint" AutomationProperties.HelpText="An https address without a path, for example https://account-id.r2.cloudflarestorage.com." />
+              </StackPanel>
+              <StackPanel Grid.Column="1" Spacing="6">
+                <TextBlock Text="Bucket" Classes="label" />
+                <TextBox Name="WatchBucketBox" Classes="mono" Text="{Binding WatchBucket, Mode=TwoWay}" PlaceholderText="keaclip-watch" AutomationProperties.Name="Bucket" AutomationProperties.HelpText="3 to 63 lowercase letters, digits or hyphens." />
+              </StackPanel>
+              <StackPanel Grid.Row="1" Spacing="6">
+                <TextBlock Text="Access key ID" Classes="label" />
+                <TextBox Name="WatchAccessKeyBox" Classes="mono" Text="{Binding WatchAccessKeyId, Mode=TwoWay}" PlaceholderText="Access key ID" AutomationProperties.Name="Access key ID" AutomationProperties.HelpText="The access key ID of an R2 token that can write to this bucket only." />
+              </StackPanel>
+              <StackPanel Grid.Row="1" Grid.Column="1" Spacing="6">
+                <TextBlock Text="Secret access key" Classes="label" />
+                <TextBox Name="WatchSecretBox" Classes="mono" PasswordChar="•" Text="{Binding WatchSecret, Mode=TwoWay}" PlaceholderText="{Binding WatchSecretPlaceholder}" AutomationProperties.Name="Secret access key" AutomationProperties.HelpText="16 to 128 characters without spaces. Stored protected for your Windows account and never shown again; leave blank to keep the saved one." />
+              </StackPanel>
+              <StackPanel Grid.Row="2" Spacing="6">
+                <TextBlock Text="Player page" Classes="label" />
+                <TextBox Name="WatchPlayerPageBox" Classes="mono" Text="{Binding WatchPlayerPage, Mode=TwoWay}" PlaceholderText="https://watch.example.com/v/" AutomationProperties.Name="Player page" AutomationProperties.HelpText="An https address ending in a slash, where your copy of KeaClip's web player is published, for example https://watch.example.com/v/." />
+              </StackPanel>
+              <StackPanel Grid.Row="2" Grid.Column="1" Spacing="6">
+                <TextBlock Text="Delete links after" Classes="label" />
+                <TextBox Name="WatchRetentionBox" Classes="mono" Width="160" HorizontalAlignment="Left" Text="{Binding WatchRetentionDays, Mode=TwoWay}" AutomationProperties.Name="Delete watch links after this many days" AutomationProperties.HelpText="A whole number of days from 1 to 365. Match your bucket's lifecycle rule; the bucket does the deleting.">
+                  <TextBox.InnerRightContent><TextBlock Text="days" Classes="caption faint suffix" /></TextBox.InnerRightContent>
+                </TextBox>
+              </StackPanel>
+            </Grid>
+            <TextBlock Name="WatchSetupStatusText" Text="{Binding WatchSetupStatus}" Classes="caption muted" TextWrapping="Wrap" IsVisible="{Binding WatchSetupStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            <WrapPanel ItemSpacing="8" LineSpacing="8">
+              <Button Name="SaveWatchSetupButton" Classes="primary" Command="{Binding SaveWatchSetupCommand}" IsEnabled="{Binding CanRunSettingsTask}" Content="Save watch link setup" />
+              <Button Name="RemoveWatchSetupButton" Classes="ghost" Command="{Binding RemoveWatchSetupCommand}" IsEnabled="{Binding CanRunSettingsTask}" Content="Remove from this PC" ToolTip.Tip="Forgets the storage details and secret. Links already shared keep working until the bucket deletes them." />
+            </WrapPanel>
+            <Border Classes="notice accent">
+              <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                <c:StrokeIcon Data="{StaticResource IconShield}" Size="18" Classes="accent" VerticalAlignment="Top" />
+                <TextBlock Grid.Column="1" Text="The key that unlocks each video stays in the link after #, which browsers never send to a server, so your storage and the player page can't see the video. Use an API token that can only write to this bucket." Classes="caption muted" TextWrapping="Wrap" />
+              </Grid>
+            </Border>
+          </StackPanel></Border>
+
+          <!-- ===== Components ===== -->
+          <Border Name="ComponentsCard" Classes="card enter e4"><StackPanel Spacing="20">
+            <Grid Classes="section-head" ColumnDefinitions="Auto,*,Auto">
+              <Border Classes="well large"><c:StrokeIcon Data="{StaticResource IconPackage}" /></Border>
+              <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                <TextBlock Text="Components" Classes="section" />
+                <TextBlock Text="Verified media tools kept in KeaClip's own folder. Nothing is installed system-wide." Classes="caption muted" />
+              </StackPanel>
+              <Panel Grid.Column="2" VerticalAlignment="Center">
+                <Border Name="ComponentsReadyChip" Classes="chip accent" IsVisible="{Binding SettingsComponentsAllReady}">
+                  <StackPanel Orientation="Horizontal" Spacing="5"><c:StrokeIcon Data="{StaticResource IconCheck}" Size="12" StrokeThickness="2.4" /><TextBlock Text="{Binding SettingsComponentsSummary}" /></StackPanel>
+                </Border>
+                <Border Name="ComponentsAttentionChip" Classes="chip warning" IsVisible="{Binding SettingsComponentsNeedAttention}">
+                  <StackPanel Orientation="Horizontal" Spacing="5"><c:StrokeIcon Data="{StaticResource IconAlert}" Size="12" StrokeThickness="2.2" /><TextBlock Text="{Binding SettingsComponentsSummary}" /></StackPanel>
+                </Border>
+              </Panel>
+            </Grid>
+
+            <Border Name="ComponentUpdateFailedNotice" Classes="notice warning reveal" IsVisible="{Binding ComponentUpdateFailed}">
+              <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                <c:StrokeIcon Data="{StaticResource IconAlert}" Size="18" Foreground="{DynamicResource AppWarning}" VerticalAlignment="Top" />
+                <TextBlock Grid.Column="1" Text="The downloader update didn't finish. The installed version still works. Try again later, or go back to the previous verified components." Classes="caption muted" VerticalAlignment="Center" />
+                <Button Name="RestoreAfterUpdateButton" Grid.Column="2" Classes="small" Command="{Binding RollbackComponentsCommand}" IsEnabled="{Binding CanRunSettingsTask}" VerticalAlignment="Center" Content="Restore previous" ToolTip.Tip="Go back to the previous verified component versions" />
+              </Grid>
+            </Border>
+
+            <TextBlock Name="ComponentsNotCheckedText" Text="Component status isn't known yet. Choose Check status to look for them." Classes="caption muted" IsVisible="{Binding ShowComponentsNotChecked}" />
+            <StackPanel Name="ComponentSkeleton" Spacing="8" IsVisible="{Binding ShowComponentSkeleton}">
+              <Border Classes="skeleton" Height="56" CornerRadius="10" />
+              <Border Classes="skeleton" Height="56" CornerRadius="10" />
+              <Border Classes="skeleton" Height="56" CornerRadius="10" />
+            </StackPanel>
+            <ItemsControl Name="ComponentList" ItemsSource="{Binding SettingsComponents}" IsVisible="{Binding HasSettingsComponents}">
+              <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Spacing="8" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <Border Classes="component">
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                      <Border Classes="component-icon"><c:StrokeIcon Data="{Binding IconKey, Converter={StaticResource SettingsResource}}" Size="16" Classes="muted" /></Border>
+                      <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                        <WrapPanel ItemSpacing="8">
+                          <TextBlock Text="{Binding Name}" Classes="row-title" />
+                          <TextBlock Text="{Binding VersionText}" Classes="caption muted tabular" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" IsVisible="{Binding ShowVersion}" ToolTip.Tip="{Binding FullVersion}" />
+                        </WrapPanel>
+                        <TextBlock Text="{Binding Role}" Classes="caption muted" />
+                        <TextBlock Text="{Binding Error}" Classes="caption" TextWrapping="Wrap" Foreground="{DynamicResource AppWarning}" Margin="0,2,0,0" IsVisible="{Binding HasError}" />
+                      </StackPanel>
+                      <Panel Grid.Column="2" VerticalAlignment="Center">
+                        <Border Classes="chip accent pop" IsVisible="{Binding Ready}"><StackPanel Orientation="Horizontal" Spacing="5"><c:StrokeIcon Data="{StaticResource IconCheck}" Size="12" StrokeThickness="2.4" /><TextBlock Text="{Binding StatusLabel}" /></StackPanel></Border>
+                        <Border Classes="chip warning" IsVisible="{Binding NeedsAttention}"><StackPanel Orientation="Horizontal" Spacing="5"><c:StrokeIcon Data="{StaticResource IconAlert}" Size="12" StrokeThickness="2.2" /><TextBlock Text="{Binding StatusLabel}" /></StackPanel></Border>
+                      </Panel>
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!-- Inline progress while a component task runs, labelled by the page itself. -->
+            <Border Name="ComponentProgress" Classes="inset reveal" IsVisible="{Binding IsComponentTaskRunning}">
+              <StackPanel Spacing="10">
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                  <Panel Width="18" Height="18" VerticalAlignment="Center">
+                    <c:ProgressRing Width="16" Height="16" Thickness="2" IsIndeterminate="{Binding AnimateComponentRing}" IsVisible="{Binding AnimateComponentRing}" />
+                    <c:StrokeIcon Data="{StaticResource IconPackage}" Size="16" Classes="accent" IsVisible="{Binding !AnimateComponentRing}" />
+                  </Panel>
+                  <StackPanel Grid.Column="1" Spacing="1" VerticalAlignment="Center">
+                    <TextBlock Name="ComponentTaskTitleText" Text="{Binding ComponentTaskTitle}" Classes="row-title" AutomationProperties.LiveSetting="Polite" />
+                    <TextBlock Name="ComponentTaskDetailText" Text="{Binding ComponentTaskDetail}" Classes="caption muted" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" IsVisible="{Binding HasComponentTaskDetail}" ToolTip.Tip="{Binding ComponentTaskDetail}" />
+                  </StackPanel>
+                  <c:AnimatedNumberText Grid.Column="2" Classes="count tabular" Value="{Binding SettingsTaskPercent}" Format="{}{0:0}%" IsVisible="{Binding HasSettingsTaskPercent}" VerticalAlignment="Center" />
+                </Grid>
+                <ProgressBar Classes="thin" Minimum="0" Maximum="100" Value="{Binding SettingsTaskPercent}" IsVisible="{Binding HasSettingsTaskPercent}" />
+              </StackPanel>
+            </Border>
+
+            <WrapPanel ItemSpacing="8" LineSpacing="8">
+              <Button Name="PrepareComponentsButton" Classes.primary="{Binding SettingsComponentsNeedAttention}" Command="{Binding ProvisionCommand}" IsEnabled="{Binding CanRunSettingsTask}" ToolTip.Tip="Download and verify any missing media tools">
+                <StackPanel Orientation="Horizontal" Spacing="8"><c:StrokeIcon Data="{StaticResource IconDownload}" Size="16" /><TextBlock Text="Prepare components" VerticalAlignment="Center" /></StackPanel>
+              </Button>
+              <Button Name="CheckComponentsButton" Command="{Binding InspectComponentsCommand}" IsEnabled="{Binding CanRunSettingsTask}" ToolTip.Tip="Check each tool's integrity and version">
+                <StackPanel Orientation="Horizontal" Spacing="8"><c:StrokeIcon Data="{StaticResource IconSearch}" Size="16" /><TextBlock Text="Check status" VerticalAlignment="Center" /></StackPanel>
+              </Button>
+              <Button Name="UpdateDownloaderButton" Command="{Binding SettingsUpdateDownloaderCommand}" IsEnabled="{Binding CanRunSettingsTask}" ToolTip.Tip="Get the latest verified yt-dlp release">
+                <StackPanel Orientation="Horizontal" Spacing="8"><c:StrokeIcon Data="{StaticResource IconRetry}" Size="16" /><TextBlock Text="Update downloader" VerticalAlignment="Center" /></StackPanel>
+              </Button>
+            </WrapPanel>
+
+            <Expander Name="TechnicalDetails" Header="Supported sites, diagnostics and recovery">
+              <StackPanel Spacing="16" Margin="0,14,0,4">
+                <StackPanel Spacing="10">
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                    <StackPanel Spacing="2" VerticalAlignment="Center">
+                      <TextBlock Text="SUPPORTED SITES" Classes="overline" />
+                      <TextBlock Text="Reads the installed downloader's own list. Support still depends on each site and video." Classes="caption muted" />
+                    </StackPanel>
+                    <Button Name="SupportedSitesButton" Grid.Column="1" Classes="small" Command="{Binding SupportedSitesCommand}" IsEnabled="{Binding CanRunSettingsTask}" VerticalAlignment="Center">
+                      <StackPanel Orientation="Horizontal" Spacing="7"><c:StrokeIcon Data="{StaticResource IconLink}" Size="14" /><TextBlock Text="Supported sites" VerticalAlignment="Center" /></StackPanel>
+                    </Button>
+                  </Grid>
+                  <Border Classes="inset" Padding="12,10">
+                    <ScrollViewer MaxHeight="150" HorizontalScrollBarVisibility="Disabled">
+                      <SelectableTextBlock Name="SupportedSitesText" Text="{Binding SupportedSitesText}" FontSize="12" LineHeight="18" Foreground="{DynamicResource AppMuted}" TextWrapping="Wrap" />
+                    </ScrollViewer>
+                  </Border>
+                </StackPanel>
+                <Border Classes="divider" />
+                <StackPanel Spacing="10">
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                    <StackPanel Spacing="2" VerticalAlignment="Center">
+                      <TextBlock Text="DIAGNOSTICS" Classes="overline" />
+                      <TextBlock Text="App, Windows and component versions, plus the last error in this session. Browser cookies, local paths and share secrets are removed." Classes="caption muted" />
+                    </StackPanel>
+                    <Button Name="CopyDiagnosticsButton" Grid.Column="1" Classes="small" Command="{Binding CopySettingsDiagnosticsCommand}" VerticalAlignment="Center" ToolTip.Tip="Copy the redacted report to the clipboard">
+                      <StackPanel Orientation="Horizontal" Spacing="7"><c:StrokeIcon Data="{StaticResource IconCopy}" Size="14" /><TextBlock Text="Copy diagnostics" VerticalAlignment="Center" /></StackPanel>
+                    </Button>
+                  </Grid>
+                  <TextBox Name="DiagnosticsBox" Text="{Binding SettingsDiagnosticsText, Mode=OneWay}" Classes="mono" FontSize="12" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" MaxHeight="180" AutomationProperties.Name="Redacted diagnostics" />
+                </StackPanel>
+                <Border Classes="divider" />
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                  <StackPanel Spacing="2" VerticalAlignment="Center">
+                    <TextBlock Text="RECOVERY" Classes="overline" />
+                    <TextBlock Text="If an update causes problems, go back to the previous verified components." Classes="caption muted" />
+                  </StackPanel>
+                  <Button Name="RestoreComponentsButton" Grid.Column="1" Classes="small" Command="{Binding RollbackComponentsCommand}" IsEnabled="{Binding CanRunSettingsTask}" VerticalAlignment="Center" ToolTip.Tip="Go back to the previous verified component versions">
+                    <StackPanel Orientation="Horizontal" Spacing="7"><c:StrokeIcon Data="{StaticResource IconClock}" Size="14" /><TextBlock Text="Restore previous" VerticalAlignment="Center" /></StackPanel>
+                  </Button>
+                </Grid>
+              </StackPanel>
+            </Expander>
+          </StackPanel></Border>
+
+          <!-- ===== Storage ===== -->
+          <Border Name="StorageCard" Classes="card enter e4"><StackPanel Spacing="20">
+            <Grid Classes="section-head" ColumnDefinitions="Auto,*">
+              <Border Classes="well large"><c:StrokeIcon Data="{StaticResource IconBroom}" /></Border>
+              <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                <TextBlock Text="Storage" Classes="section" />
+                <TextBlock Text="Free up space used by unfinished work." Classes="caption muted" />
+              </StackPanel>
+            </Grid>
+            <TextBlock Text="Remove verified inactive working files left by this app. Active jobs, recovery copies and folders without verified ownership are kept. Saved media and settings are kept." Classes="caption muted" />
+            <StackPanel Orientation="Horizontal" Spacing="12">
+              <Button Name="CleanTemporaryFilesButton" Command="{Binding CleanTemporaryFilesCommand}" IsEnabled="{Binding CanCleanTemporaryFiles}" HorizontalAlignment="Left">
+                <StackPanel Orientation="Horizontal" Spacing="8"><c:StrokeIcon Data="{StaticResource IconBroom}" Size="16" /><TextBlock Text="Clean temporary files" VerticalAlignment="Center" /></StackPanel>
+              </Button>
+              <c:ProgressRing Width="16" Height="16" Thickness="2" IsIndeterminate="{Binding AnimateCleanupRing}" IsVisible="{Binding AnimateCleanupRing}" VerticalAlignment="Center" />
+            </StackPanel>
+            <Border Classes="inset" Padding="12,10">
+              <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                <c:StrokeIcon Data="{StaticResource IconInfo}" Size="14" Classes="faint" VerticalAlignment="Top" Margin="0,1,0,0" />
+                <TextBlock Name="TemporaryCleanupStatusText" Grid.Column="1" Text="{Binding TemporaryCleanupStatus}" Classes="caption muted" />
+              </Grid>
+            </Border>
+          </StackPanel></Border>
+          </StackPanel>
+        </StackPanel>
+      </Grid>
+    </ScrollViewer>
+
+    <!-- ===== Saved confirmation: a small pill that hides itself ===== -->
+    <Grid Margin="36,0,36,16" IsHitTestVisible="False">
+      <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="100000*" MaxWidth="1040" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+      <Border Name="SettingsSavedToast" Grid.Column="1" Classes="saved-toast reveal" IsVisible="{Binding SettingsSavedVisible}">
+        <StackPanel Orientation="Horizontal" Spacing="9">
+          <Border Classes="saved-tick pop"><c:StrokeIcon Data="{StaticResource IconCheck}" Size="13" StrokeThickness="2.4" Classes="accent" /></Border>
+          <TextBlock Name="SettingsSavedText" Text="{Binding SettingsSavedTitle}" Classes="row-title" VerticalAlignment="Center" AutomationProperties.LiveSetting="Polite" />
+        </StackPanel>
+      </Border>
+    </Grid>
+
+    <!-- ===== Unsaved changes, fields to fix or a failed save ===== -->
+    <Grid Grid.Row="1" Margin="36,0,36,14">
+      <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="100000*" MaxWidth="1040" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+      <Border Name="SettingsSaveBar" Grid.Column="1" Classes="save-bar reveal" IsVisible="{Binding ShowSettingsSaveBar}">
+        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
+          <Border Classes="save-dot" Classes.attention="{Binding SettingsSaveBarNeedsAttention}" />
+          <StackPanel Grid.Column="1" Spacing="1" VerticalAlignment="Center">
+            <TextBlock Name="UnsavedSettingsText" Text="{Binding UnsavedSettingsTitle}" Classes="row-title" AutomationProperties.LiveSetting="Polite" />
+            <TextBlock Name="SaveBarDetailText" Text="{Binding SettingsSaveBarDetail}" Classes="caption muted" Classes.danger="{Binding SettingsSaveBarNeedsAttention}" MaxLines="2" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding SettingsSaveBarDetail}" AutomationProperties.LiveSetting="Polite" />
+            <Button Name="SettingsReviewButton" Classes="link" Content="{Binding SettingsReviewLabel}" Click="OnReviewSettingClick" Padding="0" HorizontalAlignment="Left" IsVisible="{Binding FirstSettingNeedingAttention, Converter={x:Static ObjectConverters.IsNotNull}}" ToolTip.Tip="Scroll to the first setting that needs your attention" />
+          </StackPanel>
+          <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+            <Button Name="DiscardSettingsButton" Classes="ghost" Content="Discard" Command="{Binding DiscardSettingsCommand}" IsEnabled="{Binding CanRunSettingsTask}" ToolTip.Tip="Go back to your saved settings" />
+            <Button Name="SaveSettingsButton" Classes="primary" Command="{Binding SaveSettingsChangesCommand}" IsEnabled="{Binding CanRunSettingsTask}" ToolTip.Tip="Save settings · Ctrl+S">
+              <StackPanel Orientation="Horizontal" Spacing="8"><c:StrokeIcon Data="{StaticResource IconCheck}" Size="16" StrokeThickness="2.2" /><TextBlock Text="Save settings" VerticalAlignment="Center" /></StackPanel>
+            </Button>
+          </StackPanel>
+        </Grid>
+      </Border>
+    </Grid>
+  </Grid>
+</UserControl>

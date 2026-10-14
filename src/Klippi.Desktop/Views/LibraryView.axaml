@@ -1,0 +1,374 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="using:Klippi.Desktop" xmlns:c="using:Klippi.Desktop.Controls" x:Class="Klippi.Desktop.Views.LibraryView">
+  <!--
+    Library: a calm, fast list of everything saved or exported.
+    The list owns its scrolling (virtualised ListBox filling the remaining height) so a
+    long history never builds every row. Rows stay quiet at rest: colour comes only from
+    the kind tile and from exceptions (a missing or unfinished file); the round primary
+    action fills with accent when its row is hovered or holds focus. Hover, focus and
+    state panels are colour/opacity fades only; panels use the shared `reveal` motion.
+  -->
+  <UserControl.Resources>
+    <!-- Row container: replaces the Fluent ListBoxItem theme so no stock hover/selection fill leaks in. -->
+    <ControlTheme x:Key="HistoryRowTheme" TargetType="ListBoxItem">
+      <Setter Property="Background" Value="{DynamicResource AppSurface}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AppBorder}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="12" />
+      <Setter Property="Padding" Value="12,11,10,11" />
+      <Setter Property="Margin" Value="0,0,0,8" />
+      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="FocusAdorner" Value="{x:Null}" />
+      <Setter Property="AutomationProperties.Name" Value="{Binding DisplayTitle}" />
+      <Setter Property="AutomationProperties.HelpText" Value="{Binding AccessibleSummary}" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Panel>
+            <Border Name="RowBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}" Padding="{TemplateBinding Padding}">
+              <Border.Transitions>
+                <Transitions>
+                  <BrushTransition Property="Background" Duration="0:0:0.14" />
+                  <BrushTransition Property="BorderBrush" Duration="0:0:0.14" />
+                </Transitions>
+              </Border.Transitions>
+              <ContentPresenter Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+            </Border>
+            <!-- Keyboard focus: a 2px accent ring drawn over the row, faded in; no layout change. -->
+            <Border Name="FocusRing" BorderBrush="{DynamicResource AppAccent}" BorderThickness="2" CornerRadius="{TemplateBinding CornerRadius}" Opacity="0" IsHitTestVisible="False">
+              <Border.Transitions>
+                <Transitions><DoubleTransition Property="Opacity" Duration="0:0:0.12" /></Transitions>
+              </Border.Transitions>
+            </Border>
+          </Panel>
+        </ControlTemplate>
+      </Setter>
+      <Style Selector="^:pointerover">
+        <Setter Property="Background" Value="{DynamicResource AppSurfaceRaised}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppBorderStrong}" />
+      </Style>
+      <!-- Selection is only the keyboard cursor: it shows while the list holds focus and never sticks after focus leaves. -->
+      <Style Selector="^:selected:focus-within">
+        <Setter Property="Background" Value="{DynamicResource AppSurfaceRaised}" />
+      </Style>
+      <Style Selector="^:focus-visible /template/ Border#FocusRing">
+        <Setter Property="Opacity" Value="1" />
+      </Style>
+    </ControlTheme>
+  </UserControl.Resources>
+
+  <UserControl.Styles>
+    <!-- Search field -->
+    <Style Selector="TextBox.search"><Setter Property="Padding" Value="8,0,6,0" /></Style>
+
+    <!-- List -->
+    <Style Selector="ListBox.history">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Padding" Value="36,0,36,28" />
+      <Setter Property="FocusAdorner" Value="{x:Null}" />
+    </Style>
+
+    <!-- Kind tile: video (accent), audio (info), clip (kea warm), archive (neutral) -->
+    <Style Selector="Border.kind">
+      <Setter Property="Width" Value="40" />
+      <Setter Property="Height" Value="40" />
+      <Setter Property="CornerRadius" Value="10" />
+      <Setter Property="Background" Value="{DynamicResource AppAccentSubtle}" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Border.kind c|StrokeIcon"><Setter Property="Data" Value="{StaticResource IconFilm}" /><Setter Property="Foreground" Value="{DynamicResource AppAccent}" /></Style>
+    <Style Selector="Border.kind.audio"><Setter Property="Background" Value="{DynamicResource AppInfoSubtle}" /></Style>
+    <Style Selector="Border.kind.audio c|StrokeIcon"><Setter Property="Data" Value="{StaticResource IconMusic}" /><Setter Property="Foreground" Value="{DynamicResource AppInfo}" /></Style>
+    <Style Selector="Border.kind.clip"><Setter Property="Background" Value="{DynamicResource AppWarmSubtle}" /></Style>
+    <Style Selector="Border.kind.clip c|StrokeIcon"><Setter Property="Data" Value="{StaticResource IconScissors}" /><Setter Property="Foreground" Value="{DynamicResource AppWarm}" /></Style>
+    <Style Selector="Border.kind.archive"><Setter Property="Background" Value="{DynamicResource AppSurfaceRaised}" /><Setter Property="BorderBrush" Value="{DynamicResource AppBorder}" /></Style>
+    <Style Selector="Border.kind.archive c|StrokeIcon"><Setter Property="Data" Value="{StaticResource IconArchive}" /><Setter Property="Foreground" Value="{DynamicResource AppMuted}" /></Style>
+
+    <!-- Row text: titles wrap to two lines before trimming; the meta line trims its least important facts first. -->
+    <Style Selector="TextBlock.row-title"><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="TextWrapping" Value="Wrap" /><Setter Property="TextTrimming" Value="CharacterEllipsis" /><Setter Property="MaxLines" Value="2" /></Style>
+    <Style Selector="TextBlock.row-meta"><Setter Property="FontSize" Value="12" /><Setter Property="Foreground" Value="{DynamicResource AppMuted}" /><Setter Property="TextTrimming" Value="CharacterEllipsis" /><Setter Property="MaxLines" Value="1" /></Style>
+
+    <!-- Secondary row actions: quiet until hovered; dimmed when the file is missing -->
+    <Style Selector="Button.row-action c|StrokeIcon"><Setter Property="Foreground" Value="{DynamicResource AppMuted}" /></Style>
+    <Style Selector="Button.row-action:pointerover c|StrokeIcon"><Setter Property="Foreground" Value="{DynamicResource AppText}" /></Style>
+    <Style Selector="Button.row-action:pointerover /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="{DynamicResource AppSurfaceHover}" /></Style>
+    <Style Selector="Button.row-action:disabled"><Setter Property="Opacity" Value="0.35" /></Style>
+
+    <!-- Row primary (Open / Download again): a quiet round button at rest that fills with accent when its row is
+         hovered or holds focus, so the list never shows a column of solid green dots. Order matters: later wins. -->
+    <Style Selector="Button.row-primary"><Setter Property="FontWeight" Value="SemiBold" /></Style>
+    <Style Selector="Button.row-primary /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource AppSurfaceRaised}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AppBorderStrong}" />
+      <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <Style Selector="Button.row-primary c|StrokeIcon"><Setter Property="Foreground" Value="{DynamicResource AppText}" /></Style>
+    <Style Selector="ListBoxItem:pointerover Button.row-primary /template/ ContentPresenter#PART_ContentPresenter, ListBoxItem:focus-within Button.row-primary /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource AppAccent}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AppAccent}" />
+    </Style>
+    <Style Selector="ListBoxItem:pointerover Button.row-primary c|StrokeIcon, ListBoxItem:focus-within Button.row-primary c|StrokeIcon"><Setter Property="Foreground" Value="{DynamicResource AccentText}" /></Style>
+    <Style Selector="Button.row-primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource AppAccentHover}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AppAccentHover}" />
+      <Setter Property="BoxShadow" Value="{DynamicResource ShadowAccent}" />
+    </Style>
+    <Style Selector="Button.row-primary:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource AppAccentPressed}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AppAccentPressed}" />
+    </Style>
+    <!-- An unavailable primary turns into a faint outline instead of a washed-out accent blob, even on row hover. -->
+    <Style Selector="Button.row-primary:disabled /template/ ContentPresenter#PART_ContentPresenter, ListBoxItem:pointerover Button.row-primary:disabled /template/ ContentPresenter#PART_ContentPresenter, ListBoxItem:focus-within Button.row-primary:disabled /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AppBorder}" />
+      <Setter Property="BoxShadow" Value="none" />
+    </Style>
+    <Style Selector="Button.row-primary:disabled c|StrokeIcon, ListBoxItem:pointerover Button.row-primary:disabled c|StrokeIcon, ListBoxItem:focus-within Button.row-primary:disabled c|StrokeIcon"><Setter Property="Foreground" Value="{DynamicResource AppFaint}" /></Style>
+
+    <!-- Exception pill (File missing, unfinished) that sits at the start of the meta line. -->
+    <Style Selector="Border.chip.row-status"><Setter Property="Padding" Value="7,1,8,1" /></Style>
+
+    <!-- State panels -->
+    <Style Selector="Border.state-badge">
+      <Setter Property="Width" Value="64" />
+      <Setter Property="Height" Value="64" />
+      <Setter Property="CornerRadius" Value="32" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+      <Setter Property="Background" Value="{DynamicResource AppSurfaceRaised}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AppBorder}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Margin" Value="0,0,0,10" />
+    </Style>
+    <Style Selector="Border.state-badge.warning"><Setter Property="Background" Value="{DynamicResource AppWarningSubtle}" /><Setter Property="BorderBrush" Value="Transparent" /></Style>
+    <Style Selector="Border.skeleton-row">
+      <Setter Property="Background" Value="{DynamicResource AppSurface}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AppBorder}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="12" />
+      <Setter Property="Padding" Value="12,11" />
+    </Style>
+    <!-- Each placeholder carries the loading state itself, so its breathing animation stops the moment loading ends. -->
+    <Style Selector="StackPanel#HistoryLoading Border.skeleton"><Setter Property="IsVisible" Value="{Binding IsHistoryLoading}" /></Style>
+
+    <!-- Popups: the theme colours every flyout and menu with the raised surface (Tokens.axaml);
+         this page only sets the shape and spacing of its confirmation flyout and row menu. -->
+    <Style Selector="FlyoutPresenter.library-confirm">
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="12" />
+      <Setter Property="Padding" Value="18,16" />
+    </Style>
+    <Style Selector="MenuFlyoutPresenter.library-menu">
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="12" />
+      <Setter Property="Padding" Value="4" />
+      <Setter Property="MinWidth" Value="220" />
+    </Style>
+    <Style Selector="MenuFlyoutPresenter.library-menu MenuItem"><Setter Property="Foreground" Value="{DynamicResource AppText}" /><Setter Property="Padding" Value="10,8" /></Style>
+    <Style Selector="MenuFlyoutPresenter.library-menu MenuItem /template/ Border#PART_LayoutRoot"><Setter Property="CornerRadius" Value="8" /></Style>
+    <Style Selector="MenuFlyoutPresenter.library-menu MenuItem:selected /template/ Border#PART_LayoutRoot"><Setter Property="Background" Value="{DynamicResource AppSurfaceHover}" /></Style>
+    <Style Selector="MenuFlyoutPresenter.library-menu MenuItem c|StrokeIcon"><Setter Property="Foreground" Value="{DynamicResource AppMuted}" /></Style>
+    <Style Selector="MenuFlyoutPresenter.library-menu MenuItem.danger"><Setter Property="Foreground" Value="{DynamicResource AppDanger}" /></Style>
+    <Style Selector="MenuFlyoutPresenter.library-menu MenuItem.danger c|StrokeIcon"><Setter Property="Foreground" Value="{DynamicResource AppDanger}" /></Style>
+    <Style Selector="MenuFlyoutPresenter.library-menu Separator"><Setter Property="Background" Value="{DynamicResource AppBorder}" /><Setter Property="Margin" Value="8,4" /></Style>
+  </UserControl.Styles>
+
+  <Grid RowDefinitions="Auto,Auto,*">
+    <!-- Toolbar: search, then the guarded clear action -->
+    <Grid Margin="36,4,36,0" MaxWidth="1040" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+      <TextBox Name="HistorySearch" Classes="search" Text="{Binding LibrarySearchText, Mode=TwoWay}" PlaceholderText="Search titles and sources" AutomationProperties.Name="Search library" ToolTip.Tip="Search your library · Ctrl+F">
+        <TextBox.InnerLeftContent>
+          <c:StrokeIcon Data="{StaticResource IconSearch}" Size="16" Classes="faint" Margin="13,0,0,0" VerticalAlignment="Center" />
+        </TextBox.InnerLeftContent>
+        <TextBox.InnerRightContent>
+          <Button Name="ClearSearchButton" Classes="icon small ghost row-action" Margin="0,0,5,0" Command="{Binding ClearHistorySearchCommand}" IsVisible="{Binding HasLibrarySearchText}" ToolTip.Tip="Clear search · Esc" AutomationProperties.Name="Clear search">
+            <c:StrokeIcon Data="{StaticResource IconClose}" Size="14" />
+          </Button>
+        </TextBox.InnerRightContent>
+      </TextBox>
+      <Button Grid.Column="1" Name="ClearHistoryButton" MinHeight="40" IsEnabled="{Binding HasHistoryRecords}" ToolTip.Tip="Remove every record from the library. Your files are kept." AutomationProperties.Name="Clear history records">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <c:StrokeIcon Data="{StaticResource IconBroom}" Size="16" Classes="muted" />
+          <TextBlock Text="Clear history" VerticalAlignment="Center" />
+        </StackPanel>
+        <Button.Flyout>
+          <Flyout Placement="BottomEdgeAlignedRight" VerticalOffset="6" FlyoutPresenterClasses="library-confirm">
+            <StackPanel Width="296" Spacing="6">
+              <TextBlock Text="Clear all history records?" Classes="section" />
+              <TextBlock Text="{Binding ClearHistoryPrompt}" Classes="muted" />
+              <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" Margin="0,12,0,0">
+                <Button Name="CancelClearHistoryButton" Content="Keep history" Click="OnCancelClearHistory" />
+                <Button Name="ConfirmClearHistoryButton" Classes="danger" Command="{Binding ClearHistoryRecordsCommand}" Click="OnConfirmClearHistory" AutomationProperties.Name="Confirm: clear all history records">
+                  <StackPanel Orientation="Horizontal" Spacing="8"><c:StrokeIcon Data="{StaticResource IconTrash}" Size="16" /><TextBlock Text="Clear records" VerticalAlignment="Center" /></StackPanel>
+                </Button>
+              </StackPanel>
+            </StackPanel>
+          </Flyout>
+        </Button.Flyout>
+      </Button>
+    </Grid>
+
+    <!-- Result count. Its line keeps its height while loading and on no-results, so nothing below jumps. -->
+    <Panel Grid.Row="1" Name="HistoryCountRow" Margin="38,14,36,10" MaxWidth="1040" Height="17" IsVisible="{Binding ShowHistoryCountRow}">
+      <TextBlock Name="HistoryCount" Text="{Binding HistoryResultSummary}" IsVisible="{Binding ShowHistorySummary}" Classes="caption" Foreground="{DynamicResource AppMuted}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+    </Panel>
+
+    <Panel Grid.Row="2">
+      <!-- Virtualised list: only rows on screen are built, and it scrolls by itself. -->
+      <ListBox Name="HistoryList" Classes="history" ItemsSource="{Binding History}" IsVisible="{Binding HasHistoryResults}" SelectionMode="Single" KeyboardNavigation.TabNavigation="Continue" ItemContainerTheme="{StaticResource HistoryRowTheme}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" AutomationProperties.Name="Library items">
+        <ListBox.ItemsPanel>
+          <ItemsPanelTemplate><VirtualizingStackPanel MaxWidth="1040" /></ItemsPanelTemplate>
+        </ListBox.ItemsPanel>
+        <ListBox.ItemTemplate>
+          <DataTemplate>
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
+              <Border Classes="kind" Classes.audio="{Binding IsAudioKind}" Classes.clip="{Binding IsClipKind}" Classes.archive="{Binding IsArchiveKind}" ToolTip.Tip="{Binding KindLabel}">
+                <c:StrokeIcon Size="22" />
+              </Border>
+              <StackPanel Grid.Column="1" Spacing="4" VerticalAlignment="Center" Background="Transparent" ToolTip.Tip="{Binding DetailTip}">
+                <TextBlock Text="{Binding DisplayTitle}" Classes="row-title" />
+                <!-- DockPanel, not a spaced Grid: a hidden pill must not leave a gap before the meta line. -->
+                <DockPanel>
+                  <Border DockPanel.Dock="Left" Margin="0,0,8,0" Classes="chip row-status" Classes.warning="{Binding IsMissing}" IsVisible="{Binding ShowStatusPill}" ToolTip.Tip="{Binding StatusTip}">
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                      <c:StrokeIcon Data="{StaticResource IconAlert}" Size="11" StrokeThickness="2.2" IsVisible="{Binding IsMissing}" VerticalAlignment="Center" />
+                      <TextBlock Text="{Binding StatusLabel}" VerticalAlignment="Center" />
+                    </StackPanel>
+                  </Border>
+                  <TextBlock Text="{Binding MetaLine}" Classes="row-meta tabular" VerticalAlignment="Center" />
+                </DockPanel>
+              </StackPanel>
+              <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+                <Panel Width="30" Height="30" Margin="0,0,4,0">
+                  <Button Name="OpenItemButton" Classes="icon small round row-primary checks-file" Command="{Binding OpenCommand}" IsVisible="{Binding ShowOpenPrimary}" IsEnabled="{Binding IsAvailable}" ToolTip.Tip="{Binding OpenTip}" ToolTip.ShowOnDisabled="True" AutomationProperties.Name="Open">
+                    <c:StrokeIcon Data="{StaticResource IconPlay}" IsFilled="True" Size="13" Margin="2,0,0,0" />
+                  </Button>
+                  <Button Name="RepeatItemButton" Classes="icon small round row-primary" Command="{Binding RepeatCommand}" IsVisible="{Binding ShowRepeatPrimary}" ToolTip.Tip="File missing · Download it again" AutomationProperties.Name="Download again">
+                    <c:StrokeIcon Data="{StaticResource IconRetry}" Size="15" StrokeThickness="2" />
+                  </Button>
+                </Panel>
+                <Button Name="RevealItemButton" Classes="icon small ghost row-action checks-file" Command="{Binding RevealCommand}" IsEnabled="{Binding CanReveal}" ToolTip.Tip="{Binding RevealTip}" ToolTip.ShowOnDisabled="True" AutomationProperties.Name="Show file">
+                  <c:StrokeIcon Data="{StaticResource IconFolder}" Size="17" />
+                </Button>
+                <Button Name="EditItemButton" Classes="icon small ghost row-action checks-file" Command="{Binding EditCommand}" IsEnabled="{Binding IsAvailable}" ToolTip.Tip="{Binding EditTip}" ToolTip.ShowOnDisabled="True" AutomationProperties.Name="Edit">
+                  <c:StrokeIcon Data="{StaticResource IconEdit}" Size="17" />
+                </Button>
+                <Button Name="ShareItemButton" Classes="icon small ghost row-action checks-file" Command="{Binding ShareCommand}" IsEnabled="{Binding IsAvailable}" ToolTip.Tip="{Binding ShareTip}" ToolTip.ShowOnDisabled="True" AutomationProperties.Name="Share">
+                  <c:StrokeIcon Data="{StaticResource IconShare}" Size="17" />
+                </Button>
+                <Button Name="CopyShareLinkItemButton" Classes="icon small ghost row-action" Command="{Binding CopyShareLinkCommand}" IsVisible="{Binding HasShareLink}" ToolTip.Tip="Copy the share link made this session (it expires; keep it private)" AutomationProperties.Name="Copy share link">
+                  <c:StrokeIcon Data="{StaticResource IconLink}" Size="17" />
+                </Button>
+                <Button Name="MoreItemButton" Classes="icon small ghost row-action" ToolTip.Tip="More actions" AutomationProperties.Name="More actions">
+                  <c:StrokeIcon Data="{StaticResource IconMore}" Size="18" StrokeThickness="2.8" />
+                  <Button.Flyout>
+                    <MenuFlyout Placement="BottomEdgeAlignedRight" VerticalOffset="4" FlyoutPresenterClasses="library-menu">
+                      <MenuItem Header="Copy file path" Command="{Binding CopyPathCommand}">
+                        <MenuItem.Icon><c:StrokeIcon Data="{StaticResource IconCopy}" Size="16" /></MenuItem.Icon>
+                      </MenuItem>
+                      <MenuItem Header="Copy source link" Command="{Binding CopySourceCommand}" IsVisible="{Binding HasSource}">
+                        <MenuItem.Icon><c:StrokeIcon Data="{StaticResource IconLink}" Size="16" /></MenuItem.Icon>
+                      </MenuItem>
+                      <MenuItem Header="Download again…" Command="{Binding RepeatCommand}" IsVisible="{Binding HasSource}">
+                        <MenuItem.Icon><c:StrokeIcon Data="{StaticResource IconDownload}" Size="16" /></MenuItem.Icon>
+                      </MenuItem>
+                      <Separator />
+                      <MenuItem Name="RemoveRecordItem" Classes="danger" Command="{Binding RemoveRecordCommand}" AutomationProperties.Name="Remove record">
+                        <MenuItem.Header>
+                          <StackPanel Spacing="1">
+                            <TextBlock Text="Remove record" />
+                            <TextBlock Text="The file stays on disk" Classes="caption" Foreground="{DynamicResource AppFaint}" />
+                          </StackPanel>
+                        </MenuItem.Header>
+                        <MenuItem.Icon><c:StrokeIcon Data="{StaticResource IconTrash}" Size="16" /></MenuItem.Icon>
+                      </MenuItem>
+                    </MenuFlyout>
+                  </Button.Flyout>
+                </Button>
+              </StackPanel>
+            </Grid>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+
+      <!-- Loading: row-shaped placeholders while the first history read runs, aligned with where rows appear -->
+      <StackPanel Name="HistoryLoading" IsVisible="{Binding IsHistoryLoading}" Spacing="8" Margin="36,0,36,0" MaxWidth="1040" VerticalAlignment="Top">
+        <Border Classes="skeleton-row">
+          <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
+            <Border Classes="skeleton" Width="40" Height="40" CornerRadius="10" />
+            <StackPanel Grid.Column="1" Spacing="8" VerticalAlignment="Center">
+              <Border Classes="skeleton" Height="12" Width="280" HorizontalAlignment="Left" />
+              <Border Classes="skeleton" Height="10" Width="190" HorizontalAlignment="Left" />
+            </StackPanel>
+            <Border Grid.Column="2" Classes="skeleton" Width="30" Height="30" CornerRadius="15" VerticalAlignment="Center" Margin="0,0,132,0" />
+          </Grid>
+        </Border>
+        <Border Classes="skeleton-row">
+          <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
+            <Border Classes="skeleton" Width="40" Height="40" CornerRadius="10" />
+            <StackPanel Grid.Column="1" Spacing="8" VerticalAlignment="Center">
+              <Border Classes="skeleton" Height="12" Width="220" HorizontalAlignment="Left" />
+              <Border Classes="skeleton" Height="10" Width="160" HorizontalAlignment="Left" />
+            </StackPanel>
+            <Border Grid.Column="2" Classes="skeleton" Width="30" Height="30" CornerRadius="15" VerticalAlignment="Center" Margin="0,0,132,0" />
+          </Grid>
+        </Border>
+        <Border Classes="skeleton-row">
+          <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
+            <Border Classes="skeleton" Width="40" Height="40" CornerRadius="10" />
+            <StackPanel Grid.Column="1" Spacing="8" VerticalAlignment="Center">
+              <Border Classes="skeleton" Height="12" Width="250" HorizontalAlignment="Left" />
+              <Border Classes="skeleton" Height="10" Width="180" HorizontalAlignment="Left" />
+            </StackPanel>
+            <Border Grid.Column="2" Classes="skeleton" Width="30" Height="30" CornerRadius="15" VerticalAlignment="Center" Margin="0,0,132,0" />
+          </Grid>
+        </Border>
+        <Border Classes="skeleton-row">
+          <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
+            <Border Classes="skeleton" Width="40" Height="40" CornerRadius="10" />
+            <StackPanel Grid.Column="1" Spacing="8" VerticalAlignment="Center">
+              <Border Classes="skeleton" Height="12" Width="200" HorizontalAlignment="Left" />
+              <Border Classes="skeleton" Height="10" Width="150" HorizontalAlignment="Left" />
+            </StackPanel>
+            <Border Grid.Column="2" Classes="skeleton" Width="30" Height="30" CornerRadius="15" VerticalAlignment="Center" Margin="0,0,132,0" />
+          </Grid>
+        </Border>
+      </StackPanel>
+
+      <!-- Empty: nothing saved yet -->
+      <StackPanel Name="HistoryEmptyState" Classes="reveal" IsVisible="{Binding ShowHistoryEmpty}" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="400" Spacing="6" Margin="36,0,36,56">
+        <!-- The vector kea follows the light/dark palette (a bitmap icon would always show the dark tile). -->
+        <Border Width="116" Height="116" CornerRadius="58" Background="{DynamicResource AppAccentSubtle}" HorizontalAlignment="Center" Margin="0,0,0,14">
+          <c:KeaMascot Size="84" Pose="Idle" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </Border>
+        <TextBlock Text="Nothing saved yet" Classes="h1" HorizontalAlignment="Center" />
+        <TextBlock Text="Your downloads and exported clips land here, newest first, ready to open, edit or share again." Classes="muted" TextAlignment="Center" />
+        <Button Name="EmptyDownloadButton" Classes="primary" HorizontalAlignment="Center" Margin="0,16,0,0" Command="{Binding BrowseDownloadsCommand}">
+          <StackPanel Orientation="Horizontal" Spacing="8"><c:StrokeIcon Data="{StaticResource IconDownload}" Size="16" /><TextBlock Text="Download something" VerticalAlignment="Center" /></StackPanel>
+        </Button>
+      </StackPanel>
+
+      <!-- No results for the current search -->
+      <StackPanel Name="HistoryNoResults" Classes="reveal" IsVisible="{Binding ShowHistoryNoResults}" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="400" Spacing="6" Margin="36,0,36,72">
+        <Border Classes="state-badge"><c:StrokeIcon Data="{StaticResource IconSearch}" Size="26" Classes="muted" /></Border>
+        <TextBlock Text="{Binding HistoryNoResultsTitle}" Classes="section" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
+        <TextBlock Text="Try part of the title or the site it came from." Classes="muted" TextAlignment="Center" />
+        <Button Name="NoResultsClearButton" HorizontalAlignment="Center" Margin="0,12,0,0" Command="{Binding ClearHistorySearchCommand}">
+          <StackPanel Orientation="Horizontal" Spacing="8"><c:StrokeIcon Data="{StaticResource IconClose}" Size="14" Classes="muted" /><TextBlock Text="Clear search" VerticalAlignment="Center" /></StackPanel>
+        </Button>
+      </StackPanel>
+
+      <!-- History could not be read: say so, with the reason kept here (the status bar moves on), instead of looking empty -->
+      <StackPanel Name="HistoryLoadFailedState" Classes="reveal" IsVisible="{Binding HistoryLoadFailed}" HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="480" Spacing="6" Margin="36,0,36,72">
+        <Border Classes="state-badge warning"><c:StrokeIcon Data="{StaticResource IconAlert}" Size="26" Foreground="{DynamicResource AppWarning}" /></Border>
+        <TextBlock Text="Your library couldn't be opened" Classes="section" HorizontalAlignment="Center" />
+        <TextBlock Text="The history list could not be read. Your media files are untouched." Classes="muted" TextAlignment="Center" />
+        <TextBlock Name="HistoryLoadErrorText" Text="{Binding HistoryLoadError}" IsVisible="{Binding HasHistoryLoadError}" Classes="caption" Foreground="{DynamicResource AppFaint}" TextAlignment="Center" TextWrapping="Wrap" MaxLines="4" TextTrimming="CharacterEllipsis" Margin="0,2,0,0" />
+        <Button Name="RetryHistoryButton" Classes="primary" HorizontalAlignment="Center" Margin="0,12,0,0" Command="{Binding RetryHistoryCommand}">
+          <StackPanel Orientation="Horizontal" Spacing="8"><c:StrokeIcon Data="{StaticResource IconRetry}" Size="16" /><TextBlock Text="Try again" VerticalAlignment="Center" /></StackPanel>
+        </Button>
+      </StackPanel>
+    </Panel>
+  </Grid>
+</UserControl>
