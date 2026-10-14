@@ -5,6 +5,7 @@
 - Beta copies (`build/package.ps1 -Beta`) open a short **Beta test** checklist on first start: six things to try, Works or Problem for each, a notes box and **Save report**, which writes a plain-text report (answers, Windows version, screen scaling, last error, personal paths removed) to the Desktop to email to keaclip@proton.me. Normal builds show none of it.
 - Updates and the download link now point at the public repository `Langkurst/KeaClip`.
 - The source zip in public packages leaves out private working notes.
+- The installer accepts `--silent` (for winget: per-user install or upgrade, no window) and is about 60 MB smaller (compressed). `build/winget-manifest.ps1` writes the winget manifests for a release.
 
 ## 0.3.1 - tidier export, recordings switch (2026-10-14)
 

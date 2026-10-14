@@ -99,6 +99,14 @@ default feed answers 404 and the app says no update information was published ye
   `installer-publish.ps1 -SelfTest`, `release-manifest.ps1`, then `gh release create v<version>`
   with the four files). Keep `-SelfTest` in the workflow; a release without it is not verified.
 
+## winget
+
+After the release is public, `pwsh -File build/winget-manifest.ps1 -Installer <KeaClip-<version>-Setup.exe>`
+writes the three `Langkurst.KeaClip` manifests under `artifacts/winget/manifests/l/Langkurst/KeaClip/<version>/`.
+Check them with `winget validate --manifest <folder>`, then submit that folder to
+`microsoft/winget-pkgs` as a pull request. winget runs `KeaClip.Setup.exe --silent`: a per-user install or
+upgrade into `%LOCALAPPDATA%\Programs\KeaClip` with no window, which keeps an existing installation's choices.
+
 ## Signing
 
 Signing is optional today. To add it: sign `KeaClip.Setup.exe` (and `KeaClip.exe` inside the

@@ -11,7 +11,7 @@ try {
     $installerRevision = (git rev-parse HEAD).Trim()
     if ($LASTEXITCODE -ne 0 -or (git status --porcelain)) { throw 'Commit the reviewed source before publishing the installer.' }
     New-Item -ItemType Directory -Path $installerOutput -Force | Out-Null
-    dotnet publish src/Klippi.Installer/Klippi.Installer.csproj -c Release -r win-x64 --self-contained true -o $installerOutput -m:1 -p:UseSharedCompilation=false -p:BuildInParallel=false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:RuntimeFrameworkVersion=10.0.12 -p:RestoreLockedMode=true "-p:PayloadZip=$installerPayload"
+    dotnet publish src/Klippi.Installer/Klippi.Installer.csproj -c Release -r win-x64 --self-contained true -o $installerOutput -m:1 -p:UseSharedCompilation=false -p:BuildInParallel=false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:SatelliteResourceLanguages=en -p:RuntimeFrameworkVersion=10.0.12 -p:RestoreLockedMode=true "-p:PayloadZip=$installerPayload"
     if ($LASTEXITCODE -ne 0) { throw 'Installer publish failed.' }
     if ((git rev-parse HEAD).Trim() -ne $installerRevision -or (git status --porcelain)) { throw 'Source changed during installer publishing; verify and checkpoint before retrying.' }
     $installerExe = Join-Path $installerOutput 'KeaClip.Setup.exe'

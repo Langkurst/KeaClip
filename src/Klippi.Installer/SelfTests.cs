@@ -15,7 +15,15 @@ public static class SelfTests
         var source = Environment.ProcessPath ?? throw new IOException("No installer executable.");
         var contents = new Dictionary<string, byte[]> { ["KeaClip.exe"] = Encoding.UTF8.GetBytes("synthetic executable fixture; never launched"), ["portable.marker"] = Encoding.UTF8.GetBytes("portable"), ["runtime/native.dll"] = [1, 2, 3] };
         StartupEntryChecks(run, checks);
-        var payload = MakePayload(contents); var engine = new InstallEngine(); var choices = new InstallChoices(false, false, false); var target = Path.Combine(run, "App");
+        var payload = MakePayload(contents);
+        // --silent (winget): a fresh folder gets the setup window's defaults; a second run upgrades and keeps Data.
+        var silentTarget = Path.Combine(run, "Silent");
+        Require(Program.SilentChoices(silentTarget) == new InstallChoices(false, true, false), "silent install defaults");
+        using (var stream = new MemoryStream(payload)) Program.SilentInstall(stream, silentTarget, source, new InstallEngine());
+        Directory.CreateDirectory(Path.Combine(silentTarget, "Data")); File.WriteAllText(Path.Combine(silentTarget, "Data", "settings.json"), "silent settings");
+        using (var stream = new MemoryStream(payload)) Program.SilentInstall(stream, silentTarget, source, new InstallEngine());
+        Require(File.Exists(Path.Combine(silentTarget, "KeaClip.exe")) && File.ReadAllText(Path.Combine(silentTarget, "Data", "settings.json")) == "silent settings", "silent install and upgrade");
+        checks.Add("Silent install (winget) uses the default choices, and a repeat run upgrades and keeps Data"); var engine = new InstallEngine(); var choices = new InstallChoices(false, false, false); var target = Path.Combine(run, "App");
         using (var stream = new MemoryStream(payload)) engine.Install(stream, target, source, choices);
         Require(File.Exists(Path.Combine(target, "KeaClip.exe")) && !File.Exists(Path.Combine(target, "portable.marker")), "install files / installed data mode"); checks.Add("Verified install and portable marker exclusion");
         var receipt = InstallEngine.ReadReceipt(target); Require(receipt.Files.Count == 3 && !receipt.Protocol && !receipt.ProgramsEntry && receipt.Shortcuts.Count == 0, "receipt scope"); checks.Add("Receipt-owned files; no registry or shortcuts in test mode");
