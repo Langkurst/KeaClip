@@ -347,7 +347,8 @@ public sealed class FakeComponents : IComponentService
     public string? Find(string name) => null;
     public bool Ready { get; set; } = true;
     public Task<IReadOnlyList<ComponentInfo>> InspectAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<ComponentInfo>>([new("yt-dlp", null, "Test component", Ready), new("FFmpeg", null, "Test component", true)]);
-    public Task ProvisionAsync(IProgress<JobProgress>? progress = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
+    public int Provisions { get; private set; }
+    public Task ProvisionAsync(IProgress<JobProgress>? progress = null, CancellationToken cancellationToken = default) { Provisions++; return Task.CompletedTask; }
     public string? UpdateMessage { get; set; }
     public Task UpdateDownloaderAsync(IProgress<JobProgress>? progress = null, CancellationToken cancellationToken = default) { if (UpdateMessage is { } message) progress?.Report(new(JobStage.Finished, 100, message)); return Task.CompletedTask; }
 }

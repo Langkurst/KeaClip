@@ -263,6 +263,44 @@ public sealed class InstallEngine
         finally { if (File.Exists(temporary)) File.Delete(temporary); }
     }
     public static string Hash(string path) { using var stream = File.OpenRead(path); return Convert.ToHexString(SHA256.HashData(stream)).ToLowerInvariant(); }
+    /// <summary>Where an installed KeaClip keeps its own state (portable copies keep a Data folder beside the app instead).</summary>
+    public static string DefaultDataRoot => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "KeaClip");
+    // Parts KeaClip downloads or makes for itself and can always fetch again: media tools, update downloads, temporary work.
+    private static readonly string[] DownloadedParts = ["Components", "Updates", "TemporaryWorkspaces"];
+    // The user's settings and history (with KeaClip's own backup and set-aside copies of them).
+    private static readonly string[] StateFiles = ["settings.json", "history.json", "queue.json", "update-state.json", "watch-links.json", "watch-usage.json", "beta-test.json"];
+
+    /// <summary>
+    /// Uninstall clean-up of the data folder: always the downloaded parts; settings and history only when the user
+    /// ticks that. Only these known names are removed, linked paths are refused, and anything else (which KeaClip
+    /// never puts there, such as media) is left alone, so the folder itself goes only once it is empty.
+    /// </summary>
+    public static IReadOnlyList<string> RemoveAppData(string dataRoot, bool settingsToo)
+    {
+        var root = SafeTarget(dataRoot);
+        if (!Directory.Exists(root)) return [];
+        CheckLinks(root);
+        var removed = new List<string>();
+        foreach (var name in DownloadedParts)
+        {
+            var path = Path.Combine(root, name);
+            if (!Directory.Exists(path)) continue;
+            CheckLinks(path);
+            Directory.Delete(path, recursive: true); removed.Add(name);
+        }
+        if (settingsToo)
+        {
+            foreach (var file in Directory.EnumerateFiles(root))
+            {
+                var name = Path.GetFileName(file);
+                if (!StateFiles.Any(state => name.Equals(state, StringComparison.OrdinalIgnoreCase) || name.Equals(state + ".backup", StringComparison.OrdinalIgnoreCase) || name.StartsWith(state + ".corrupt-", StringComparison.OrdinalIgnoreCase))) continue;
+                File.Delete(file); removed.Add(name);
+            }
+            if (!Directory.EnumerateFileSystemEntries(root).Any()) { Directory.Delete(root); removed.Add("."); }
+        }
+        return removed;
+    }
+
     public static string SafeTarget(string path)
     {
         var full = Path.GetFullPath(path).TrimEnd(Path.DirectorySeparatorChar);

@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="using:Klippi.Desktop" xmlns:c="using:Klippi.Desktop.Controls" xmlns:v="using:Klippi.Desktop.Views" xmlns:vlc="clr-namespace:LibVLCSharp.Avalonia;assembly=LibVLCSharp.Avalonia" x:Class="Klippi.Desktop.Views.EditorView">
   <UserControl.Resources>
     <v:EditorChoiceConverter x:Key="EditorChoice" />
+    <v:EditorTimeConverter x:Key="EditorTime" />
     <v:EditorPresetLabelConverter x:Key="EditorPresetLabel" />
   </UserControl.Resources>
   <UserControl.Styles>
@@ -62,7 +63,7 @@
   </UserControl.Styles>
 
   <ScrollViewer Name="PageScroller" HorizontalScrollBarVisibility="Disabled" Padding="36,4,36,28">
-    <StackPanel Spacing="18" MaxWidth="1040">
+    <StackPanel Spacing="18" MaxWidth="{Binding PageMaxWidth}">
       <!--
         One grid holds every editor state; EditorView.UpdateLayoutMode places the columns:
         narrow with a file: workspace, then output below; wide: output beside the workspace;
@@ -165,22 +166,17 @@
 
           <!-- Preview -->
           <Border Name="PreviewCard" Classes="card enter e1" Padding="18">
-            <StackPanel Spacing="14">
-              <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
-                <Border Classes="well large">
-                  <Panel>
-                    <c:StrokeIcon Data="{StaticResource IconFilm}" IsVisible="{Binding EditorHasVideo}" />
-                    <c:StrokeIcon Data="{StaticResource IconMusic}" IsVisible="{Binding IsAudioOnlyMedia}" />
-                  </Panel>
-                </Border>
-                <StackPanel Grid.Column="1" Spacing="7" VerticalAlignment="Center">
-                  <TextBlock Name="EditorFileTitle" Text="{Binding EditorTitle}" Classes="section" TextTrimming="CharacterEllipsis" MaxLines="1" ToolTip.Tip="{Binding EditorTitle}" />
-                  <ItemsControl ItemsSource="{Binding EditorFacts}">
+            <StackPanel Spacing="12">
+              <!-- One slim line (name, then facts) so the height goes to the picture. -->
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <WrapPanel ItemSpacing="12" LineSpacing="6" VerticalAlignment="Center">
+                  <TextBlock Name="EditorFileTitle" Text="{Binding EditorTitle}" Classes="section" TextTrimming="CharacterEllipsis" MaxLines="1" MaxWidth="460" VerticalAlignment="Center" ToolTip.Tip="{Binding EditorTitle}" />
+                  <ItemsControl ItemsSource="{Binding EditorFacts}" VerticalAlignment="Center">
                     <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel ItemSpacing="6" LineSpacing="6" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate><DataTemplate><Border Classes="chip"><TextBlock Text="{Binding}" Classes="tabular" /></Border></DataTemplate></ItemsControl.ItemTemplate>
                   </ItemsControl>
-                </StackPanel>
-                <Button Grid.Column="2" Classes="ghost small" Command="{Binding OpenMediaCommand}" VerticalAlignment="Top" ToolTip.Tip="Open a different video or audio file · Ctrl+O" AutomationProperties.Name="Open media">
+                </WrapPanel>
+                <Button Grid.Column="1" Classes="ghost small" Command="{Binding OpenMediaCommand}" VerticalAlignment="Center" ToolTip.Tip="Open a different video or audio file · Ctrl+O" AutomationProperties.Name="Open media">
                   <StackPanel Orientation="Horizontal" Spacing="7"><c:StrokeIcon Data="{StaticResource IconOpenFile}" Size="15" /><TextBlock Text="Open media" VerticalAlignment="Center" /></StackPanel>
                 </Button>
               </Grid>
@@ -203,7 +199,7 @@
                         <c:StrokeIcon Data="{StaticResource IconMusic}" Size="36" Classes="accent" />
                       </Border>
                       <StackPanel Grid.Column="1" Spacing="5" VerticalAlignment="Center">
-                        <TextBlock Text="AUDIO ONLY" Classes="overline" />
+                        <TextBlock Text="Audio only" Classes="overline" />
                         <TextBlock Text="{Binding EditorTitle}" Classes="h1" TextTrimming="CharacterEllipsis" MaxLines="1" />
                         <TextBlock Text="{Binding EditorAudioText}" Classes="caption muted" />
                       </StackPanel>
@@ -272,7 +268,7 @@
               </Grid>
 
               <Panel>
-                <local:WaveformControl Name="Waveform" Height="128" Classes.loading="{Binding IsWaveformLoading}" Samples="{Binding Waveform}" StartRatio="{Binding ClipStartRatio, Mode=TwoWay}" EndRatio="{Binding ClipEndRatio, Mode=TwoWay}" PlayheadRatio="{Binding PlaybackPosition}" IsPlaying="{Binding IsPlaying}" Duration="{Binding EditorDuration}" PlaceholderText="{Binding WaveformPlaceholder}" AutomationProperties.Name="Trim timeline" AutomationProperties.HelpText="Click to move the playhead. Drag the handles to trim. I and O set the start and end at the playhead; arrow keys nudge; Ctrl and scroll zooms." />
+                <local:WaveformControl Name="Waveform" Height="112" Classes.loading="{Binding IsWaveformLoading}" Samples="{Binding Waveform}" StartRatio="{Binding ClipStartRatio, Mode=TwoWay}" EndRatio="{Binding ClipEndRatio, Mode=TwoWay}" PlayheadRatio="{Binding PlaybackPosition}" IsPlaying="{Binding IsPlaying}" Duration="{Binding EditorDuration}" PlaceholderText="{Binding WaveformPlaceholder}" AutomationProperties.Name="Trim timeline" AutomationProperties.HelpText="Click to move the playhead. Drag the handles to trim. I and O set the start and end at the playhead; arrow keys nudge; Ctrl and scroll zooms." />
                 <Border Classes="skeleton" CornerRadius="10" IsVisible="{Binding IsWaveformLoading}" />
                 <StackPanel Orientation="Horizontal" Spacing="9" HorizontalAlignment="Center" VerticalAlignment="Center" IsVisible="{Binding IsWaveformLoading}">
                   <c:ProgressRing Width="16" Height="16" Thickness="2" Value="0" IsIndeterminate="{Binding AnimateEditorLoading}" />
@@ -284,7 +280,7 @@
                 <StackPanel>
                   <TextBlock Text="Start" Classes="label" />
                   <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
-                    <TextBox Name="StartTimeBox" Classes="mono" Text="{Binding StartTime, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" AutomationProperties.Name="Clip start time" ToolTip.Tip="hh:mm:ss.mmm, mm:ss or seconds · Enter applies" />
+                    <TextBox Name="StartTimeBox" Classes="mono" Text="{Binding StartTime, Mode=TwoWay, UpdateSourceTrigger=Explicit, Converter={StaticResource EditorTime}}" AutomationProperties.Name="Clip start time" ToolTip.Tip="Type 1:20.5, 1:20 or 80 (seconds) · Enter applies" />
                     <Button Name="MarkStartButton" Grid.Column="1" Classes="icon" Click="MarkStartAtPlayhead" ToolTip.Tip="Set start to the playhead · I" AutomationProperties.Name="Set start to playhead">
                       <c:StrokeIcon Data="{StaticResource IconSetStart}" Classes="warm" />
                     </Button>
@@ -293,7 +289,7 @@
                 <StackPanel Grid.Column="1">
                   <TextBlock Text="End" Classes="label" />
                   <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
-                    <TextBox Name="EndTimeBox" Classes="mono" Text="{Binding EndTime, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" AutomationProperties.Name="Clip end time" ToolTip.Tip="hh:mm:ss.mmm, mm:ss or seconds · Enter applies" />
+                    <TextBox Name="EndTimeBox" Classes="mono" Text="{Binding EndTime, Mode=TwoWay, UpdateSourceTrigger=Explicit, Converter={StaticResource EditorTime}}" AutomationProperties.Name="Clip end time" ToolTip.Tip="Type 1:20.5, 1:20 or 80 (seconds) · Enter applies" />
                     <Button Name="MarkEndButton" Grid.Column="1" Classes="icon" Click="MarkEndAtPlayhead" ToolTip.Tip="Set end to the playhead · O" AutomationProperties.Name="Set end to playhead">
                       <c:StrokeIcon Data="{StaticResource IconSetEnd}" Classes="warm" />
                     </Button>
@@ -328,7 +324,7 @@
               </Grid>
 
               <StackPanel Spacing="8">
-                <TextBlock Text="OUTPUT" Classes="overline" />
+                <TextBlock Text="Output" Classes="overline" />
                 <Grid Name="OutputTiles" ColumnDefinitions="*,*" ColumnSpacing="2" Margin="-4">
                   <RadioButton Name="VideoOutputTile" Classes="tile" GroupName="EditorOutput" IsEnabled="{Binding EditorHasVideo}" IsChecked="{Binding AudioOnly, Mode=TwoWay, Converter={StaticResource EditorChoice}, ConverterParameter=False}" ToolTip.Tip="{Binding VideoOutputTip}" ToolTip.ShowOnDisabled="True" AutomationProperties.Name="Video clip">
                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
@@ -352,7 +348,7 @@
               <!-- Fit for: one click aims the clip just under a sharing limit (an exact cut with a 5% size margin,
                    checked after export). Clicking the active one turns the size target off again. -->
               <StackPanel Name="FitForRow" Spacing="8">
-                <TextBlock Text="FIT FOR" Classes="overline" />
+                <TextBlock Text="Fit for" Classes="overline" />
                 <!-- Two by two: tidy in the narrow side column and the full-width layout alike. -->
                 <UniformGrid Columns="2" ColumnSpacing="8" RowSpacing="8">
                   <Button Name="FitDiscordButton" Classes="fit" Classes.selected="{Binding FitTargetMb, Converter={StaticResource EditorChoice}, ConverterParameter=10}" Command="{Binding FitForCommand}" CommandParameter="10" ToolTip.Tip="Under Discord's 10 MB free upload limit" AutomationProperties.Name="Fit for Discord, 10 MB">
@@ -388,22 +384,22 @@
                 <StackPanel Spacing="10">
                   <Grid ColumnDefinitions="*,Auto,*" ColumnSpacing="12" IsVisible="{Binding HasEstimatedSize}">
                     <StackPanel Spacing="3">
-                      <TextBlock Text="ORIGINAL" Classes="overline" />
+                      <TextBlock Text="Original" Classes="overline" />
                       <TextBlock Text="{Binding EstimateOriginalText}" Classes="h1 tabular" />
                     </StackPanel>
                     <c:StrokeIcon Grid.Column="1" Data="{StaticResource IconChevronRight}" Classes="faint" VerticalAlignment="Bottom" Margin="0,0,0,4" />
                     <StackPanel Grid.Column="2" Spacing="3">
-                      <TextBlock Text="ESTIMATED" Classes="overline" />
+                      <TextBlock Text="Estimated" Classes="overline" />
                       <TextBlock Name="EstimateOutput" Text="{Binding EstimateOutputText}" Classes="h1 tabular accent" />
                     </StackPanel>
                   </Grid>
                   <Grid ColumnDefinitions="Auto,*" ColumnSpacing="32" IsVisible="{Binding HasUnknownSize}">
                     <StackPanel Spacing="3">
-                      <TextBlock Text="ORIGINAL" Classes="overline" />
+                      <TextBlock Text="Original" Classes="overline" />
                       <TextBlock Text="{Binding EstimateOriginalText}" Classes="h1 tabular" />
                     </StackPanel>
                     <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Bottom">
-                      <TextBlock Text="CLIP SIZE" Classes="overline" />
+                      <TextBlock Text="Clip size" Classes="overline" />
                       <TextBlock Name="EstimateUnknown" Text="Known after export" Classes="muted strong" Margin="0,0,0,2" />
                     </StackPanel>
                   </Grid>
@@ -433,7 +429,7 @@
                 </Expander.Header>
                 <StackPanel Spacing="16" Margin="0,4,0,2">
                   <StackPanel Spacing="8">
-                    <TextBlock Text="CUT" Classes="overline" />
+                    <TextBlock Text="Cut" Classes="overline" />
                     <Grid Name="CutTiles" ColumnDefinitions="*,*" ColumnSpacing="2" Margin="-4">
                       <RadioButton Name="LosslessTile" Classes="tile" GroupName="EditorClipMode" IsChecked="{Binding ClipMode, Mode=TwoWay, Converter={StaticResource EditorChoice}, ConverterParameter=Lossless}" AutomationProperties.Name="Lossless clip">
                         <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
@@ -483,7 +479,7 @@
                     </Grid>
                   </Grid>
                   <StackPanel Spacing="8">
-                    <TextBlock Text="DETECTED ENCODERS" Classes="overline" />
+                    <TextBlock Text="Detected encoders" Classes="overline" />
                     <ItemsControl ItemsSource="{Binding Encoders}">
                       <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel ItemSpacing="6" LineSpacing="6" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                       <ItemsControl.ItemTemplate>

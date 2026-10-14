@@ -20,6 +20,8 @@ public interface IPlaybackService : INotifyPropertyChanged, IDisposable
     void Close();
     /// <summary>A short reason when the preview could not decode the open file; null while preview works.</summary>
     string? LastError => null;
+    /// <summary>Called once per screen refresh while playing, so the clock and sliders move smoothly between player reports.</summary>
+    void Tick() { }
 }
 
 public sealed class VlcPlaybackService : ObservableObject, IPlaybackService
@@ -36,6 +38,10 @@ public sealed class VlcPlaybackService : ObservableObject, IPlaybackService
     private bool _priming, _playWhenReady;
     private double? _pendingSeek, _seekTarget;
     private long _seekTicks;
+    // The player reports its time a few times a second; between reports Time extrapolates from the last one
+    // (capped, so a stalled player never runs ahead). That keeps the clock and sliders smooth at any refresh rate.
+    private const double MaxExtrapolationSeconds = .6;
+    private long _reportedMs = -1, _reportedTicks;
     private string? _lastError;
     // Captured on the UI thread when the first file opens; VLC raises events on its own threads,
     // which must never touch the static dispatcher accessor themselves.
@@ -49,12 +55,18 @@ public sealed class VlcPlaybackService : ObservableObject, IPlaybackService
     public MediaPlayer? NativePlayer => _player;
     // While the input is still being prepared, a Play request already counts as playing for the UI.
     public bool IsPlaying => _player is not null && (_priming ? _playWhenReady : _player.IsPlaying);
-    public double Position => _pendingSeek ?? _seekTarget ?? Math.Max(0, _player?.Position ?? 0);
+    public double Position => _pendingSeek ?? _seekTarget ?? (_player is { Length: > 0 } player ? Math.Clamp(Time.TotalMilliseconds / player.Length, 0, 1) : Math.Max(0, _player?.Position ?? 0));
     public TimeSpan Time
     {
         get
         {
             if ((_pendingSeek ?? _seekTarget) is { } target && _player is { Length: > 0 } player) return TimeSpan.FromMilliseconds(target * player.Length);
+            if (_player is { } playing && !_priming && _reportedMs >= 0 && playing.IsPlaying)
+            {
+                var elapsed = Math.Min(MaxExtrapolationSeconds, Stopwatch.GetElapsedTime(_reportedTicks).TotalSeconds) * Math.Max(.1f, playing.Rate);
+                var ms = _reportedMs + elapsed * 1000;
+                return TimeSpan.FromMilliseconds(playing.Length > 0 ? Math.Min(ms, playing.Length) : ms);
+            }
             return TimeSpan.FromMilliseconds(Math.Max(0, _player?.Time ?? 0));
         }
     }
@@ -86,7 +98,7 @@ public sealed class VlcPlaybackService : ObservableObject, IPlaybackService
         _media = new Media(_vlc, Path.GetFullPath(path), FromType.FromPath);
         _media.AddOption(":start-paused");
         _player.Media = _media;
-        _pendingSeek = null; _seekTarget = null;
+        _pendingSeek = null; _seekTarget = null; _reportedMs = -1;
         SetError(null);
         StartPaused(playWhenReady: false);
     }
@@ -172,9 +184,12 @@ public sealed class VlcPlaybackService : ObservableObject, IPlaybackService
         Raise();
     }
 
+    public void Tick() { if (!_disposed && !_priming && _player is { IsPlaying: true }) Raise(); }
+
     private void Refresh()
     {
         if (_disposed || _player is null) return;
+        _reportedMs = Math.Max(0, _player.Time); _reportedTicks = Stopwatch.GetTimestamp();
         // Drop the shown seek target once the player reports a time near it (or after a short hold).
         if (_pendingSeek is null && _seekTarget is { } target)
         {

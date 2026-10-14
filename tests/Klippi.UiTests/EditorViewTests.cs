@@ -272,6 +272,27 @@ public sealed class EditorViewTests
     }
 
     [AvaloniaFact]
+    public async Task Playing_refreshes_the_clock_every_frame_and_stops_when_paused()
+    {
+        var fake = new EditorFakes(); using var model = new MainViewModel(fake.Services);
+        var window = new MainWindow { DataContext = model, Width = 1180, Height = 900 }; window.Show();
+        try
+        {
+            await model.InitializeAsync(); model.ReducedMotion = true; await model.OpenEditorAsync("fixture.mp4"); window.UpdateLayout();
+            Assert.Equal("0:00", model.PlaybackClockText); Assert.Equal("0:10", model.DurationClockText);
+            model.PlayCommand.Execute(null);
+            for (var i = 0; i < 6; i++) { AvaloniaHeadlessPlatform.ForceRenderTimerTick(); Dispatcher.UIThread.RunJobs(); }
+            Assert.True(fake.Playback.Ticks >= 4, $"expected a tick per frame while playing, got {fake.Playback.Ticks}");
+            model.PlayCommand.Execute(null);
+            AvaloniaHeadlessPlatform.ForceRenderTimerTick(); Dispatcher.UIThread.RunJobs();
+            var paused = fake.Playback.Ticks;
+            for (var i = 0; i < 6; i++) { AvaloniaHeadlessPlatform.ForceRenderTimerTick(); Dispatcher.UIThread.RunJobs(); }
+            Assert.Equal(paused, fake.Playback.Ticks);
+        }
+        finally { model.CloseBehavior = CloseBehavior.Exit; window.Close(); }
+    }
+
+    [AvaloniaFact]
     public async Task Tiles_timecodes_and_keys_drive_the_view_model()
     {
         var fake = new EditorFakes(); using var model = new MainViewModel(fake.Services);
@@ -295,7 +316,12 @@ public sealed class EditorViewTests
             var box = window.FindNamed<TextBox>("StartTimeBox")!; var waveform = window.FindNamed<WaveformControl>("Waveform")!;
             box.Focus(); box.Text = "00:00:0"; Assert.Equal("00:00:00.000", model.StartTime); Assert.Equal(0, waveform.StartRatio);
             box.Text = "00:00:02.500"; Press(window, Key.Enter);
-            Assert.Equal("00:00:02.500", model.StartTime); Assert.Equal(.25, waveform.StartRatio, 3); Assert.Equal("00:00:07.500", model.SelectionDurationText);
+            Assert.Equal("00:00:02.500", model.StartTime); Assert.Equal(.25, waveform.StartRatio, 3); Assert.Equal("0:07.5", model.SelectionDurationText);
+            Assert.Equal("0:02.5", box.Text);
+            // The fields show tenths, but leaving one unchanged keeps the precise time behind it.
+            model.StartTime = "00:00:02.537"; Assert.Equal("0:02.5", box.Text);
+            box.Focus(); Press(window, Key.Enter); Assert.Equal("00:00:02.537", model.StartTime);
+            model.StartTime = "00:00:02.500";
             // Exact without compression has no reliable size: say so instead of showing a number.
             Assert.True(model.HasUnknownSize); Assert.False(model.HasEstimatedSize); Assert.Equal("2 MB", model.EstimateOriginalText);
             window.UpdateLayout();
@@ -999,6 +1025,8 @@ public sealed class EditorViewTests
 
     private sealed class RecordingPlayback : IPlaybackService
     {
+        public int Ticks { get; private set; }
+        public void Tick() => Ticks++;
         private string? _lastError;
         public event PropertyChangedEventHandler? PropertyChanged;
         public string? LastError { get => _lastError; set { _lastError = value; PropertyChanged?.Invoke(this, new(nameof(LastError))); } }

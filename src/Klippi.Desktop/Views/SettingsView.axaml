@@ -751,7 +751,7 @@
                 <StackPanel Spacing="10">
                   <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
                     <StackPanel Spacing="2" VerticalAlignment="Center">
-                      <TextBlock Text="SUPPORTED SITES" Classes="overline" />
+                      <TextBlock Text="Supported sites" Classes="overline" />
                       <TextBlock Text="Reads the installed downloader's own list. Support still depends on each site and video." Classes="caption muted" />
                     </StackPanel>
                     <Button Name="SupportedSitesButton" Grid.Column="1" Classes="small" Command="{Binding SupportedSitesCommand}" IsEnabled="{Binding CanRunSettingsTask}" VerticalAlignment="Center">
@@ -768,7 +768,7 @@
                 <StackPanel Spacing="10">
                   <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
                     <StackPanel Spacing="2" VerticalAlignment="Center">
-                      <TextBlock Text="DIAGNOSTICS" Classes="overline" />
+                      <TextBlock Text="Diagnostics" Classes="overline" />
                       <TextBlock Text="App, Windows and component versions, plus the last error in this session. Browser cookies, local paths and share secrets are removed." Classes="caption muted" />
                     </StackPanel>
                     <Button Name="CopyDiagnosticsButton" Grid.Column="1" Classes="small" Command="{Binding CopySettingsDiagnosticsCommand}" VerticalAlignment="Center" ToolTip.Tip="Copy the redacted report to the clipboard">
@@ -780,7 +780,7 @@
                 <Border Classes="divider" />
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
                   <StackPanel Spacing="2" VerticalAlignment="Center">
-                    <TextBlock Text="RECOVERY" Classes="overline" />
+                    <TextBlock Text="Recovery" Classes="overline" />
                     <TextBlock Text="If an update causes problems, go back to the previous verified components." Classes="caption muted" />
                   </StackPanel>
                   <Button Name="RestoreComponentsButton" Grid.Column="1" Classes="small" Command="{Binding RollbackComponentsCommand}" IsEnabled="{Binding CanRunSettingsTask}" VerticalAlignment="Center" ToolTip.Tip="Go back to the previous verified component versions">

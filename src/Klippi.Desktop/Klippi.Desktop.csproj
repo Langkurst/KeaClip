@@ -108,9 +108,16 @@
     <VlcWindowsX64ExcludeFiles Include="plugins\demux\libvobsub_plugin.dll" />
   </ItemGroup>
   <!-- Debug symbols are for developers, not for running KeaClip; SkiaSharp and HarfBuzzSharp alone ship about 100 MB of them. -->
+  <!-- A small first-generation GC budget (32 MB): .NET otherwise sizes it from the CPU cache, which on big desktop
+       CPUs holds tens of MB more memory than KeaClip needs while idle. -->
+  <ItemGroup>
+    <RuntimeHostConfigurationOption Include="System.GC.Gen0Size" Value="33554432" />
+  </ItemGroup>
   <Target Name="LeaveOutDebugSymbols" AfterTargets="ComputeResolvedFilesToPublishList">
     <ItemGroup>
       <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(Extension)' == '.pdb'" />
+      <!-- Debugger and crash-dump support from the runtime pack (about 6 MB): only a debugger attaching uses them. -->
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(Filename)%(Extension)' == 'createdump.exe' Or '%(Filename)%(Extension)' == 'mscordbi.dll' Or '%(Filename)%(Extension)' == 'Microsoft.DiaSymReader.Native.amd64.dll' Or $([System.String]::Copy('%(Filename)').StartsWith('mscordaccore'))" />
     </ItemGroup>
   </Target>
 </Project>

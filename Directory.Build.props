@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Deterministic>true</Deterministic>
-    <Version>0.3.2</Version>
+    <Version>0.4.0</Version>
     <Authors>Langkurst</Authors>
     <Company>KeaClip</Company>
     <NuGetAudit>true</NuGetAudit>

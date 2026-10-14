@@ -332,8 +332,10 @@
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
-  <!-- Headings and the wordmark: Bricolage Grotesque (OFL, Assets/Fonts), with Inter as the fallback. Body text stays Inter. -->
-  <FontFamily x:Key="DisplayFont">avares://KeaClip/Assets/Fonts#Bricolage Grotesque, avares://Avalonia.Fonts.Inter/Assets#Inter</FontFamily>
+  <!-- Headings and the wordmark: Bricolage Grotesque (OFL, Assets/Fonts). Body text: Windows 11's own Segoe UI Variable,
+       so KeaClip reads as a native Windows app (Segoe UI on Windows 10; the bundled Inter only as a last resort). -->
+  <FontFamily x:Key="DisplayFont">avares://KeaClip/Assets/Fonts#Bricolage Grotesque, Segoe UI Variable Display, Segoe UI</FontFamily>
+  <FontFamily x:Key="BodyFont">Segoe UI Variable Text, Segoe UI, avares://Avalonia.Fonts.Inter/Assets#Inter</FontFamily>
   <CornerRadius x:Key="ControlCornerRadius">6</CornerRadius>
   <CornerRadius x:Key="OverlayCornerRadius">8</CornerRadius>
   <CornerRadius x:Key="RadiusCard">10</CornerRadius>

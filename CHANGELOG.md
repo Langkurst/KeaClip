@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.0 - first public release (2026-10-15)
+
+- **Smoother Editor**: the clock reads like a player's (0:04 / 0:10, no milliseconds) and moves every screen refresh while playing (144 times a second on a 144 Hz screen); Start, End and Length show tenths while keeping the exact time behind them.
+- **Bigger video**: with a file open the Editor uses up to 1440px of width and the preview grows with the window (up to 900px tall); the file name and facts share one slim line.
+- **Native look**: Windows 11's own Segoe UI Variable for body text with the Bricolage headings, and calm sentence-case section labels.
+- **First run**: KeaClip fetches FFmpeg and yt-dlp by itself on its first start, with progress on the setup card.
+- **Clean uninstall**: removes the tools KeaClip downloaded; a tick box also removes settings and history. Videos are never touched. The setup window now matches KeaClip and offers Open KeaClip when done.
+- **Lighter**: about 6 MB smaller (no debugger files) and less idle memory.
+
 ## 0.3.2 - beta copies (2026-10-14)
 
 - Beta copies (`build/package.ps1 -Beta`) open a short **Beta test** checklist on first start: six things to try, Works or Problem for each, a notes box and **Save report**, which writes a plain-text report (answers, Windows version, screen scaling, last error, personal paths removed) to the Desktop to email to keaclip@proton.me. Normal builds show none of it.

@@ -23,7 +23,19 @@ public static class SelfTests
         Directory.CreateDirectory(Path.Combine(silentTarget, "Data")); File.WriteAllText(Path.Combine(silentTarget, "Data", "settings.json"), "silent settings");
         using (var stream = new MemoryStream(payload)) Program.SilentInstall(stream, silentTarget, source, new InstallEngine());
         Require(File.Exists(Path.Combine(silentTarget, "KeaClip.exe")) && File.ReadAllText(Path.Combine(silentTarget, "Data", "settings.json")) == "silent settings", "silent install and upgrade");
-        checks.Add("Silent install (winget) uses the default choices, and a repeat run upgrades and keeps Data"); var engine = new InstallEngine(); var choices = new InstallChoices(false, false, false); var target = Path.Combine(run, "App");
+        checks.Add("Silent install (winget) uses the default choices, and a repeat run upgrades and keeps Data");
+        // Uninstall clean-up: downloaded tools always go; settings and history only when asked; anything else stays.
+        var data = Path.Combine(run, "UserData"); Directory.CreateDirectory(data);
+        foreach (var part in new[] { "Components/yt-dlp/yt-dlp.exe", "Updates/0.9.0/KeaClip-0.9.0-Setup.exe", "TemporaryWorkspaces/owner.json" })
+        { var file = Path.Combine(data, part.Replace('/', Path.DirectorySeparatorChar)); Directory.CreateDirectory(Path.GetDirectoryName(file)!); File.WriteAllText(file, "x"); }
+        foreach (var file in new[] { "settings.json", "settings.json.backup", "history.json", "queue.json.corrupt-1", "holiday.mp4" }) File.WriteAllText(Path.Combine(data, file), "x");
+        InstallEngine.RemoveAppData(data, settingsToo: false);
+        Require(!Directory.Exists(Path.Combine(data, "Components")) && !Directory.Exists(Path.Combine(data, "Updates")) && !Directory.Exists(Path.Combine(data, "TemporaryWorkspaces")) && File.Exists(Path.Combine(data, "settings.json")) && File.Exists(Path.Combine(data, "holiday.mp4")), "uninstall removes downloaded tools only");
+        InstallEngine.RemoveAppData(data, settingsToo: true);
+        Require(Directory.EnumerateFileSystemEntries(data).Select(Path.GetFileName).SequenceEqual(["holiday.mp4"]), "uninstall removes settings when asked and keeps unknown files");
+        File.Delete(Path.Combine(data, "holiday.mp4")); InstallEngine.RemoveAppData(data, settingsToo: true);
+        Require(!Directory.Exists(data), "an emptied data folder is removed");
+        checks.Add("Uninstall removes downloaded tools, removes settings and history only when asked, and never touches other files"); var engine = new InstallEngine(); var choices = new InstallChoices(false, false, false); var target = Path.Combine(run, "App");
         using (var stream = new MemoryStream(payload)) engine.Install(stream, target, source, choices);
         Require(File.Exists(Path.Combine(target, "KeaClip.exe")) && !File.Exists(Path.Combine(target, "portable.marker")), "install files / installed data mode"); checks.Add("Verified install and portable marker exclusion");
         var receipt = InstallEngine.ReadReceipt(target); Require(receipt.Files.Count == 3 && !receipt.Protocol && !receipt.ProgramsEntry && receipt.Shortcuts.Count == 0, "receipt scope"); checks.Add("Receipt-owned files; no registry or shortcuts in test mode");

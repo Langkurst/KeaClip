@@ -6,7 +6,7 @@ using Klippi.Infrastructure.Updates;
 
 namespace Klippi.Desktop;
 
-public sealed record DesktopServices(IDownloadService Downloads, IMediaService Media, ISharingService Sharing, ILocalStore Store, IComponentService Components, IDesktopPlatform Platform, IPlaybackService Playback, string DataRoot, ITemporaryWorkspaceService? TemporaryWorkspaces = null, IUpdateService? Updates = null, IWatchLinkService? WatchLinks = null, string? RecordingsRoot = null, bool BetaTest = false, string? ReportsRoot = null)
+public sealed record DesktopServices(IDownloadService Downloads, IMediaService Media, ISharingService Sharing, ILocalStore Store, IComponentService Components, IDesktopPlatform Platform, IPlaybackService Playback, string DataRoot, ITemporaryWorkspaceService? TemporaryWorkspaces = null, IUpdateService? Updates = null, IWatchLinkService? WatchLinks = null, string? RecordingsRoot = null, bool BetaTest = false, string? ReportsRoot = null, bool AutoSetup = false)
 {
     public static DesktopServices CreateDefault()
     {
@@ -21,6 +21,6 @@ public sealed record DesktopServices(IDownloadService Downloads, IMediaService M
         var media = new MediaService(runner, components, temporaryWorkspaces);
         return new(new DownloadService(runner, components, temporaryWorkspaces), media, new FileKiwiSharingService(new HttpClient(new HttpClientHandler { AllowAutoRedirect = false }) { Timeout = Timeout.InfiniteTimeSpan }), new JsonLocalStore(root), components, new DesktopPlatform(), new VlcPlaybackService(), root, temporaryWorkspaces, updates,
             AppIdentity.WatchLinksIncluded ? WatchLinkService.Create(media, root) : null, Environment.GetFolderPath(Environment.SpecialFolder.MyVideos),
-            AppIdentity.IsBeta, Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory));
+            AppIdentity.IsBeta, Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), AutoSetup: true);
     }
 }

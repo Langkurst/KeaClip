@@ -22,14 +22,28 @@ internal static class Program
                 var request = UpgradeMode.Parse(args);
                 ApplicationConfiguration.Initialize(); Application.Run(new UpgradeForm(request)); return 0;
             }
-            if (args.Length == 3 && args[0] is "--uninstall-worker" or "--test-uninstall-worker")
+            if (args.Length is 3 or 4 && args[0] is "--uninstall-worker" or "--test-uninstall-worker" && (args.Length == 3 || args[3] == "--remove-settings"))
             {
+                var removeSettings = args.Length == 4;
                 var target = InstallEngine.SafeTarget(args[1]);
                 if (!int.TryParse(args[2], out var parentId) || parentId <= 0) throw new IOException("The uninstall worker request is invalid. Nothing was removed.");
                 try { using var parent = Process.GetProcessById(parentId); if (!parent.WaitForExit(30_000)) throw new IOException("The uninstall window has not exited. Close it and try again; nothing was removed."); } catch (ArgumentException) { }
                 var preserved = new InstallEngine(args[0] == "--test-uninstall-worker" ? new NoIntegration() : new WindowsIntegration()).Uninstall(target);
                 File.WriteAllText(Path.Combine(AppContext.BaseDirectory, "worker-result.json"), JsonSerializer.Serialize(new { Success = true, PreservedChangedFiles = preserved, DataPreserved = true }));
-                if (args[0] == "--uninstall-worker") { ApplicationConfiguration.Initialize(); MessageBox.Show("KeaClip application files were removed. Your settings and saved media were kept." + (preserved.Count > 0 ? $" {preserved.Count} changed application file(s) and their receipt were kept for you to review." : ""), "KeaClip removed", MessageBoxButtons.OK, MessageBoxIcon.Information); }
+                if (args[0] == "--uninstall-worker")
+                {
+                    // The app is gone; now the tools it downloaded (and, if asked, settings and history). A problem here
+                    // never undoes the uninstall: it is reported, and the leftovers are harmless.
+                    string? dataProblem = null;
+                    try { InstallEngine.RemoveAppData(InstallEngine.DefaultDataRoot, removeSettings); }
+                    catch (Exception error) when (error is IOException or UnauthorizedAccessException) { dataProblem = error.Message; }
+                    ApplicationConfiguration.Initialize();
+                    MessageBox.Show("KeaClip was removed, along with the tools it downloaded."
+                        + (removeSettings ? " Your settings and history were removed too." : " Your settings and history were kept, in case you install it again.")
+                        + " Your videos were not touched."
+                        + (dataProblem is null ? "" : " Some downloaded files could not be removed: " + dataProblem)
+                        + (preserved.Count > 0 ? $" {preserved.Count} app file(s) you changed were kept for you to review." : ""), "KeaClip removed", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
                 return 0;
             }
             ApplicationConfiguration.Initialize();
@@ -84,7 +98,7 @@ internal static class Program
     public static InstallChoices SilentChoices(string target) =>
         File.Exists(Path.Combine(target, InstallEngine.ReceiptName)) ? UpgradeMode.ChoicesFrom(InstallEngine.ReadReceipt(target)) : new InstallChoices(false, true, false);
     public static Stream Payload() => Assembly.GetExecutingAssembly().GetManifestResourceStream("KeaClip.Payload.zip") ?? throw new IOException("This setup build has no embedded app payload. Build it with the installer publish script.");
-    public static string LaunchUninstallWorker(string target, string? testWorkerRoot = null, bool testMode = false)
+    public static string LaunchUninstallWorker(string target, string? testWorkerRoot = null, bool testMode = false, bool removeSettings = false)
     {
         var workerRoot = testWorkerRoot is null ? Path.Combine(Path.GetTempPath(), "KeaClip.Uninstall.Workers", Guid.NewGuid().ToString("N")) : InstallEngine.SafeTarget(testWorkerRoot); InstallEngine.CheckLinks(workerRoot);
         if (Directory.Exists(workerRoot) && Directory.EnumerateFileSystemEntries(workerRoot).Any()) throw new IOException("The worker requires a dedicated empty folder.");
@@ -93,6 +107,7 @@ internal static class Program
         File.WriteAllText(Path.Combine(workerRoot, "worker-owned.json"), JsonSerializer.Serialize(new { ApplicationId = "KeaClip.Uninstall.Worker", ExecutableSha256 = InstallEngine.Hash(worker) }));
         var info = new ProcessStartInfo(worker) { UseShellExecute = false, CreateNoWindow = true, WindowStyle = ProcessWindowStyle.Hidden };
         info.ArgumentList.Add(testMode ? "--test-uninstall-worker" : "--uninstall-worker"); info.ArgumentList.Add(InstallEngine.SafeTarget(target)); info.ArgumentList.Add(Environment.ProcessId.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        if (removeSettings) info.ArgumentList.Add("--remove-settings");
         _ = Process.Start(info) ?? throw new IOException("The uninstall worker could not start.");
         return workerRoot;
     }

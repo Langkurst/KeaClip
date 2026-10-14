@@ -386,7 +386,16 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         StartUpdates();
         StartDownloaderUpdates();
         OpenBetaTestOnFirstStart();
+        StartFirstRunSetup();
     });
+    // First start of a real copy: fetch the media tools straight away (the setup card shows progress) instead of
+    // waiting for a click. Offline or failed, the card keeps its Prepare components button to try again.
+    // Start-up holds the maintenance lane, so the setup starts just after it finishes.
+    private void StartFirstRunSetup()
+    {
+        if (!_services.AutoSetup || ComponentsReady) return;
+        Dispatcher.UIThread.Post(() => { if (!_disposed && !ComponentsReady && !IsComponentTaskRunning && ProvisionCommand.CanExecute(null)) _ = ProvisionCommand.ExecuteAsync(null); }, DispatcherPriority.Background);
+    }
     // Each step is independent: one unreadable file must not stop the others loading.
     private async Task<bool> LoadStartupStateAsync(CancellationToken ct, List<string> problems)
     {

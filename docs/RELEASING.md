@@ -6,7 +6,7 @@ each one is a plain command, so a GitHub Actions workflow can run the same comma
 ## How the app finds and installs an update
 
 - **Feed.** The app reads `keaclip-update.json` from
-  `https://github.com/Langkurst/Klippi/releases/latest/download/keaclip-update.json`: the asset of
+  `https://github.com/Langkurst/KeaClip/releases/latest/download/keaclip-update.json`: the asset of
   that name on the newest published (not draft, not pre-release) GitHub release. Another https feed
   can be set as `UpdateFeedUrl` in `settings.json` (hand-edited; not shown in the app). Plain http,
   links with credentials and redirects to insecure addresses are refused.

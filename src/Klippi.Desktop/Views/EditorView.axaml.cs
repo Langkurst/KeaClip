@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Globalization;
 using Avalonia;
+using Klippi.Core;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
@@ -15,12 +16,14 @@ public sealed partial class EditorView : UserControl
 {
     // Content width (after page padding, capped at the page max width) where the export
     // panel moves beside the preview instead of below it.
-    private const double WideContentWidth = 940, PagePadding = 72, PageMaxWidth = 1040, OutputColumnWidth = 380, ColumnGap = 18;
-    // The preview shrinks (down to PreviewMinHeight) so the transport and the whole trim card
-    // (timeline, Start/End and length) stay on screen without scrolling.
-    private const double PreviewMinHeight = 180, PreviewMaxHeight = 460, PageTopPadding = 4, BottomBreathingRoom = 10;
+    private const double WideContentWidth = 940, PagePadding = 72, OutputColumnWidth = 380, ColumnGap = 18;
+    // The preview takes the room the window gives it (up to PreviewMaxHeight on big screens) and shrinks
+    // (down to PreviewMinHeight) so the transport and the whole trim card stay on screen without scrolling.
+    private const double PreviewMinHeight = 228, PreviewMaxHeight = 900, PageTopPadding = 4, BottomBreathingRoom = 10;
     private MainViewModel? _model;
-    private (bool Wide, bool HasEditor, bool HasOutput)? _layout;
+    private (bool Wide, bool HasEditor, bool HasOutput, double Width)? _layout;
+    private bool _playbackFrameRequested;
+    private double PageMaxWidth => _model?.PageMaxWidth ?? 1040;
 
     public EditorView()
     {
@@ -33,8 +36,8 @@ public sealed partial class EditorView : UserControl
         DragDrop.AddDragLeaveHandler(DropZone, OnDropZoneLeave);
         // The window performs the actual open; this only clears the highlight and never marks the event handled.
         DragDrop.AddDropHandler(DropZone, (_, _) => DropZone.Classes.Set("dragover", false));
-        StartTimeBox.KeyDown += CommitTimecodeOnEnter;
-        EndTimeBox.KeyDown += CommitTimecodeOnEnter;
+        StartTimeBox.KeyDown += CommitTimecodeOnEnter; StartTimeBox.LostFocus += (_, _) => CommitTimecode(StartTimeBox);
+        EndTimeBox.KeyDown += CommitTimecodeOnEnter; EndTimeBox.LostFocus += (_, _) => CommitTimecode(EndTimeBox);
         // Card heights change with wrapping and the selected file; the preview height follows them.
         PreviewCard.SizeChanged += (_, _) => FitPreview();
         TimelineCard.SizeChanged += (_, _) => FitPreview();
@@ -69,8 +72,11 @@ public sealed partial class EditorView : UserControl
     {
         switch (e.PropertyName)
         {
-            case nameof(MainViewModel.HasEditor) or nameof(MainViewModel.ShowShareCard):
+            case nameof(MainViewModel.HasEditor) or nameof(MainViewModel.ShowShareCard) or nameof(MainViewModel.PageMaxWidth):
                 UpdateLayoutMode();
+                break;
+            case nameof(MainViewModel.IsPlaying):
+                EnsurePlaybackFrames();
                 break;
             case nameof(MainViewModel.EditorSession):
                 // A newly opened file (even one of the same length, or the same file again) starts unzoomed.
@@ -109,7 +115,7 @@ public sealed partial class EditorView : UserControl
         var hasOutput = _model?.ShowShareCard == true;
         var content = Math.Min(PageMaxWidth, Bounds.Width - PagePadding);
         var wide = content >= WideContentWidth && hasOutput;
-        var layout = (wide, hasEditor, hasOutput);
+        var layout = (wide, hasEditor, hasOutput, PageMaxWidth);
         if (_layout == layout) return;
         _layout = layout;
         EditorLayout.ColumnDefinitions[1].Width = wide ? new GridLength(OutputColumnWidth) : new GridLength(0);
@@ -121,6 +127,21 @@ public sealed partial class EditorView : UserControl
         Grid.SetColumn(OutputColumn, wide ? 1 : 0);
         Grid.SetRow(OutputColumn, wide ? 0 : mainRow == 1 ? 0 : 1);
         Classes.Set("wide", wide);
+    }
+
+    // While playing, nudge the player once per screen refresh (144 times a second on a 144 Hz screen) so the clock
+    // and the fullscreen slider move as smoothly as the waveform's playhead. Stops by itself when playback stops.
+    private void EnsurePlaybackFrames()
+    {
+        if (_playbackFrameRequested || _model is not { IsPlaying: true } || !IsEffectivelyVisible || TopLevel.GetTopLevel(this) is not { } top) return;
+        _playbackFrameRequested = true;
+        top.RequestAnimationFrame(_ =>
+        {
+            _playbackFrameRequested = false;
+            if (_model is not { IsPlaying: true } model) return;
+            model.Playback.Tick();
+            EnsurePlaybackFrames();
+        });
     }
 
     private void OnDropZoneLeave(object? sender, DragEventArgs e)
@@ -167,13 +188,41 @@ public sealed partial class EditorView : UserControl
         => source is not null && source.GetSelfAndVisualAncestors().Any(v => v is Slider or ToggleSwitch or ToggleButton or ScrollBar);
 
     // Timecodes commit on focus loss (so typing never makes the trim handles jump); Enter commits too.
-    private static void CommitTimecodeOnEnter(object? sender, KeyEventArgs e)
+    private void CommitTimecodeOnEnter(object? sender, KeyEventArgs e)
     {
         if (e.Key != Key.Enter || sender is not TextBox box) return;
-        BindingOperations.GetBindingExpressionBase(box, TextBox.TextProperty)?.UpdateSource();
+        CommitTimecode(box);
         box.SelectAll();
         e.Handled = true;
     }
+
+    // The fields show tenths of a second; leaving one unchanged must not round the precise time behind it.
+    private void CommitTimecode(TextBox box)
+    {
+        if (_model is null) return;
+        var current = ReferenceEquals(box, StartTimeBox) ? _model.StartTime : _model.EndTime;
+        if (string.Equals(box.Text, EditorTimeConverter.Shown(current), StringComparison.Ordinal)) return;
+        BindingOperations.GetBindingExpressionBase(box, TextBox.TextProperty)?.UpdateSource();
+    }
+}
+
+/// <summary>
+/// Trim fields show m:ss.t (h:mm:ss.t for long files): tenths are precise enough to read and type, while the value
+/// behind them keeps full precision. Anything typed goes back as typed; the view model parses and checks it.
+/// </summary>
+public sealed class EditorTimeConverter : IValueConverter
+{
+    public static string Shown(string? timecode)
+    {
+        if (!MediaValidation.TryTimecode(timecode ?? "", out var time)) return timecode ?? "";
+        var tenths = TimeSpan.FromSeconds(Math.Round(Math.Max(0, time.TotalSeconds) * 10, MidpointRounding.AwayFromZero) / 10);
+        return tenths.TotalHours >= 1
+            ? string.Create(CultureInfo.InvariantCulture, $"{(int)tenths.TotalHours}:{tenths.Minutes:00}:{tenths.Seconds:00}.{tenths.Milliseconds / 100}")
+            : string.Create(CultureInfo.InvariantCulture, $"{(int)tenths.TotalMinutes}:{tenths.Seconds:00}.{tenths.Milliseconds / 100}");
+    }
+
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture) => Shown(value as string);
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => value as string ?? "";
 }
 
 /// <summary>

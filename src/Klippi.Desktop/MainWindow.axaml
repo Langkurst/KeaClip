@@ -87,9 +87,9 @@
 
     <!-- Header + pages -->
     <Grid Grid.Column="1" Grid.Row="1" RowDefinitions="Auto,*">
-      <!-- Same 1040px centred column as the pages, so the heading lines up on wide screens.
+      <!-- Same centred column as the page (1040px; wider in the Editor with a file open), so the heading lines up.
            Cancel operation shares the title's line. No explainer under the title: each page says what matters in place. -->
-      <Grid Name="PageHeader" ColumnDefinitions="*,Auto" ColumnSpacing="16" Margin="36,10,36,20" MaxWidth="1040">
+      <Grid Name="PageHeader" ColumnDefinitions="*,Auto" ColumnSpacing="16" Margin="36,10,36,20" MaxWidth="{Binding PageMaxWidth}">
         <TextBlock Name="PageTitleText" Text="{Binding PageTitle}" Classes="title" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
         <!-- Always in layout (only faded and disabled while idle), so the header never reflows when work starts.
              The negative margin centres the 36px button on the title line without making that line taller. -->

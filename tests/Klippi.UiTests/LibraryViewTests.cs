@@ -165,7 +165,8 @@ public sealed class LibraryViewTests
             var scroller = list.GetVisualDescendants().OfType<ScrollViewer>().First();
             Assert.True(scroller.Extent.Height > scroller.Viewport.Height * 10);
             Assert.True(list.Bounds.Height < 740);
-            list.ScrollIntoView(599); await Settle(window);
+            // Rows are measured as they appear, so the first jump can land a row short: settle, then jump again.
+            list.ScrollIntoView(599); await Settle(window); list.ScrollIntoView(599); await Settle(window);
             Assert.NotNull(list.ContainerFromIndex(599)); Assert.InRange(list.GetRealizedContainers().Count(), 1, 40);
             Capture(window, "library-long-scrolled-dark");
             model.Theme = "Light"; await Settle(window); Capture(window, "library-long-scrolled-light");

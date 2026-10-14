@@ -345,7 +345,7 @@
           <Border Name="OptionsCard" Classes="card enter e3">
             <StackPanel Spacing="18">
               <StackPanel Spacing="10">
-                <TextBlock Text="DOWNLOAD AS" Classes="overline" />
+                <TextBlock Text="Download as" Classes="overline" />
                 <!-- Kept for compatibility and automation; the tiles below are the visible control. -->
                 <ComboBox Name="DownloadModePicker" ItemsSource="{Binding DownloadModes}" SelectedItem="{Binding DownloadMode, Mode=TwoWay}" IsVisible="False" AutomationProperties.Name="Download as" />
                 <UniformGrid Name="ModeTiles" ColumnSpacing="2" RowSpacing="2" Margin="-4" KeyboardNavigation.TabNavigation="Once" AutomationProperties.Name="Download as">
@@ -528,7 +528,7 @@
                   <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="12">
                     <Border Classes="inset">
                       <StackPanel Spacing="12">
-                        <TextBlock Text="VIDEO FORMAT" Classes="overline" />
+                        <TextBlock Text="Video format" Classes="overline" />
                         <StackPanel IsEnabled="{Binding IsVideoDownload}">
                           <TextBlock Text="Video codec" Classes="label" />
                           <ComboBox Name="VideoCodecPicker" ItemsSource="{Binding VideoCodecs}" SelectedItem="{Binding VideoCodec, Mode=TwoWay}" SelectionChanged="OnFormatPickerChanged" AutomationProperties.Name="Video codec" />
@@ -549,7 +549,7 @@
                     </Border>
                     <Border Grid.Column="1" Classes="inset">
                       <StackPanel Spacing="12">
-                        <TextBlock Text="AUDIO" Classes="overline" />
+                        <TextBlock Text="Audio" Classes="overline" />
                         <StackPanel>
                           <TextBlock Text="Audio language (optional)" Classes="label" />
                           <TextBox Text="{Binding AudioLanguage, Mode=TwoWay}" PlaceholderText="Example: en" AutomationProperties.Name="Audio language" />
@@ -559,7 +559,7 @@
                     </Border>
                     <Border Grid.Row="1" Classes="inset">
                       <StackPanel Spacing="12">
-                        <TextBlock Text="SUBTITLES &amp; CAPTIONS" Classes="overline" />
+                        <TextBlock Text="Subtitles &amp; captions" Classes="overline" />
                         <StackPanel>
                           <TextBlock Text="Subtitle languages (optional)" Classes="label" />
                           <TextBox Text="{Binding SubtitleLanguages, Mode=TwoWay}" PlaceholderText="Example: en,en-US" AutomationProperties.Name="Subtitle languages" />
@@ -572,7 +572,7 @@
                     </Border>
                     <Border Grid.Row="1" Grid.Column="1" Classes="inset">
                       <StackPanel Spacing="12">
-                        <TextBlock Text="EMBEDDING" Classes="overline" />
+                        <TextBlock Text="Embedding" Classes="overline" />
                         <!-- WebM and WAV files can't carry a cover: the choice is kept but shown unavailable, with the reason. -->
                         <Grid Name="EmbedCoverRow" ColumnDefinitions="*,Auto" ColumnSpacing="10" Background="Transparent" IsEnabled="{Binding CanEmbedCover}" ToolTip.Tip="{Binding CoverArtTip}" ToolTip.ShowOnDisabled="True">
                           <TextBlock Name="EmbedCoverLabel" Text="Cover art / thumbnail" VerticalAlignment="Center" TextWrapping="Wrap" />
@@ -588,7 +588,7 @@
                     </Border>
                     <Border Grid.Row="2" Classes="inset">
                       <StackPanel Spacing="12">
-                        <TextBlock Text="BROWSER SIGN-IN" Classes="overline" />
+                        <TextBlock Text="Browser sign-in" Classes="overline" />
                         <StackPanel>
                           <TextBlock Text="Use a browser session (opt-in)" Classes="label" />
                           <ComboBox Name="BrowserPicker" ItemsSource="{Binding Browsers}" SelectedItem="{Binding Browser, Mode=TwoWay}" AutomationProperties.Name="Browser session" />
@@ -598,7 +598,7 @@
                     </Border>
                     <Border Grid.Row="2" Grid.Column="1" Classes="inset">
                       <StackPanel Spacing="12">
-                        <TextBlock Text="NAMING &amp; OVERWRITE" Classes="overline" />
+                        <TextBlock Text="Naming &amp; overwrite" Classes="overline" />
                         <StackPanel>
                           <TextBlock Text="Naming template (optional)" Classes="label" />
                           <TextBox Text="{Binding NamingTemplate, Mode=TwoWay}" PlaceholderText="Blank for safe, friendly names" AutomationProperties.Name="Naming template" />

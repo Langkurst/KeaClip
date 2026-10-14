@@ -56,12 +56,16 @@ public sealed partial class MainViewModel
     public string PlaybackClockText => ClockText(Playback.Time, EditorDuration);
     public string DurationClockText => ClockText(EditorDuration, EditorDuration);
 
+    /// <summary>Pages are a 1040px column; with a file open the Editor widens so the video gets a proper size on big screens.</summary>
+    public double PageMaxWidth => IsEditor && HasEditor ? 1440 : 1040;
+
+    // Whole seconds: the clock reads like a player's (m:ss, or h:mm:ss for long files). The trim fields keep tenths.
     private static string ClockText(TimeSpan time, TimeSpan duration)
     {
         if (time < TimeSpan.Zero) time = TimeSpan.Zero;
         return duration.TotalHours >= 1
-            ? string.Create(CultureInfo.InvariantCulture, $"{(int)time.TotalHours}:{time.Minutes:00}:{time.Seconds:00}.{time.Milliseconds:000}")
-            : string.Create(CultureInfo.InvariantCulture, $"{(int)time.TotalMinutes}:{time.Seconds:00}.{time.Milliseconds:000}");
+            ? string.Create(CultureInfo.InvariantCulture, $"{(int)time.TotalHours}:{time.Minutes:00}:{time.Seconds:00}")
+            : string.Create(CultureInfo.InvariantCulture, $"{(int)time.TotalMinutes}:{time.Seconds:00}");
     }
     public bool EditorHasVideo => _probe?.HasVideo ?? false;
     public bool EditorHasAudio => _probe?.HasAudio ?? false;
@@ -241,7 +245,7 @@ public sealed partial class MainViewModel
     // ===== Selection =====
 
     public bool IsSelectionValid => _probe is not null && MediaValidation.TryTimecode(StartTime, out var start) && MediaValidation.TryTimecode(EndTime, out var end) && start >= TimeSpan.Zero && end > start && end <= _probe.Duration + TimeSpan.FromMilliseconds(1);
-    public string SelectionDurationText => IsSelectionValid && MediaValidation.TryTimecode(StartTime, out var start) && MediaValidation.TryTimecode(EndTime, out var end) ? MediaValidation.Timecode(end - start) : "Check range";
+    public string SelectionDurationText => IsSelectionValid && MediaValidation.TryTimecode(StartTime, out var start) && MediaValidation.TryTimecode(EndTime, out var end) ? Views.EditorTimeConverter.Shown(MediaValidation.Timecode(end - start)) : "Check range";
 
     // ===== Mute =====
 
@@ -520,6 +524,7 @@ public sealed partial class MainViewModel
 
     private void OnEditorStateChanged(object? sender, PropertyChangedEventArgs e)
     {
+        if (e.PropertyName is nameof(HasEditor) or nameof(SelectedTab)) OnPropertyChanged(nameof(PageMaxWidth));
         switch (e.PropertyName)
         {
             case nameof(HasEditor) or nameof(EditorSummary):

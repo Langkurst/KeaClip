@@ -9,6 +9,8 @@
     builds the transform group); transitions use TransformOperations. Never mix both on
     one element: keyframe targets must not also get a TransformOperations RenderTransform.
   -->
+  <!-- Body font for every window and popup (menus, tooltips, dropdowns); FontFamily inherits from there. -->
+  <Style Selector=":is(TopLevel)"><Setter Property="FontFamily" Value="{StaticResource BodyFont}" /></Style>
 
   <!-- ===== Base & typography ===== -->
   <Style Selector="Window">
@@ -26,7 +28,8 @@
   <Style Selector="TextBlock.faint"><Setter Property="Foreground" Value="{DynamicResource AppFaint}" /></Style>
   <Style Selector="TextBlock.caption"><Setter Property="FontSize" Value="12" /><Setter Property="LineHeight" Value="17" /></Style>
   <Style Selector="TextBlock.label"><Setter Property="Foreground" Value="{DynamicResource AppMuted}" /><Setter Property="FontSize" Value="12" /><Setter Property="FontWeight" Value="Medium" /><Setter Property="Margin" Value="0,0,0,6" /></Style>
-  <Style Selector="TextBlock.overline"><Setter Property="Foreground" Value="{DynamicResource AppFaint}" /><Setter Property="FontSize" Value="11" /><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="LetterSpacing" Value="0.8" /></Style>
+  <!-- Small section labels: sentence case in the muted ink, not shouted capitals. -->
+  <Style Selector="TextBlock.overline"><Setter Property="Foreground" Value="{DynamicResource AppMuted}" /><Setter Property="FontSize" Value="12.5" /><Setter Property="FontWeight" Value="SemiBold" /></Style>
   <Style Selector="TextBlock.accent"><Setter Property="Foreground" Value="{DynamicResource AppAccent}" /></Style>
   <Style Selector="TextBlock.danger"><Setter Property="Foreground" Value="{DynamicResource AppDanger}" /></Style>
   <Style Selector="TextBlock.tabular"><Setter Property="FontFeatures" Value="+tnum" /></Style>
