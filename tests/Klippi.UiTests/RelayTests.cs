@@ -198,10 +198,11 @@ public sealed class RelayTests
         return relay;
     }
 
-    private static Task ForwardFromAnotherThread(string argument) => Task.Run(() =>
+    // Awaited, not blocked on: eight blocked pool threads starved the listener on slow CI machines until forwards timed out.
+    private static Task ForwardFromAnotherThread(string argument) => Task.Run(async () =>
     {
         using var secondary = new SingleInstanceRelay(); Assert.False(secondary.IsOwner);
-        secondary.ForwardAsync(argument).GetAwaiter().GetResult();
+        await secondary.ForwardAsync(argument);
     });
 
     private static async Task SendRaw(string name, string argument)
@@ -216,7 +217,7 @@ public sealed class RelayTests
     private static async Task Until(Func<bool> condition)
     {
         var limit = Stopwatch.StartNew();
-        while (!condition() && limit.Elapsed < TimeSpan.FromSeconds(6)) await Task.Delay(20);
+        while (!condition() && limit.Elapsed < TimeSpan.FromSeconds(15)) await Task.Delay(20);
         Assert.True(condition(), "The current-user relay did not deliver within its bounded deadline.");
     }
 

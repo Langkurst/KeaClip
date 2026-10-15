@@ -67,7 +67,9 @@ internal sealed class SingleInstanceRelay : IDisposable
         try
         {
             await using var pipe=new NamedPipeClientStream(".",_name,PipeDirection.Out,PipeOptions.Asynchronous|PipeOptions.CurrentUserOnly);
-            using var timeout=new CancellationTokenSource(TimeSpan.FromSeconds(3));
+            // The open window handles one link at a time; a busy or slow PC (several links opened at once while it
+            // starts) must not lose one, and this second copy is invisible while it waits.
+            using var timeout=new CancellationTokenSource(TimeSpan.FromSeconds(10));
             await pipe.ConnectAsync(timeout.Token); await pipe.WriteAsync(Encoding.UTF8.GetBytes(validated),timeout.Token);
         }
         catch(Exception ex)when(ex is IOException or OperationCanceledException or TimeoutException){ }
