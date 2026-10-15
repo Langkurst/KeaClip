@@ -12,10 +12,16 @@ public sealed partial class MainViewModel
     public const string IssuesUrl = "https://github.com/Langkurst/KeaClip/issues/new";
     // Browsers and mail apps cut long links; the details stay well under that.
     private const int MaxReportDetails = 1800;
-    private IRelayCommand? _reportOnGitHub, _reportByEmail, _suggestIdea;
+    private IRelayCommand? _reportOnGitHub, _suggestIdea;
+    private IAsyncRelayCommand? _reportByEmail;
 
     public IRelayCommand ReportOnGitHubCommand => _reportOnGitHub ??= new RelayCommand(() => TryAction(() => _services.Platform.OpenUri(BugReportGitHubUri())));
-    public IRelayCommand ReportByEmailCommand => _reportByEmail ??= new RelayCommand(() => TryAction(() => _services.Platform.OpenUri(BugReportEmailUri())));
+    // The address is always copied first: plenty of PCs have no email app, and then the link opens nothing.
+    public IAsyncRelayCommand ReportByEmailCommand => _reportByEmail ??= new AsyncRelayCommand(async () =>
+    {
+        await CopyToClipboardAsync(AppIdentity.ContactEmail, AppIdentity.ContactEmail + " is copied. If no email app opened, paste it into your email (Gmail, Outlook and so on).");
+        TryAction(() => _services.Platform.OpenUri(BugReportEmailUri()));
+    });
     public IRelayCommand SuggestIdeaCommand => _suggestIdea ??= new RelayCommand(() => TryAction(() => _services.Platform.OpenUri(IdeaGitHubUri())));
 
     public static Uri IdeaGitHubUri() => new(IssuesUrl + "?labels=idea&title=" + Uri.EscapeDataString("Idea: ")

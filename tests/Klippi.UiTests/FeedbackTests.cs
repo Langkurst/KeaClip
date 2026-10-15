@@ -34,7 +34,7 @@ public sealed class FeedbackTests
     }
 
     [AvaloniaFact]
-    public void The_feedback_menu_opens_each_choice()
+    public async Task The_feedback_menu_opens_each_choice()
     {
         var fake = new UiFakes();
         using var model = new MainViewModel(fake.Services);
@@ -46,8 +46,9 @@ public sealed class FeedbackTests
             Assert.True(button.IsVisible);
             var menu = Assert.IsType<MenuFlyout>(button.Flyout);
             var items = menu.Items.OfType<MenuItem>().ToArray();
-            Assert.Equal(["Report a problem", "Suggest an idea", "Email keaclip@proton.me"], items.Select(item => item.Header as string));
-            model.ReportOnGitHubCommand.Execute(null); model.SuggestIdeaCommand.Execute(null); model.ReportByEmailCommand.Execute(null);
+            Assert.Equal(["Report a problem", "Suggest an idea", "Email keaclip@proton.me", "Copy the email address"], items.Select(item => item.Header as string));
+            model.ReportOnGitHubCommand.Execute(null); model.SuggestIdeaCommand.Execute(null); await model.ReportByEmailCommand.ExecuteAsync(null);
+            Assert.Equal("keaclip@proton.me", fake.Platform.Clipboard); // copied too, for PCs without an email app
             Assert.Equal(["https", "https", "mailto"], fake.Platform.OpenedUris.Select(uri => uri.Scheme));
         }
         finally { model.CloseBehavior = CloseBehavior.Exit; window.Close(); }

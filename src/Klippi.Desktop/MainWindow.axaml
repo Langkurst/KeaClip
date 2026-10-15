@@ -89,7 +89,8 @@
                   <MenuFlyout Placement="TopEdgeAlignedRight">
                     <MenuItem Name="ReportOnGitHubItem" Header="Report a problem" Command="{Binding ReportOnGitHubCommand}" ToolTip.Tip="Opens a ready-made report on GitHub (free account). Personal folder names are left out." />
                     <MenuItem Name="SuggestIdeaItem" Header="Suggest an idea" Command="{Binding SuggestIdeaCommand}" ToolTip.Tip="Opens a new idea on GitHub (free account)." />
-                    <MenuItem Name="ReportByEmailItem" Header="Email keaclip@proton.me" Command="{Binding ReportByEmailCommand}" ToolTip.Tip="For problems, ideas or questions. Your email app opens with the details filled in." />
+                    <MenuItem Name="ReportByEmailItem" Header="Email keaclip@proton.me" Command="{Binding ReportByEmailCommand}" ToolTip.Tip="For problems, ideas or questions. Copies the address and opens your email app, if you have one." />
+                    <MenuItem Name="CopyEmailItem" Header="Copy the email address" Command="{Binding CopyContactEmailCommand}" />
                   </MenuFlyout>
                 </Button.Flyout>
               </Button>

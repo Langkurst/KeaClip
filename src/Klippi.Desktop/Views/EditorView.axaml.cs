@@ -212,14 +212,7 @@ public sealed partial class EditorView : UserControl
 /// </summary>
 public sealed class EditorTimeConverter : IValueConverter
 {
-    public static string Shown(string? timecode)
-    {
-        if (!MediaValidation.TryTimecode(timecode ?? "", out var time)) return timecode ?? "";
-        var tenths = TimeSpan.FromSeconds(Math.Round(Math.Max(0, time.TotalSeconds) * 10, MidpointRounding.AwayFromZero) / 10);
-        return tenths.TotalHours >= 1
-            ? string.Create(CultureInfo.InvariantCulture, $"{(int)tenths.TotalHours}:{tenths.Minutes:00}:{tenths.Seconds:00}.{tenths.Milliseconds / 100}")
-            : string.Create(CultureInfo.InvariantCulture, $"{(int)tenths.TotalMinutes}:{tenths.Seconds:00}.{tenths.Milliseconds / 100}");
-    }
+    public static string Shown(string? timecode) => MainViewModel.TrimFieldText(timecode);
 
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture) => Shown(value as string);
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => value as string ?? "";

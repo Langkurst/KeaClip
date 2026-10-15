@@ -67,6 +67,16 @@ public sealed partial class MainViewModel
     /// <summary>Pages are a 1040px column; with a file open the Editor widens so the video gets a proper size on big screens.</summary>
     public double PageMaxWidth => IsEditor && HasEditor ? 1440 : 1040;
 
+    /// <summary>Trim fields and the selection length: m:ss.t (h:mm:ss.t for long files), rounded to tenths.</summary>
+    public static string TrimFieldText(string? timecode)
+    {
+        if (!MediaValidation.TryTimecode(timecode ?? "", out var time)) return timecode ?? "";
+        var tenths = TimeSpan.FromSeconds(Math.Round(Math.Max(0, time.TotalSeconds) * 10, MidpointRounding.AwayFromZero) / 10);
+        return tenths.TotalHours >= 1
+            ? string.Create(CultureInfo.InvariantCulture, $"{(int)tenths.TotalHours}:{tenths.Minutes:00}:{tenths.Seconds:00}.{tenths.Milliseconds / 100}")
+            : string.Create(CultureInfo.InvariantCulture, $"{(int)tenths.TotalMinutes}:{tenths.Seconds:00}.{tenths.Milliseconds / 100}");
+    }
+
     // Whole seconds: the clock reads like a player's (m:ss, or h:mm:ss for long files). The trim fields keep tenths.
     private static string ClockText(TimeSpan time, TimeSpan duration)
     {
@@ -253,7 +263,7 @@ public sealed partial class MainViewModel
     // ===== Selection =====
 
     public bool IsSelectionValid => _probe is not null && MediaValidation.TryTimecode(StartTime, out var start) && MediaValidation.TryTimecode(EndTime, out var end) && start >= TimeSpan.Zero && end > start && end <= _probe.Duration + TimeSpan.FromMilliseconds(1);
-    public string SelectionDurationText => IsSelectionValid && MediaValidation.TryTimecode(StartTime, out var start) && MediaValidation.TryTimecode(EndTime, out var end) ? Views.EditorTimeConverter.Shown(MediaValidation.Timecode(end - start)) : "Check range";
+    public string SelectionDurationText => IsSelectionValid && MediaValidation.TryTimecode(StartTime, out var start) && MediaValidation.TryTimecode(EndTime, out var end) ? TrimFieldText(MediaValidation.Timecode(end - start)) : "Check range";
 
     // ===== Mute =====
 
