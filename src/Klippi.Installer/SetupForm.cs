@@ -26,7 +26,7 @@ public sealed class SetupForm : Form
     {
         _uninstall = uninstall;
         Text = uninstall ? "Uninstall KeaClip" : "Install KeaClip";
-        ClientSize = new(560, uninstall ? 330 : 400); FormBorderStyle = FormBorderStyle.FixedDialog; MaximizeBox = false; MinimizeBox = true;
+        ClientSize = new(560, uninstall ? 330 : 470); FormBorderStyle = FormBorderStyle.FixedDialog; MaximizeBox = false; MinimizeBox = true;
         StartPosition = FormStartPosition.CenterScreen; Font = new("Segoe UI", 10); BackColor = Background; ForeColor = Text1;
         if (Environment.ProcessPath is { } self) Icon = Icon.ExtractAssociatedIcon(self);
         var panel = new FlowLayoutPanel { Dock = DockStyle.Fill, Padding = new(30, 26, 30, 20), FlowDirection = FlowDirection.TopDown, WrapContents = false, AutoScroll = true };
@@ -36,7 +36,8 @@ public sealed class SetupForm : Form
         {
             Text = uninstall
                 ? "Removes the app and the tools it downloaded (FFmpeg, yt-dlp, Deno). Your videos and other saved media are never touched."
-                : "Installs just for you: no administrator rights, nothing added to Windows startup. Your settings stay when you update.",
+                : "Installs just for you: no administrator rights, nothing added to Windows startup. Your settings stay when you update.\n\n"
+                  + "On its first start KeaClip downloads its free helper tools (yt-dlp, FFmpeg, Deno), and once a day it checks GitHub for updates. You can turn the daily check off in Settings. No tracking, no ads.",
             AutoSize = true, MaximumSize = new(490, 0), ForeColor = Muted, Margin = new(0, 0, 0, 18),
         });
         panel.Controls.Add(new Label { Text = uninstall ? "Installed in" : "Install to", AutoSize = true, Font = new("Segoe UI Semibold", 9.5f), Margin = new(0, 0, 0, 4) });

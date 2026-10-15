@@ -338,7 +338,7 @@
               <Grid Classes="row" ColumnDefinitions="*,Auto">
                 <StackPanel>
                   <TextBlock Text="Check for updates automatically" Classes="row-title" />
-                  <TextBlock Text="Once a day KeaClip checks for a new version. Nothing installs until you press Update now." Classes="caption muted" />
+                  <TextBlock Text="Once a day KeaClip checks for a new version of itself and of its download tool. Nothing installs until you press Update now, except the download tool, which keeps up with websites. Turn this off and KeaClip only goes online when you ask." Classes="caption muted" TextWrapping="Wrap" />
                 </StackPanel>
                 <ToggleSwitch Name="CheckForUpdatesSwitch" Grid.Column="1" IsChecked="{Binding CheckForUpdates, Mode=TwoWay}" AutomationProperties.Name="Check for updates automatically" />
               </Grid>

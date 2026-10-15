@@ -1,0 +1,48 @@
+name: Release build
+# Builds a release from the public source on GitHub's own machines: verify, package, installer self-test and the
+# update feed. Run it by hand (Actions > Release build > Run workflow) or by pushing a v* tag. The files are kept as
+# the run's artifact; publishing the GitHub release stays a manual step.
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: '10.0.x'
+      - name: Build and test
+        shell: pwsh
+        run: ./build/verify.ps1
+      - name: Package and self-test the installer
+        shell: pwsh
+        run: |
+          $out = & ./build/package.ps1
+          $zip = ($out | Select-String 'Portable archive: (.*)').Matches[0].Groups[1].Value
+          $folder = ($out | Select-String 'Portable folder: (.*)').Matches[0].Groups[1].Value
+          ./build/installer-publish.ps1 -Payload $zip -SelfTest
+          $version = ([xml](Get-Content Directory.Build.props -Raw)).Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1
+          $release = "artifacts/release-$version"
+          New-Item -ItemType Directory -Force $release | Out-Null
+          Copy-Item artifacts/installer/KeaClip.Setup.exe "$release/KeaClip-$version-Setup.exe"
+          Copy-Item $zip "$release/KeaClip-$version-win-x64.zip"
+          Copy-Item (Join-Path $folder "KeaClip-$version-source.zip") $release
+          "RELEASE_DIR=$release" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "RELEASE_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+      # Signing (SignPath Foundation) is added here once the project is approved: the unsigned installer and zip are
+      # uploaded to SignPath, signed after a manual approval, and the signed files replace them before the feed is
+      # written. Until then releases are unsigned.
+      - name: Write the update feed and checksums
+        shell: pwsh
+        run: ./build/release-manifest.ps1 -Installer "$env:RELEASE_DIR/KeaClip-$env:RELEASE_VERSION-Setup.exe" -Portable "$env:RELEASE_DIR/KeaClip-$env:RELEASE_VERSION-win-x64.zip" -Notes "KeaClip $env:RELEASE_VERSION" -OutputDirectory $env:RELEASE_DIR
+      - uses: actions/upload-artifact@v4
+        with:
+          name: keaclip-release
+          path: ${{ env.RELEASE_DIR }}
+          if-no-files-found: error

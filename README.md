@@ -46,8 +46,8 @@ Until KeaClip is code-signed, Windows may say "Windows protected your PC". Click
 KeaClip has no accounts, ads, analytics or tracking. Your files never leave your PC unless you share them. KeaClip only goes online to:
 
 - download what you paste in, and its preview picture;
-- fetch its free helper tools (yt-dlp, FFmpeg, Deno) from their official sites the first time, then check once a day for a newer yt-dlp, because websites change often;
-- check this page once a day for a new KeaClip version (you can turn this off in Settings);
+- fetch its free helper tools (yt-dlp, FFmpeg, Deno) from their official sites the first time, then check once a day for a newer yt-dlp, because websites change often (both daily checks stop if you turn off **Check for updates automatically** in Settings, About);
+- check this page once a day for a new KeaClip version;
 - upload a file to file.kiwi when you press Share, or after each download if you turn on Share when finished.
 ## Your responsibility
 
@@ -62,6 +62,10 @@ KeaClip isn't affiliated with or endorsed by YouTube, Discord, file.kiwi or any 
 KeaClip is free and always will be. If it saved you some time, you can [shout me a coffee on Ko-fi](https://ko-fi.com/keaclip). It helps me keep making it better.
 
 Found a bug or want something added? Open an issue, or email [keaclip@proton.me](mailto:keaclip@proton.me).
+
+## Code signing
+
+KeaClip has applied for free code signing from SignPath Foundation; see the [code signing policy](https://langkurst.github.io/KeaClip/code-signing.html). Until then, releases are unsigned and listed with their SHA-256 checksums.
 
 ## Licence
 

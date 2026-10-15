@@ -28,6 +28,17 @@ public sealed class DownloaderUpdateTests
     }
 
     [AvaloniaFact]
+    public async Task Turning_off_automatic_updates_also_stops_the_downloader_check()
+    {
+        var components = new QuietComponents { NextVersion = "2026.10.10" };
+        using var model = new MainViewModel(new UiFakes().Services with { Components = components }) { DownloaderCheckDelay = TimeSpan.FromHours(1) };
+        await model.InitializeAsync();
+        model.CheckForUpdates = false;
+        Assert.False(await model.QuietlyUpdateDownloaderAsync(CancellationToken.None));
+        Assert.Equal(0, components.Updates);
+    }
+
+    [AvaloniaFact]
     public async Task An_idle_app_picks_up_a_newer_downloader_quietly()
     {
         var components = new QuietComponents { NextVersion = "2026.10.10" };

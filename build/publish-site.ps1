@@ -8,7 +8,7 @@ $ErrorActionPreference = 'Stop'
 $root = (Resolve-Path -LiteralPath (Split-Path -Parent $PSScriptRoot)).Path
 $stage = Join-Path $root 'artifacts\site'
 New-Item -ItemType Directory -Path (Join-Path $stage 'images'), (Join-Path $stage 'fonts') -Force | Out-Null
-Copy-Item -LiteralPath (Join-Path $root 'web\site\index.html') -Destination $stage -Force
+foreach ($page in 'index.html', 'code-signing.html') { Copy-Item -LiteralPath (Join-Path $root "web\site\$page") -Destination $stage -Force }
 foreach ($image in 'kea-128.png', 'keaclip-demo.gif', 'editor-dark.png') { Copy-Item -LiteralPath (Join-Path $root "docs\images\$image") -Destination (Join-Path $stage 'images') -Force }
 foreach ($font in 'BricolageGrotesque-SemiBold.ttf', 'BricolageGrotesque-Bold.ttf', 'BricolageGrotesque-OFL.txt') { Copy-Item -LiteralPath (Join-Path $root "src\Klippi.Desktop\Assets\Fonts\$font") -Destination (Join-Path $stage 'fonts') -Force }
 # Served as plain files; no Jekyll processing.

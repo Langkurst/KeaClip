@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en-NZ">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KeaClip code signing policy</title>
+<meta name="description" content="How KeaClip's Windows releases are built and signed.">
+<link rel="icon" href="images/kea-128.png">
+<style>
+:root { --bg: #F3F0E8; --surface: #FBFAF6; --border: #E2DED2; --text: #22241D; --muted: #5C5E54; --olive: #5A6A16; }
+@media (prefers-color-scheme: dark) { :root { --bg: #12130F; --surface: #1B1C17; --border: #2E3027; --text: #ECE9DF; --muted: #B9B6A3; --olive: #B7C45C; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.65 "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif; }
+a { color: var(--olive); }
+main { max-width: 760px; margin: 0 auto; padding: 32px 20px 56px; }
+h1 { font-size: 34px; margin: 18px 0 8px; line-height: 1.2; }
+h2 { font-size: 22px; margin: 32px 0 8px; }
+.note { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; color: var(--muted); }
+ul { padding-left: 22px; }
+</style>
+</head>
+<body>
+<main>
+  <a href="./">&larr; KeaClip</a>
+  <h1>Code signing policy</h1>
+  <p class="note">Status: KeaClip has applied for free code signing. Releases are unsigned until it's approved; this page says so as soon as that changes. Every release lists its SHA-256 checksums in <code>SHA256SUMS.txt</code> either way.</p>
+
+  <p>Free code signing provided by <a href="https://signpath.io">SignPath.io</a>, certificate by <a href="https://signpath.org">SignPath Foundation</a>.</p>
+
+  <h2>What gets signed</h2>
+  <p>The Windows installer (<code>KeaClip-&lt;version&gt;-Setup.exe</code>) and the KeaClip program files in each release on the <a href="https://github.com/Langkurst/KeaClip/releases">releases page</a>. Only files built from this project's own source are signed. The free helper tools KeaClip downloads on first start (yt-dlp, FFmpeg, Deno) are signed or published by their own makers, not by this project.</p>
+
+  <h2>How releases are built</h2>
+  <p>Every signed release is built by GitHub Actions from the public source code in <a href="https://github.com/Langkurst/KeaClip">github.com/Langkurst/KeaClip</a>, using the build scripts in that repository. Each signing request is approved by hand.</p>
+
+  <h2>Team roles</h2>
+  <ul>
+    <li>Committers and reviewers: <a href="https://github.com/Langkurst">Langkurst</a></li>
+    <li>Approvers: <a href="https://github.com/Langkurst">Langkurst</a></li>
+  </ul>
+  <p>All team members use multi-factor authentication for GitHub and SignPath.</p>
+
+  <h2>Privacy</h2>
+  <p>KeaClip has no tracking or analytics, and your files never leave your PC unless you share them. The things it does online by itself (fetching its helper tools once, and a daily update check you can turn off) are listed in its <a href="https://github.com/Langkurst/KeaClip#privacy">privacy section</a>.</p>
+
+  <h2>Contact</h2>
+  <p>Questions or a security concern: <a href="mailto:keaclip@proton.me">keaclip@proton.me</a>.</p>
+</main>
+</body>
+</html>

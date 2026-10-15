@@ -41,7 +41,8 @@ public sealed partial class MainViewModel
     /// <summary>One quiet check; true when a newer yt-dlp was installed. Skipped while anything is busy or downloading.</summary>
     internal async Task<bool> QuietlyUpdateDownloaderAsync(CancellationToken token)
     {
-        if (_disposed || !ComponentsReady || IsBusy || HasActiveQueue) return false;
+        // "Check for updates automatically" covers the helper tools too: off means KeaClip stays offline on its own.
+        if (_disposed || !CheckForUpdates || !ComponentsReady || IsBusy || HasActiveQueue) return false;
         var before = DownloaderVersion();
         try { await _services.Components.UpdateDownloaderAsync(null, token); }
         catch (OperationCanceledException) when (token.IsCancellationRequested) { throw; }
