@@ -315,7 +315,7 @@ public sealed class ComponentReliabilityTests
         f.Network.PublishMediaTools(good[0], good[1]);
         var progress = new EngineProgress();
         await f.Service.ProvisionAsync(progress).WaitAsync(TimeSpan.FromSeconds(20));
-        Assert.Equal(new[] { FakeNetwork.MediaTools + ".sha256", FakeNetwork.MediaTools }, f.Network.Requests.Select(u => u.AbsoluteUri));
+        Assert.Equal(new[] { FakeNetwork.MediaToolsRelease, FakeNetwork.MediaTools }, f.Network.Requests.Select(u => u.AbsoluteUri));
         Assert.Contains(progress.Values, p => p.Stage == JobStage.Finished && p.Message == "All set. Paste a link to start.");
         var ffmpeg = f.Service.Find("ffmpeg"); var ffprobe = f.Service.Find("ffprobe");
         Assert.StartsWith(Path.Combine(f.Root, "versions") + Path.DirectorySeparatorChar, ffmpeg);
@@ -540,7 +540,7 @@ public sealed class ComponentReliabilityTests
             var path = Path.GetFullPath(Path.Combine(root, relative));
             Directory.CreateDirectory(Path.GetDirectoryName(path)!); File.WriteAllText(path, content);
             Runner.Versions[path] = version;
-            var source = name switch { "yt-dlp" => "https://github.com/yt-dlp/yt-dlp/releases/download/test/yt-dlp.exe", "deno" => "https://github.com/denoland/deno/releases/download/test/deno-x86_64-pc-windows-msvc.zip", _ => "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip" };
+            var source = name switch { "yt-dlp" => "https://github.com/yt-dlp/yt-dlp/releases/download/test/yt-dlp.exe", "deno" => "https://github.com/denoland/deno/releases/download/test/deno-x86_64-pc-windows-msvc.zip", _ => FakeNetwork.MediaTools };
             return new(name, relative, version, Sha(File.ReadAllBytes(path)), source, "Fixture licence record");
         }
         public ManagedComponent Ship(string name, string version, string content, string? id = null)
@@ -596,7 +596,8 @@ public sealed class ComponentReliabilityTests
     {
         public const string DownloaderRelease = "https://api.github.com/repos/yt-dlp/yt-dlp/releases/latest";
         public const string DenoRelease = "https://api.github.com/repos/denoland/deno/releases/latest";
-        public const string MediaTools = "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip";
+        public const string MediaToolsRelease = "https://api.github.com/repos/GyanD/codexffmpeg/releases/latest";
+        public const string MediaTools = "https://github.com/GyanD/codexffmpeg/releases/download/7.1.1/ffmpeg-7.1.1-essentials_build.zip";
         private readonly ConcurrentDictionary<string, Func<HttpContent>> _files = new(StringComparer.Ordinal);
         private readonly ConcurrentDictionary<string, string> _releases = new(StringComparer.Ordinal);
         public ConcurrentQueue<Uri> Requests { get; } = new();
@@ -613,7 +614,11 @@ public sealed class ComponentReliabilityTests
         {
             const string folder = "ffmpeg-7.1.1-essentials_build/";
             var zip = Zip((folder + "bin/ffmpeg.exe", ffmpeg), (folder + "bin/ffprobe.exe", ffprobe), (folder + "LICENSE", "GPL-3.0"u8.ToArray()));
-            _files[MediaTools + ".sha256"] = () => new StringContent(Sha(zip).ToLowerInvariant());
+            // The same release also carries a .7z and a full build; only the essentials zip may be picked.
+            _releases[MediaToolsRelease] = JsonSerializer.Serialize(new { assets = new[] {
+                new { name = "ffmpeg-7.1.1-essentials_build.7z", browser_download_url = MediaTools[..^3] + "7z", digest = "sha256:" + new string('0', 64) },
+                new { name = "ffmpeg-7.1.1-full_build.zip", browser_download_url = MediaTools.Replace("essentials", "full"), digest = "sha256:" + new string('0', 64) },
+                new { name = "ffmpeg-7.1.1-essentials_build.zip", browser_download_url = MediaTools, digest = "sha256:" + Sha(zip) } } });
             _files[MediaTools] = () => new ByteArrayContent(zip);
         }
         private static byte[] Zip(params (string Name, byte[] Body)[] files)

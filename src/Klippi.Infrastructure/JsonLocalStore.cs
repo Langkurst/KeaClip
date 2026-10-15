@@ -29,7 +29,16 @@ public sealed class JsonLocalStore(string dataRoot) : ILocalStore
         return LockedAsync(async () => { await WriteAsync(SettingsFile, settings, cancellationToken); return true; }, cancellationToken);
     }
     public Task<IReadOnlyList<HistoryEntry>> LoadHistoryAsync(CancellationToken cancellationToken = default) => LockedAsync<IReadOnlyList<HistoryEntry>>(async () => (await ReadHistoryAsync(cancellationToken)).OrderByDescending(x => x.Date).ToArray(), cancellationToken);
-    public Task AddHistoryAsync(HistoryEntry entry, CancellationToken cancellationToken = default) => UpdateHistoryAsync(list => { list.RemoveAll(x => x.Id == entry.Id); list.Add(entry); }, cancellationToken);
+    public Task AddHistoryAsync(HistoryEntry entry, CancellationToken cancellationToken = default) => UpdateHistoryAsync(list => { list.RemoveAll(x => x.Id == entry.Id); list.Add(entry); KeepNewest(list); }, cancellationToken);
+    // The whole file is rewritten on every download, so with "keep forever" it is capped at the newest records; that is
+    // years of normal use, and the media files themselves are never touched.
+    internal const int MaxHistoryEntries = 5000;
+    private static void KeepNewest(List<HistoryEntry> list)
+    {
+        if (list.Count <= MaxHistoryEntries) return;
+        list.Sort((a, b) => b.Date.CompareTo(a.Date));
+        list.RemoveRange(MaxHistoryEntries, list.Count - MaxHistoryEntries);
+    }
     public Task RemoveHistoryAsync(string id, CancellationToken cancellationToken = default) => UpdateHistoryAsync(list => list.RemoveAll(x => x.Id == id), cancellationToken);
     public Task ClearHistoryAsync(CancellationToken cancellationToken = default) => UpdateHistoryAsync(list => list.Clear(), cancellationToken);
     public Task PruneHistoryAsync(int? retentionDays, CancellationToken cancellationToken = default)

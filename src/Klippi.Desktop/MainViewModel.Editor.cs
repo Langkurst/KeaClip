@@ -474,10 +474,10 @@ public sealed partial class MainViewModel
 
     // ===== Detailed waveform =====
 
-    // OpenEditorAsync draws a 600-point overview. Longer files get a second, detailed pass in the
-    // background (about 12 points per second, up to the service limit) so zooming shows real
-    // transients; the overview stays usable meanwhile and the view keeps its zoom when it arrives.
-    // Any other operation (export, share, another open) cancels it first, so it never competes
+    // OpenEditorAsync already asks for the full detail (OpenWaveformPoints), so this background pass
+    // only runs when that came back with clearly fewer points or failed: it tries once more for the
+    // detailed waveform (about 12 points per second, up to the service limit) so zooming shows real
+    // transients, and the view keeps its zoom when it arrives. Any other operation (export, share, another open) cancels it first, so it never competes
     // with real work or holds the file open while an export deletes the original; it resumes
     // once that operation ends and the file is still open.
     private void StartDetailedWaveform()

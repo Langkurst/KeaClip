@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.1 (2026-10-15)
+
+- **Feedback email**: choosing Email also copies keaclip@proton.me, since many PCs have no email app; there's a Copy the email address item too.
+- **Safer first setup**: FFmpeg now comes from its maker's official GitHub mirror, checked against the checksum GitHub itself recorded (like yt-dlp and Deno), instead of a checksum stored next to the file on the same website.
+- **History stays quick**: if history is kept forever, KeaClip keeps the newest 5,000 records so saving stays fast. Your videos are never touched.
+
 ## 0.4.0 - first public release (2026-10-15)
 
 - **Smoother Editor**: the clock reads like a player's (0:04 / 0:10, no milliseconds) and moves every screen refresh while playing (144 times a second on a 144 Hz screen); Start, End and Length show tenths while keeping the exact time behind them.

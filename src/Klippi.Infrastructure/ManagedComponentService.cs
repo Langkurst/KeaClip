@@ -339,7 +339,9 @@ public sealed partial class ManagedComponentService(IProcessRunner runner, strin
         {
             "yt-dlp" => source.AbsoluteUri.StartsWith("https://github.com/yt-dlp/yt-dlp/releases/download/", StringComparison.Ordinal),
             "deno" => source.AbsoluteUri.StartsWith("https://github.com/denoland/deno/releases/download/", StringComparison.Ordinal),
-            _ => source.AbsoluteUri == "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip"
+            // Copies set up before 0.4.1 came from gyan.dev directly.
+            _ => source.AbsoluteUri.StartsWith("https://github.com/" + FfmpegRepository + "/releases/download/", StringComparison.Ordinal)
+                || source.AbsoluteUri == "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip"
         };
         if (!trustedSource)
             throw new MediaOperationException("The previous component source was not recognized. Current components remain active.");
@@ -430,11 +432,12 @@ public sealed partial class ManagedComponentService(IProcessRunner runner, strin
             if (!downloaderOnly && Missing(Resolution("ffmpeg")))
             {
                 progress?.Report(new(JobStage.Downloading, Message: "Getting media tools…"));
-                const string source = "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip";
-                var hash = (await _http.GetStringAsync(source + ".sha256", token).ConfigureAwait(false)).Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()
-                    ?? throw new MediaOperationException("The publisher did not supply a component checksum. Installation was stopped." + KeptActive);
+                // Gyan's official GitHub mirror of the gyan.dev release build (the same file). Its checksum is the one
+                // GitHub computed on upload, so a tampered web server cannot swap the file and its checksum together.
+                var asset = await GithubAssetAsync(FfmpegRepository, IsFfmpegEssentialsZip, token).ConfigureAwait(false);
+                var source = asset.Url;
                 var zip = Path.Combine(staging, "ffmpeg.zip");
-                await DownloadVerifiedAsync(source, hash, zip, progress, token).ConfigureAwait(false);
+                await DownloadVerifiedAsync(source, asset.Hash, zip, progress, token).ConfigureAwait(false);
                 var extract = Path.Combine(staging, "ffmpeg-extracted"); ExtractVerifiedZip(zip, extract);
                 foreach (var name in new[] { "ffmpeg", "ffprobe" })
                 {
@@ -603,13 +606,17 @@ public sealed partial class ManagedComponentService(IProcessRunner runner, strin
         if (Path.IsPathRooted(relative) || !path.StartsWith(_root + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)) throw new MediaOperationException("Component path is not valid.");
         return path;
     }
-    private async Task<(string Url, string Hash)> GithubAssetAsync(string repository, string name, CancellationToken token)
+    private const string FfmpegRepository = "GyanD/codexffmpeg";
+    // "ffmpeg-9.0.2-essentials_build.zip": the release's version is in the name, and the same release also has .7z and full builds.
+    private static bool IsFfmpegEssentialsZip(string name) => name.StartsWith("ffmpeg-", StringComparison.Ordinal) && name.EndsWith("-essentials_build.zip", StringComparison.Ordinal);
+    private Task<(string Url, string Hash)> GithubAssetAsync(string repository, string name, CancellationToken token) => GithubAssetAsync(repository, candidate => candidate == name, token);
+    private async Task<(string Url, string Hash)> GithubAssetAsync(string repository, Func<string, bool> isWanted, CancellationToken token)
     {
         if (!_http.DefaultRequestHeaders.UserAgent.Any()) _http.DefaultRequestHeaders.UserAgent.ParseAdd("KeaClip/" + AppIdentity.Version);
         const string incomplete = "The publisher's release information was incomplete or not ready yet. Try again later." + KeptActive;
         using var release = await _http.GetFromJsonAsync<JsonDocument>("https://api.github.com/repos/" + repository + "/releases/latest", token).ConfigureAwait(false) ?? throw new MediaOperationException(incomplete);
         if (release.RootElement.ValueKind != JsonValueKind.Object || !release.RootElement.TryGetProperty("assets", out var assets) || assets.ValueKind != JsonValueKind.Array) throw new MediaOperationException(incomplete);
-        var matches = assets.EnumerateArray().Where(x => x.ValueKind == JsonValueKind.Object && Text(x, "name") == name).ToList();
+        var matches = assets.EnumerateArray().Where(x => x.ValueKind == JsonValueKind.Object && Text(x, "name") is { } name && isWanted(name)).ToList();
         if (matches.Count != 1) throw new MediaOperationException(incomplete);
         var url = Text(matches[0], "browser_download_url");
         if (url is null || !url.StartsWith("https://github.com/" + repository + "/releases/download/", StringComparison.Ordinal)) throw new MediaOperationException("Component download source was not recognized.");

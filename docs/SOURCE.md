@@ -26,7 +26,7 @@ The public download does **not** contain FFmpeg, yt-dlp or Deno. The first time 
 
 | Component | Downloaded from | Licence |
 | --- | --- | --- |
-| FFmpeg and FFprobe ("essentials" build) | https://www.gyan.dev/ffmpeg/builds/ (source: https://github.com/FFmpeg/FFmpeg) | GPL-3.0-or-later |
+| FFmpeg and FFprobe ("essentials" build) | https://www.gyan.dev/ffmpeg/builds/, downloaded from its official GitHub mirror https://github.com/GyanD/codexffmpeg (source: https://github.com/FFmpeg/FFmpeg) | GPL-3.0-or-later |
 | yt-dlp (standalone Windows executable) | https://github.com/yt-dlp/yt-dlp/releases | yt-dlp source Unlicense; the executable bundles GPL-3.0-or-later parts |
 | Deno | https://github.com/denoland/deno/releases | MIT, with third-party notices |
 
