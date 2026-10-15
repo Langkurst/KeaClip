@@ -49,6 +49,7 @@ KeaClip has no accounts, ads, analytics or tracking. Your files never leave your
 - fetch its free helper tools (yt-dlp, FFmpeg, Deno) from their official sites the first time, then check once a day for a newer yt-dlp, because websites change often (both daily checks stop if you turn off **Check for updates automatically** in Settings, About);
 - check this page once a day for a new KeaClip version;
 - upload a file to file.kiwi when you press Share, or after each download if you turn on Share when finished.
+
 ## Your responsibility
 
 KeaClip is a tool, like a browser or a video player. It doesn't host, store or share anything itself, and the developer can't see or control what you save or share. You're responsible for using it legally: only download or share what you own or have permission to, and follow the copyright law where you live and the terms of the sites you use (for example YouTube and file.kiwi). KeaClip never gets around DRM, paywalls or other copy protection.
@@ -63,9 +64,9 @@ KeaClip is free and always will be. If it saved you some time, you can [shout me
 
 Found a bug or want something added? Open an issue, or email [keaclip@proton.me](mailto:keaclip@proton.me).
 
-## Code signing
+## Code signing policy
 
-KeaClip has applied for free code signing from SignPath Foundation; see the [code signing policy](https://langkurst.github.io/KeaClip/code-signing.html). Until then, releases are unsigned and listed with their SHA-256 checksums.
+KeaClip has applied for free code signing from SignPath.io, with a certificate by SignPath Foundation. The full [code signing policy](https://langkurst.github.io/KeaClip/code-signing.html) lists who builds and approves each release. Until it's approved, releases are unsigned and listed with their SHA-256 checksums.
 
 ## Licence
 
