@@ -23,7 +23,7 @@ $installerPath = (Resolve-Path -LiteralPath $Installer).Path
 $sha = (Get-FileHash -Algorithm SHA256 -LiteralPath $installerPath).Hash
 $folder = Join-Path $Output "manifests\l\Langkurst\KeaClip\$version"
 New-Item -ItemType Directory -Path $folder -Force | Out-Null
-$id = 'Langkurst.KeaClip'; $schema = '1.9.0'
+$id = 'Langkurst.KeaClip'; $schema = '1.12.0'
 $utf8 = [Text.UTF8Encoding]::new($false)
 function Write-Manifest([string]$name, [string]$text) { [IO.File]::WriteAllText((Join-Path $folder $name), $text.Replace("`r`n", "`n"), $utf8) }
 

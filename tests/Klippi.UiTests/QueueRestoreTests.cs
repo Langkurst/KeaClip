@@ -75,14 +75,17 @@ public sealed class QueueRestoreTests : IDisposable
     [AvaloniaFact]
     public async Task Finished_jobs_leave_the_saved_queue()
     {
-        var fake = new UiFakes();
+        // The download is held open until the queue has been saved with it, so the test never depends on how fast
+        // the machine is (a quick fake download could finish before the first save).
+        var fake = new UiFakes(); fake.Downloads.DownloadGate = new(TaskCreationOptions.RunContinuationsAsynchronously);
         using var model = new MainViewModel(fake.Services);
         await model.InitializeAsync();
         model.DownloadDirectory = _folder;
         model.Url = "https://example.com/video"; await model.QueueDownloadAsync(false);
+        await ShareWhenFinishedTests.WaitUntil(() => { lock (fake.Store.QueueSaves) return fake.Store.QueueSaves.Any(saved => saved.Jobs.Count == 1); });
+        fake.Downloads.DownloadGate.SetResult();
         await ShareWhenFinishedTests.WaitUntil(() => model.Queue.Count == 1 && model.Queue[0].IsFinished);
         await ShareWhenFinishedTests.WaitUntil(() => fake.Store.Queue is { Jobs.Count: 0 });
-        lock (fake.Store.QueueSaves) Assert.Contains(fake.Store.QueueSaves, saved => saved.Jobs.Count == 1);
     }
 
     [AvaloniaFact]
