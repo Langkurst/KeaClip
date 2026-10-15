@@ -66,7 +66,7 @@ Found a bug or want something added? Open an issue, or email [keaclip@proton.me]
 
 ## Code signing policy
 
-KeaClip has applied for free code signing from SignPath.io, with a certificate by SignPath Foundation. The full [code signing policy](https://langkurst.github.io/KeaClip/code-signing.html) lists who builds and approves each release. Until it's approved, releases are unsigned and listed with their SHA-256 checksums.
+Releases are unsigned for now and listed with their SHA-256 checksums. KeaClip will reapply for free code signing from SignPath.io (certificate by SignPath Foundation) once the project is better known. The full [code signing policy](https://langkurst.github.io/KeaClip/code-signing.html) lists who builds and approves each release.
 
 ## Licence
 
