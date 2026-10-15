@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en-NZ">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KeaClip: save, trim and share video clips</title>
+<meta name="description" content="A free Windows app to save a video from a link, cut out the good bit and send it. Fits clips under Discord's limit in one click. No ads, no account, no tracking.">
+<link rel="icon" href="images/kea-128.png">
+<meta property="og:title" content="KeaClip">
+<meta property="og:description" content="Save a video. Cut the good bit. Send it. Free for Windows, no ads, no account.">
+<meta property="og:image" content="images/editor-dark.png">
+<style>
+@font-face { font-family: "Bricolage Grotesque"; font-weight: 600; src: url("fonts/BricolageGrotesque-SemiBold.ttf") format("truetype"); font-display: swap; }
+@font-face { font-family: "Bricolage Grotesque"; font-weight: 700; src: url("fonts/BricolageGrotesque-Bold.ttf") format("truetype"); font-display: swap; }
+:root {
+  --bg: #F3F0E8; --surface: #FBFAF6; --border: #E2DED2; --text: #22241D; --muted: #5C5E54;
+  --olive: #5A6A16; --olive-soft: #E8EBD2; --orange: #B8491A; --orange-hover: #A13F16; --feather: #1D6E80;
+  --shadow: 0 1px 2px rgba(34,36,29,.06), 0 8px 24px rgba(34,36,29,.06);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #12130F; --surface: #1B1C17; --border: #2E3027; --text: #ECE9DF; --muted: #B9B6A3;
+    --olive: #B7C45C; --olive-soft: #262A16; --orange: #F07A3C; --orange-hover: #F38C55; --feather: #5DB8C8;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.6 "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif; }
+a { color: var(--olive); }
+h1, h2, h3, .wordmark { font-family: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif; line-height: 1.15; letter-spacing: -.01em; }
+.wrap { max-width: 1040px; margin: 0 auto; padding: 0 20px; }
+header.top { display: flex; align-items: center; justify-content: space-between; padding: 22px 0; }
+.brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text); }
+.brand img { width: 40px; height: 40px; border-radius: 10px; }
+.wordmark { font-size: 24px; font-weight: 700; }
+.k { color: var(--olive); } .e { color: var(--feather); } .a { color: var(--orange); }
+nav.top a { color: var(--muted); text-decoration: none; margin-left: 20px; font-size: 15px; }
+nav.top a:hover { color: var(--text); }
+.hero { padding: 48px 0 24px; text-align: center; }
+.hero h1 { font-size: clamp(36px, 6vw, 60px); margin: 0 0 14px; }
+.hero p.lead { font-size: 20px; color: var(--muted); max-width: 620px; margin: 0 auto 28px; }
+.btn { display: inline-flex; align-items: center; gap: 10px; padding: 14px 26px; border-radius: 10px; font-weight: 600; text-decoration: none; font-size: 17px; transition: background-color .15s, transform .15s; }
+.btn.primary { background: var(--orange); color: #fff; }
+.btn.primary:hover { background: var(--orange-hover); transform: translateY(-1px); }
+.btn.quiet { color: var(--text); border: 1px solid var(--border); background: var(--surface); }
+.btn.quiet:hover { border-color: var(--muted); }
+.actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.small { font-size: 14px; color: var(--muted); margin-top: 14px; }
+.shot { margin: 40px auto 0; max-width: 960px; border-radius: 14px; overflow: hidden; border: 1px solid var(--border); box-shadow: var(--shadow); background: var(--surface); }
+.shot img { display: block; width: 100%; height: auto; }
+section { padding: 56px 0 8px; }
+section h2 { font-size: clamp(26px, 3.6vw, 34px); margin: 0 0 10px; }
+section p.intro { color: var(--muted); margin: 0 0 26px; max-width: 640px; }
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 22px; }
+.card h3 { font-size: 20px; margin: 0 0 6px; }
+.card p { margin: 0; color: var(--muted); font-size: 16px; }
+.num { display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--olive-soft); color: var(--olive); font-weight: 700; font-size: 15px; margin-bottom: 12px; }
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: center; }
+.split img { width: 100%; border-radius: 12px; border: 1px solid var(--border); box-shadow: var(--shadow); }
+ul.ticks { list-style: none; padding: 0; margin: 0; }
+ul.ticks li { padding-left: 28px; position: relative; margin: 0 0 10px; }
+ul.ticks li::before { content: ""; position: absolute; left: 4px; top: .55em; width: 9px; height: 5px; border-left: 2px solid var(--olive); border-bottom: 2px solid var(--olive); transform: rotate(-45deg); }
+details { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; margin: 0 0 10px; }
+summary { cursor: pointer; font-weight: 600; }
+details p { color: var(--muted); margin: 10px 0 2px; }
+.support { text-align: center; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 36px 20px; margin-top: 56px; }
+.support p { color: var(--muted); max-width: 560px; margin: 0 auto 20px; }
+footer { padding: 40px 0 48px; color: var(--muted); font-size: 14px; }
+footer p { margin: 0 0 8px; max-width: 760px; }
+@media (max-width: 760px) {
+  .cards, .split { grid-template-columns: 1fr; }
+  nav.top { display: none; }
+  .hero { padding-top: 24px; }
+}
+@media (prefers-reduced-motion: reduce) { .btn { transition: none; } .btn.primary:hover { transform: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="./"><img src="images/kea-128.png" alt=""><span class="wordmark"><span class="k">K</span><span class="e">e</span><span class="a">a</span>Clip</span></a>
+    <nav class="top"><a href="#how">How it works</a><a href="#games">Game clips</a><a href="#questions">Questions</a><a href="https://github.com/Langkurst/KeaClip">Source</a></nav>
+  </header>
+
+  <div class="hero">
+    <h1>Save a video. Cut the good bit. Send it.</h1>
+    <p class="lead">KeaClip is a free Windows app for video clips. Paste a link to save it, trim it to the part that matters, and shrink it to fit Discord or email in one click.</p>
+    <div class="actions">
+      <a class="btn primary" href="https://github.com/Langkurst/KeaClip/releases/latest">Download for Windows</a>
+      <a class="btn quiet" href="https://github.com/Langkurst/KeaClip">See the code</a>
+    </div>
+    <p class="small">Free · Windows 10 and 11 · No ads, no account, no tracking</p>
+    <div class="shot"><img src="images/keaclip-demo.gif" alt="Pasting a link into KeaClip, downloading it and trimming the clip" width="960" height="600"></div>
+  </div>
+
+  <section id="how">
+    <h2>Three steps, no fuss</h2>
+    <p class="intro">Everything happens on your PC. Your original file is kept unless you say otherwise.</p>
+    <div class="cards">
+      <div class="card"><span class="num">1</span><h3>Save</h3><p>Paste a link from YouTube or hundreds of other sites. Get the video, just the sound, or only the part you want.</p></div>
+      <div class="card"><span class="num">2</span><h3>Shape</h3><p>Drag the orange ends to keep the good bit. Make it smaller, pull out the audio, or turn it into a GIF.</p></div>
+      <div class="card"><span class="num">3</span><h3>Share</h3><p>One click fits a clip under Discord's or email's limit. Or send a private link that stops working after a day.</p></div>
+    </div>
+  </section>
+
+  <section id="games">
+    <div class="split">
+      <div>
+        <h2>Made for game clips</h2>
+        <p class="intro">KeaClip spots new recordings from Xbox Game Bar, NVIDIA, AMD and OBS in your Videos folder, so your best moment is one click away.</p>
+        <ul class="ticks">
+          <li>Open your latest clip straight from the Editor</li>
+          <li>Trim it with a smooth, frame-accurate timeline</li>
+          <li><strong>Fit for Discord</strong> makes it small enough to play right in the chat</li>
+          <li>Runs quietly in the background while you play</li>
+        </ul>
+      </div>
+      <img src="images/editor-dark.png" alt="The KeaClip editor with a game clip open and the trim timeline below" loading="lazy">
+    </div>
+  </section>
+
+  <section id="questions">
+    <h2>Questions</h2>
+    <details><summary>Is it really free?</summary><p>Yes. No trial, no watermark, no ads, no account. It's open source under the GPL. If it helps you, you can leave a tip on Ko-fi, but you never have to.</p></details>
+    <details><summary>Windows says "Windows protected your PC". Is it safe?</summary><p>That warning shows for new apps that aren't code-signed yet. Click <em>More info</em>, then <em>Run anyway</em>. The full source code is public, and every download comes with a checksum so you can check the file wasn't changed.</p></details>
+    <details><summary>What does it download when it first starts?</summary><p>A few free helper tools that do the heavy lifting: yt-dlp (reads video links), FFmpeg (cuts and converts) and Deno (helps with some sites). They come straight from their official sites, once. Uninstalling KeaClip removes them again.</p></details>
+    <details><summary>Does it send my data anywhere?</summary><p>No. There's no tracking or analytics, and your files never leave your PC unless you share them. KeaClip only goes online to download what you paste, fetch and update its helper tools, check for a new KeaClip version (you can turn that off), and upload a file when you press Share.</p></details>
+    <details><summary>How long do share links last?</summary><p>Links made with file.kiwi are free to download for 24 hours (12 hours for 10 to 20 GB, 6 hours above that). <a href="https://file.kiwi/api#free-download-hours-by-file-size">Details from file.kiwi</a>.</p></details>
+    <details><summary>Mac or Linux?</summary><p>Windows only for now.</p></details>
+  </section>
+
+  <div class="support">
+    <h2>Like it?</h2>
+    <p>KeaClip is made by one person in New Zealand and will stay free. If it saved you some time, a coffee on Ko-fi keeps it going.</p>
+    <a class="btn primary" href="https://ko-fi.com/keaclip">Support KeaClip on Ko-fi</a>
+  </div>
+
+  <footer>
+    <p>Only save or share what you own or have permission to. KeaClip doesn't host or share any content, and you're responsible for following copyright law and each site's terms. It's provided as is, without warranty, under the <a href="https://github.com/Langkurst/KeaClip/blob/main/LICENSE">GNU GPL v3</a>. <a href="https://github.com/Langkurst/KeaClip#your-responsibility">More</a>.</p>
+    <p>Not affiliated with YouTube, Discord, file.kiwi or any other site it works with. Questions or bugs: <a href="mailto:keaclip@proton.me">keaclip@proton.me</a> or <a href="https://github.com/Langkurst/KeaClip/issues">GitHub</a>.</p>
+    <p>No cookies or trackers on this page either.</p>
+  </footer>
+</div>
+</body>
+</html>
