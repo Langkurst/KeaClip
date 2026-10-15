@@ -150,7 +150,7 @@ public sealed class DownloadReliabilityTests
     [InlineData("ERROR: Postprocessing: Supported filetypes for thumbnail embedding are: mp3, mkv/mka, ogg/opus/flac, m4a/mp4/m4v/mov", "cover image could not be embedded")]
     [InlineData("ERROR: Postprocessing: audio conversion failed: Conversion failed!", "FFmpeg could not process this file")]
     // Real transfer failures after yt-dlp's retries (local test server, yt-dlp 2026.08.19).
-    [InlineData("ERROR: \r[download] Got error: HTTP Error 503: Service Unavailable. Giving up after 3 retries", "The site is having problems")]
+    [InlineData("ERROR: \r[download] Got error: HTTP Error 503: Service Unavailable. Giving up after 3 retries", "The website is having trouble")]
     [InlineData("ERROR: \r[download] Got error: 709940 bytes read, 709941 more expected. Giving up after 3 retries", "the transfer was cut off")]
     [InlineData("ERROR: \r[download] Got error: HTTPConnection(host='127.0.0.1', port=18799): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it. Giving up after 3 retries", "Could not reach the media service")]
     // The last error decides: here an earlier optional subtitle error names a 404.

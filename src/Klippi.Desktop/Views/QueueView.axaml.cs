@@ -65,7 +65,7 @@ public sealed partial class QueueView : UserControl
 
 /// <summary>
 /// Puts the queue summary (first child) and the toolbar buttons (second child) on one line. When both do not fit
-/// (the narrowest window, double-digit counts or the longer "Resume new starts"), the <see cref="CollapsibleLabel"/>
+/// (the narrowest window, double-digit counts or the longer "Resume queue"), the <see cref="CollapsibleLabel"/>
 /// folds away first and its button keeps only its icon, so the summary stays on one line. It wraps only if even
 /// that is too narrow.
 /// </summary>

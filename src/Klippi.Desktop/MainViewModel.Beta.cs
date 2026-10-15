@@ -60,7 +60,7 @@ public sealed partial class MainViewModel
     public string BetaNotes
     {
         get => _betaNotes;
-        set { if (SetProperty(ref _betaNotes, value ?? "")) SaveBetaState(); }
+        set { if (SetProperty(ref _betaNotes, value ?? "")) ScheduleBetaNotesSave(); }
     }
     public int BetaTriedCount => BetaChecks.Count(check => check.Result != BetaResult.NotTried);
     public string BetaProgress => BetaTriedCount + " of " + BetaChecks.Count + " tried";
@@ -83,7 +83,7 @@ public sealed partial class MainViewModel
             new(3, "play", "Play it", "Open the video in the Editor. Do the picture and sound play smoothly?"),
             new(4, "trim", "Trim and shrink", "Drag the ends to keep about 10 seconds, pick Fit for Discord, then Export."),
             new(5, "share", "Share it", "Press Share on the clip, then open the link on your phone."),
-            new(6, "look", "Looks right", "Anything cut off, blurry or hard to read? Try Limestone day in Settings too."),
+            new(6, "look", "Looks right", "Anything cut off, blurry or hard to read? Try the light look in Settings too."),
         ];
         foreach (var check in checks) check.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(BetaCheck.Result)) BetaAnswerChanged(); };
         return checks;
@@ -117,6 +117,20 @@ public sealed partial class MainViewModel
         }
         catch (Exception error) when (error is IOException or UnauthorizedAccessException or JsonException) { CaptureDiagnostics(error); return true; }
         finally { _loadingBetaState = false; }
+    }
+
+    // Notes are saved half a second after typing stops (not on every key), and on close.
+    private Avalonia.Threading.DispatcherTimer? _betaNotesTimer;
+    private void ScheduleBetaNotesSave()
+    {
+        if (_loadingBetaState || !IsBeta) return;
+        _betaNotesTimer ??= new Avalonia.Threading.DispatcherTimer(TimeSpan.FromMilliseconds(500), Avalonia.Threading.DispatcherPriority.Background, (_, _) => FlushBetaNotes());
+        _betaNotesTimer.Stop(); _betaNotesTimer.Start();
+    }
+    internal void FlushBetaNotes()
+    {
+        if (_betaNotesTimer is not { IsEnabled: true }) return;
+        _betaNotesTimer.Stop(); SaveBetaState();
     }
 
     private void SaveBetaState()

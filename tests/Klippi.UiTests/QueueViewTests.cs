@@ -62,7 +62,7 @@ public sealed class QueueViewTests
         scene.Model.PauseQueueCommand.Execute(null);
         await scene.CaptureAsync("paused");
         await scene.CaptureAsync("paused-tall", height: 1320);
-        Assert.Equal("Resume new starts", scene.Model.PauseQueueLabel);
+        Assert.Equal("Resume queue", scene.Model.PauseQueueLabel);
         Assert.True(scene.Window.FindNamed<Border>("QueuePausedNotice")!.IsVisible);
         scene.Model.PauseQueueCommand.Execute(null); scene.Flush();
         Assert.False(scene.Window.FindNamed<Border>("QueuePausedNotice")!.IsVisible);
@@ -385,7 +385,7 @@ public sealed class QueueViewTests
         Assert.Equal(13, scene.Model.QueueActiveTotal);
 
         // At the narrowest window the Clear finished label gives way before the summary would wrap,
-        // also with the longer "Resume new starts"; on a wider window it is back.
+        // also with the longer "Resume queue"; on a wider window it is back.
         var summary = scene.Window.FindNamed<WrapPanel>("QueueSummary")!;
         var clearLabel = scene.Window.FindNamed<TextBlock>("ClearFinishedLabel")!;
         var toolbar = scene.Window.FindNamed<QueueToolbarPanel>("QueueToolbar")!;

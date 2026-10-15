@@ -23,7 +23,10 @@ public static class SelfTests
         Directory.CreateDirectory(Path.Combine(silentTarget, "Data")); File.WriteAllText(Path.Combine(silentTarget, "Data", "settings.json"), "silent settings");
         using (var stream = new MemoryStream(payload)) Program.SilentInstall(stream, silentTarget, source, new InstallEngine());
         Require(File.Exists(Path.Combine(silentTarget, "KeaClip.exe")) && File.ReadAllText(Path.Combine(silentTarget, "Data", "settings.json")) == "silent settings", "silent install and upgrade");
+        ExpectFailure(() => UpgradeMode.RefuseDowngrade(silentTarget, "0.0.1"));
+        UpgradeMode.RefuseDowngrade(silentTarget, InstallEngine.ReadReceipt(silentTarget).Version);
         checks.Add("Silent install (winget) uses the default choices, and a repeat run upgrades and keeps Data");
+        checks.Add("An older setup is refused over a newer installation; the same version can be reinstalled");
         // Uninstall clean-up: downloaded tools always go; settings and history only when asked; anything else stays.
         var data = Path.Combine(run, "UserData"); Directory.CreateDirectory(data);
         foreach (var part in new[] { "Components/yt-dlp/yt-dlp.exe", "Updates/0.9.0/KeaClip-0.9.0-Setup.exe", "TemporaryWorkspaces/owner.json" })

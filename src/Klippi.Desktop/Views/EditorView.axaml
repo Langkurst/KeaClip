@@ -228,7 +228,7 @@
                   <c:StrokeIcon Data="{StaticResource IconStop}" Size="18" IsFilled="True" />
                 </Button>
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" Margin="8,0,0,0">
-                  <TextBlock Name="PlaybackClock" Text="{Binding PlaybackClockText}" Classes="tabular strong" ToolTip.Tip="{Binding PlaybackTime}" />
+                  <TextBlock Name="PlaybackClock" Text="{Binding PlaybackClockText}" Classes="tabular strong" />
                   <TextBlock Text="/" Classes="faint" />
                   <TextBlock Text="{Binding DurationClockText}" Classes="tabular faint" />
                 </StackPanel>
@@ -252,7 +252,7 @@
               <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                 <StackPanel Spacing="3">
                   <TextBlock Text="Keep the good part" Classes="section" />
-                  <TextBlock Text="Drag the orange handles, or press I and O to mark at the playhead." Classes="caption muted" />
+                  <TextBlock Text="Drag the orange ends to keep just the part you want." Classes="caption muted" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
                   <Button Name="ZoomOutButton" Classes="icon small ghost" Click="ZoomTimelineOut" IsEnabled="{Binding #Waveform.CanZoomOut}" ToolTip.Tip="Zoom out · −" AutomationProperties.Name="Zoom timeline out">
@@ -370,7 +370,7 @@
               <!-- Size targets for sharing are the Fit for buttons above; a custom size is Compression, Target size. -->
               <Grid RowDefinitions="Auto,Auto" IsEnabled="{Binding IsExactClip}">
                 <StackPanel>
-                  <TextBlock Text="Compression" Classes="label" />
+                  <TextBlock Text="Make it smaller" Classes="label" />
                   <ComboBox ItemsSource="{Binding Compressions}" SelectedItem="{Binding Compression, Mode=TwoWay}" AutomationProperties.Name="Compression" />
                 </StackPanel>
                 <StackPanel Grid.Row="1" Classes="reveal" Margin="0,10,0,0" IsVisible="{Binding IsTargetSizeCompression}">
@@ -549,7 +549,7 @@
                 </Button>
                 <!-- A GIF is a quiet second choice: the same selection, silent and looping. -->
                 <Button Name="ExportGifButton" Classes="link small" HorizontalAlignment="Center" Command="{Binding ExportGifCommand}" IsEnabled="{Binding CanExportGif}" IsVisible="{Binding EditorHasVideo}" ToolTip.Tip="A silent, looping GIF of the selection, up to 60 seconds and 480 pixels wide" AutomationProperties.Name="Export the selection as a GIF">
-                  <TextBlock Text="Export the selection as a GIF" />
+                  <TextBlock Text="Make a GIF of this part" />
                 </Button>
                 <Grid Classes="reveal" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10" IsVisible="{Binding IsExporting}">
                   <ProgressBar Minimum="0" Maximum="100" Value="{Binding ExportPercent}" IsIndeterminate="{Binding ExportProgressIndeterminate}" VerticalAlignment="Center" />

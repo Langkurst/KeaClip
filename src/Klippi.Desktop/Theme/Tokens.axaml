@@ -10,6 +10,9 @@
       <SolidColorBrush x:Key="AppSurface">#1A1B16</SolidColorBrush>
       <SolidColorBrush x:Key="AppSurfaceRaised">#22241D</SolidColorBrush>
       <SolidColorBrush x:Key="AppSurfaceHover">#2A2C24</SolidColorBrush>
+      <!-- "Nothing" for fading backgrounds: the hover colour at zero opacity. Plain Transparent is transparent WHITE,
+           so a fade from it to a dark colour flashes pale grey on the way (the sidebar strobed on hover). -->
+      <SolidColorBrush x:Key="AppClear">#002A2C24</SolidColorBrush>
       <SolidColorBrush x:Key="AppSurfacePressed">#1E2019</SolidColorBrush>
       <SolidColorBrush x:Key="AppInput">#15160F</SolidColorBrush>
       <SolidColorBrush x:Key="AppInputHover">#1A1B14</SolidColorBrush>
@@ -25,6 +28,8 @@
       <SolidColorBrush x:Key="AppAccentSubtle">#2B3014</SolidColorBrush>
       <SolidColorBrush x:Key="AppAccentSubtleText">#CAD57A</SolidColorBrush>
       <SolidColorBrush x:Key="AppWarm">#F07A3C</SolidColorBrush>
+      <!-- The blue-green of a kea's flight feathers (the wordmark's "e"). -->
+      <SolidColorBrush x:Key="KeaFeather">#5DB8C8</SolidColorBrush>
       <SolidColorBrush x:Key="AppWarmText">#F07A3C</SolidColorBrush>
       <SolidColorBrush x:Key="AppWarmSubtle">#3A2117</SolidColorBrush>
       <SolidColorBrush x:Key="AppWarmHover">#F48D55</SolidColorBrush>
@@ -73,10 +78,10 @@
       <SolidColorBrush x:Key="AccentButtonForegroundPressed">#22260A</SolidColorBrush>
       <!-- Disabled primary label: still readable (about 3:1 on its fill) but clearly inactive. -->
       <SolidColorBrush x:Key="AccentButtonForegroundDisabled">#7E8551</SolidColorBrush>
-      <SolidColorBrush x:Key="AccentButtonBorderBrush">Transparent</SolidColorBrush>
-      <SolidColorBrush x:Key="AccentButtonBorderBrushPointerOver">Transparent</SolidColorBrush>
-      <SolidColorBrush x:Key="AccentButtonBorderBrushPressed">Transparent</SolidColorBrush>
-      <SolidColorBrush x:Key="AccentButtonBorderBrushDisabled">Transparent</SolidColorBrush>
+      <SolidColorBrush x:Key="AccentButtonBorderBrush">#002A2C24</SolidColorBrush>
+      <SolidColorBrush x:Key="AccentButtonBorderBrushPointerOver">#002A2C24</SolidColorBrush>
+      <SolidColorBrush x:Key="AccentButtonBorderBrushPressed">#002A2C24</SolidColorBrush>
+      <SolidColorBrush x:Key="AccentButtonBorderBrushDisabled">#002A2C24</SolidColorBrush>
       <SolidColorBrush x:Key="TextControlBackground">#15160F</SolidColorBrush>
       <SolidColorBrush x:Key="TextControlBackgroundPointerOver">#1A1B14</SolidColorBrush>
       <SolidColorBrush x:Key="TextControlBackgroundFocused">#15160F</SolidColorBrush>
@@ -141,17 +146,17 @@
       <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeUncheckedPointerOver">#B7C45C</SolidColorBrush>
       <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillUnchecked">#15160F</SolidColorBrush>
       <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillUncheckedPointerOver">#1A1B14</SolidColorBrush>
-      <SolidColorBrush x:Key="ExpanderHeaderBackground">Transparent</SolidColorBrush>
+      <SolidColorBrush x:Key="ExpanderHeaderBackground">#002A2C24</SolidColorBrush>
       <SolidColorBrush x:Key="ExpanderHeaderBackgroundPointerOver">#22241D</SolidColorBrush>
       <SolidColorBrush x:Key="ExpanderHeaderBackgroundPressed">#1D1F18</SolidColorBrush>
       <SolidColorBrush x:Key="ExpanderHeaderBorderBrush">#2D2F26</SolidColorBrush>
       <SolidColorBrush x:Key="ExpanderHeaderBorderBrushPointerOver">#3E4134</SolidColorBrush>
       <SolidColorBrush x:Key="ExpanderHeaderBorderBrushPressed">#3E4134</SolidColorBrush>
-      <SolidColorBrush x:Key="ExpanderContentBackground">Transparent</SolidColorBrush>
+      <SolidColorBrush x:Key="ExpanderContentBackground">#002A2C24</SolidColorBrush>
       <SolidColorBrush x:Key="ExpanderContentBorderBrush">#2D2F26</SolidColorBrush>
       <SolidColorBrush x:Key="ExpanderChevronForeground">#B9B6A3</SolidColorBrush>
-      <SolidColorBrush x:Key="ExpanderChevronBackground">Transparent</SolidColorBrush>
-      <SolidColorBrush x:Key="ExpanderChevronBorderBrush">Transparent</SolidColorBrush>
+      <SolidColorBrush x:Key="ExpanderChevronBackground">#002A2C24</SolidColorBrush>
+      <SolidColorBrush x:Key="ExpanderChevronBorderBrush">#002A2C24</SolidColorBrush>
       <SolidColorBrush x:Key="ToolTipBackground">#26281F</SolidColorBrush>
       <SolidColorBrush x:Key="ToolTipBorderBrush">#3E4134</SolidColorBrush>
       <SolidColorBrush x:Key="ToolTipForeground">#F1EFE6</SolidColorBrush>
@@ -176,6 +181,7 @@
       <SolidColorBrush x:Key="AppSurface">#FFFFFF</SolidColorBrush>
       <SolidColorBrush x:Key="AppSurfaceRaised">#FAF8F2</SolidColorBrush>
       <SolidColorBrush x:Key="AppSurfaceHover">#F0EDE3</SolidColorBrush>
+      <SolidColorBrush x:Key="AppClear">#00F0EDE3</SolidColorBrush>
       <SolidColorBrush x:Key="AppSurfacePressed">#E7E3D7</SolidColorBrush>
       <SolidColorBrush x:Key="AppInput">#FBFAF6</SolidColorBrush>
       <SolidColorBrush x:Key="AppInputHover">#F4F2EA</SolidColorBrush>
@@ -191,6 +197,7 @@
       <SolidColorBrush x:Key="AppAccentSubtle">#EDF0D8</SolidColorBrush>
       <SolidColorBrush x:Key="AppAccentSubtleText">#4A5711</SolidColorBrush>
       <SolidColorBrush x:Key="AppWarm">#B8491A</SolidColorBrush>
+      <SolidColorBrush x:Key="KeaFeather">#1D6E80</SolidColorBrush>
       <!-- Warm text (chips, values) is darker than the warm fill used for handles and dots, so small text reaches 4.5:1. -->
       <SolidColorBrush x:Key="AppWarmText">#A03E12</SolidColorBrush>
       <SolidColorBrush x:Key="AppWarmSubtle">#FBE6DA</SolidColorBrush>
@@ -237,10 +244,10 @@
       <SolidColorBrush x:Key="AccentButtonForegroundPointerOver">#FFFFFF</SolidColorBrush>
       <SolidColorBrush x:Key="AccentButtonForegroundPressed">#F5F7EC</SolidColorBrush>
       <SolidColorBrush x:Key="AccentButtonForegroundDisabled">#6B7240</SolidColorBrush>
-      <SolidColorBrush x:Key="AccentButtonBorderBrush">Transparent</SolidColorBrush>
-      <SolidColorBrush x:Key="AccentButtonBorderBrushPointerOver">Transparent</SolidColorBrush>
-      <SolidColorBrush x:Key="AccentButtonBorderBrushPressed">Transparent</SolidColorBrush>
-      <SolidColorBrush x:Key="AccentButtonBorderBrushDisabled">Transparent</SolidColorBrush>
+      <SolidColorBrush x:Key="AccentButtonBorderBrush">#00F0EDE3</SolidColorBrush>
+      <SolidColorBrush x:Key="AccentButtonBorderBrushPointerOver">#00F0EDE3</SolidColorBrush>
+      <SolidColorBrush x:Key="AccentButtonBorderBrushPressed">#00F0EDE3</SolidColorBrush>
+      <SolidColorBrush x:Key="AccentButtonBorderBrushDisabled">#00F0EDE3</SolidColorBrush>
       <SolidColorBrush x:Key="TextControlBackground">#FBFAF6</SolidColorBrush>
       <SolidColorBrush x:Key="TextControlBackgroundPointerOver">#F4F2EA</SolidColorBrush>
       <SolidColorBrush x:Key="TextControlBackgroundFocused">#FFFFFF</SolidColorBrush>
@@ -305,17 +312,17 @@
       <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeUncheckedPointerOver">#5A6A16</SolidColorBrush>
       <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillUnchecked">#FFFFFF</SolidColorBrush>
       <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillUncheckedPointerOver">#F4F2EA</SolidColorBrush>
-      <SolidColorBrush x:Key="ExpanderHeaderBackground">Transparent</SolidColorBrush>
+      <SolidColorBrush x:Key="ExpanderHeaderBackground">#00F0EDE3</SolidColorBrush>
       <SolidColorBrush x:Key="ExpanderHeaderBackgroundPointerOver">#F3F0E7</SolidColorBrush>
       <SolidColorBrush x:Key="ExpanderHeaderBackgroundPressed">#EAE6DB</SolidColorBrush>
       <SolidColorBrush x:Key="ExpanderHeaderBorderBrush">#E2DDCF</SolidColorBrush>
       <SolidColorBrush x:Key="ExpanderHeaderBorderBrushPointerOver">#CDC7B5</SolidColorBrush>
       <SolidColorBrush x:Key="ExpanderHeaderBorderBrushPressed">#CDC7B5</SolidColorBrush>
-      <SolidColorBrush x:Key="ExpanderContentBackground">Transparent</SolidColorBrush>
+      <SolidColorBrush x:Key="ExpanderContentBackground">#00F0EDE3</SolidColorBrush>
       <SolidColorBrush x:Key="ExpanderContentBorderBrush">#E2DDCF</SolidColorBrush>
       <SolidColorBrush x:Key="ExpanderChevronForeground">#575548</SolidColorBrush>
-      <SolidColorBrush x:Key="ExpanderChevronBackground">Transparent</SolidColorBrush>
-      <SolidColorBrush x:Key="ExpanderChevronBorderBrush">Transparent</SolidColorBrush>
+      <SolidColorBrush x:Key="ExpanderChevronBackground">#00F0EDE3</SolidColorBrush>
+      <SolidColorBrush x:Key="ExpanderChevronBorderBrush">#00F0EDE3</SolidColorBrush>
       <SolidColorBrush x:Key="ToolTipBackground">#26251D</SolidColorBrush>
       <SolidColorBrush x:Key="ToolTipBorderBrush">#26251D</SolidColorBrush>
       <SolidColorBrush x:Key="ToolTipForeground">#F5F3EC</SolidColorBrush>

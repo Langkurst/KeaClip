@@ -6,7 +6,7 @@
 A free Windows app for saving videos and audio you're allowed to keep, cutting out the good part and sending it to someone.<br>
 No ads, no account, no tracking.</p>
 
-<p align="center"><a href="https://ko-fi.com/keaclip">Support KeaClip on Ko-fi</a></p>
+<p align="center"><a href="https://github.com/Langkurst/KeaClip/releases/latest"><b>Download for Windows</b></a> · <a href="https://langkurst.github.io/KeaClip/">Website</a> · <a href="https://ko-fi.com/keaclip">Support on Ko-fi</a></p>
 
 ![KeaClip: paste a link, analyse, download, then trim](docs/images/keaclip-demo.gif)
 
@@ -26,13 +26,13 @@ No ads, no account, no tracking.</p>
 
 ## Get it
 
-KeaClip runs on Windows 10 and 11 (64-bit).
+KeaClip is made for Windows 11 (64-bit). Windows 10 should work but hasn't been tested yet.
 
 1. Download the installer from the [Releases page](https://github.com/Langkurst/KeaClip/releases).
 2. Run it. It installs just for you, no admin rights needed.
-3. On first launch choose **Prepare components**. KeaClip fetches the free tools it uses (yt-dlp, FFmpeg and Deno) from their official sites into its own folder. Nothing else on your PC changes.
+3. The first time it opens, KeaClip downloads the free tools it uses (yt-dlp, FFmpeg and Deno) from their official sites into its own folder. If you're offline, press **Download the tools** later. Nothing else on your PC changes.
 
-Windows may show an "unknown publisher" warning until KeaClip is code-signed. That's what the [Ko-fi goal](https://ko-fi.com/keaclip) is for.
+Until KeaClip is code-signed, Windows may say "Windows protected your PC". Click **More info**, then **Run anyway**. Each download's SHA-256 is listed on the release page if you want to check the file.
 
 ## Good to know
 
@@ -40,6 +40,22 @@ Windows may show an "unknown publisher" warning until KeaClip is code-signed. Th
 - **Your stuff stays on your PC.** Settings, history and any browser sign-in stay on this device. Nothing is uploaded unless you choose Share.
 - **Your originals are safe.** Editing makes a new file. KeaClip only deletes an original if you tick that option, and only after the new file checks out.
 - **Share links are free to download for 24 hours** (12 hours for files of 10 to 20 GB, 6 hours for 20 GB or more), then they stop working. These are file.kiwi's times for API uploads and differ from uploads made on the file.kiwi website; see [free download hours by file size](https://file.kiwi/api#free-download-hours-by-file-size).
+
+## Privacy
+
+KeaClip has no accounts, ads, analytics or tracking. Your files never leave your PC unless you share them. KeaClip only goes online to:
+
+- download what you paste in, and its preview picture;
+- fetch its free helper tools (yt-dlp, FFmpeg, Deno) from their official sites the first time, then check once a day for a newer yt-dlp, because websites change often;
+- check this page once a day for a new KeaClip version (you can turn this off in Settings);
+- upload a file to file.kiwi when you press Share, or after each download if you turn on Share when finished.
+## Your responsibility
+
+KeaClip is a tool, like a browser or a video player. It doesn't host, store or share anything itself, and the developer can't see or control what you save or share. You're responsible for using it legally: only download or share what you own or have permission to, and follow the copyright law where you live and the terms of the sites you use (for example YouTube and file.kiwi). KeaClip never gets around DRM, paywalls or other copy protection.
+
+KeaClip is free software provided as is, with no warranty, under the [GNU GPL v3](LICENSE) (see sections 15 and 16). To the fullest extent the law allows, the developer isn't liable for any loss or damage from using it. Nothing here limits rights you have under laws that can't be excluded, such as New Zealand's Consumer Guarantees Act.
+
+KeaClip isn't affiliated with or endorsed by YouTube, Discord, file.kiwi or any other site it works with. Their names belong to their owners.
 
 ## Support
 
@@ -49,6 +65,6 @@ Found a bug or want something added? Open an issue, or email [keaclip@proton.me]
 
 ## Licence
 
-KeaClip is free software under the [GNU GPL v3 or later](LICENSE). It's built with [Avalonia](https://avaloniaui.net), [LibVLC](https://www.videolan.org/vlc/libvlc.html), and works with [file.kiwi](https://file.kiwi/api) for sharing, [yt-dlp](https://github.com/yt-dlp/yt-dlp), [FFmpeg](https://ffmpeg.org) and [Deno](https://deno.com). Their licences ship with the app; source details are in [SOURCE.md](docs/SOURCE.md).
+Copyright (C) 2026 Langkurst. KeaClip is free software under the [GNU GPL v3 or later](LICENSE). It's built with [Avalonia](https://avaloniaui.net), [LibVLC](https://www.videolan.org/vlc/libvlc.html), and works with [file.kiwi](https://file.kiwi/api) for sharing, [yt-dlp](https://github.com/yt-dlp/yt-dlp), [FFmpeg](https://ffmpeg.org) and [Deno](https://deno.com). Their licences ship with the app; source details are in [SOURCE.md](docs/SOURCE.md).
 
 Building from source: see [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).

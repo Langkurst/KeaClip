@@ -198,8 +198,8 @@ public sealed class DownloadViewTests
             // Missing components offer Prepare right where the attempt failed.
             fake.Downloads.AnalysisFailure = new MediaOperationException("yt-dlp is not ready. Open Components and set it up first.");
             model.Url = "https://example.com/setup"; await model.AnalyseCommand.ExecuteAsync(null); Settle(window);
-            Assert.Equal("Setup needed", model.AnalysisProblemTitle); Assert.True(window.FindNamed<Button>("PrepareFromProblemButton")!.IsEffectivelyVisible);
-            Assert.Contains("Prepare components", model.AnalysisProblemText);
+            Assert.Equal("One more step", model.AnalysisProblemTitle); Assert.True(window.FindNamed<Button>("PrepareFromProblemButton")!.IsEffectivelyVisible);
+            Assert.Contains("Download the tools", model.AnalysisProblemText);
 
             // Something that cannot be a link never reaches the service.
             fake.Downloads.AnalysisFailure = null; model.Url = "file:///C:/private/notes.txt"; Settle(window);
@@ -215,7 +215,7 @@ public sealed class DownloadViewTests
             Assert.False(window.FindNamed<TextBlock>("UrlHintText")!.IsEffectivelyVisible);
             fake.Downloads.AnalysisFailure = new MediaOperationException("This link is not supported by the installed downloader. Check the link or update the downloader.");
             model.Url = "https://example.com/unsupported"; await model.AnalyseCommand.ExecuteAsync(null);
-            Assert.Equal("This link isn't supported", model.AnalysisProblemTitle); Assert.True(model.AnalysisSuggestsUpdate); Assert.False(model.AnalysisSuggestsSignIn);
+            Assert.Equal("This website isn't supported", model.AnalysisProblemTitle); Assert.True(model.AnalysisSuggestsUpdate); Assert.False(model.AnalysisSuggestsSignIn);
             model.DismissAnalysisProblemCommand.Execute(null); Assert.False(model.HasAnalysisProblem);
         }
         finally { Close(window, model); }

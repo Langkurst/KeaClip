@@ -75,7 +75,12 @@ if ($Portable) {
         $marker = $zip.Entries | Where-Object { $_.Name -eq 'portable.marker' -and ($_.FullName.Replace('\', '/').Split('/').Count -le 2) } | Select-Object -First 1
         if (-not $buildInfo -or -not $marker) { throw 'The portable ZIP has no BUILD_INFO.json and portable.marker. Build it with build/package.ps1.' }
         $reader = [IO.StreamReader]::new($buildInfo.Open())
-        try { $portableVersion = ($reader.ReadToEnd() | ConvertFrom-Json).Version } finally { $reader.Dispose() }
+        try { $info = $reader.ReadToEnd() | ConvertFrom-Json } finally { $reader.Dispose() }
+        $portableVersion = $info.Version
+        # Only a public release build may be published: no personal or beta copy, and no bundled FFmpeg, yt-dlp or Deno.
+        if ($info.Edition -ne 'Public' -or ($info.PSObject.Properties.Name -contains 'Channel' -and $info.Channel -ne 'Release')) { throw "This is a $($info.Edition) $($info.Channel) build. Publish only a public release build (build/package.ps1 without -Beta, -Edition or -IncludeComponents)." }
+        $bundled = $zip.Entries | Where-Object { $_.Name -in 'PRIVATE_BUILD.txt', 'ffmpeg.exe', 'ffprobe.exe', 'yt-dlp.exe', 'deno.exe' -or $_.FullName.Replace('\', '/') -match '^[^/]+/Components/' } | Select-Object -First 1
+        if ($bundled) { throw "The portable ZIP bundles '$($bundled.FullName)'. Public downloads fetch these tools on first run instead." }
     } finally { $zip.Dispose() }
     if ($portableVersion -ne $releaseVersion) { throw "The portable ZIP is version '$portableVersion', not $releaseVersion." }
     $manifest.portable = Add-ReleaseAsset $Portable "KeaClip-$releaseVersion-win-x64.zip" '.zip'
@@ -84,6 +89,12 @@ if ($Portable) {
 $manifestPath = Join-Path $releaseOutput 'keaclip-update.json'
 [IO.File]::WriteAllText($manifestPath, ($manifest | ConvertTo-Json -Depth 4) + "`n", [Text.UTF8Encoding]::new($false))
 $sums = @($manifest.installer, $manifest.portable) | Where-Object { $_ } | ForEach-Object { '{0}  {1}' -f $_.sha256, [Uri]::UnescapeDataString(([Uri]$_.url).Segments[-1]) }
+# The source archives go up with every release (GPL/LGPL), so they are in the checksum list too.
+foreach ($source in "KeaClip-$releaseVersion-source.zip", "KeaClip-$releaseVersion-third-party-source.zip") {
+    $path = Join-Path $releaseOutput $source
+    if (Test-Path -LiteralPath $path) { $sums += '{0}  {1}' -f (Get-FileHash -Algorithm SHA256 -LiteralPath $path).Hash.ToLowerInvariant(), $source }
+    else { Write-Warning "$source is not in $releaseOutput yet; add it (package.ps1 and third-party-source.ps1) before publishing." }
+}
 [IO.File]::WriteAllText((Join-Path $releaseOutput 'SHA256SUMS.txt'), (($sums -join "`n") + "`n"), [Text.UTF8Encoding]::new($false))
 Write-Output "Release feed: $manifestPath"
-Write-Output "Upload to the GitHub release $releaseTag (not a draft or pre-release): keaclip-update.json, SHA256SUMS.txt and the listed assets."
+Write-Output "Upload to the GitHub release $releaseTag (not a draft or pre-release): keaclip-update.json, SHA256SUMS.txt, the installer, the ZIP and both source ZIPs."

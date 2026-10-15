@@ -17,7 +17,10 @@ public sealed record DesktopServices(IDownloadService Downloads, IMediaService M
         var temporaryWorkspaces = new OwnedTemporaryWorkspaceService(root);
         // Installed copies update through the verified installer; portable copies get the verified ZIP.
         var environment = UpdateEnvironment.Detect(AppContext.BaseDirectory);
-        var updates = new UpdateService(new UpdateServiceOptions { DataRoot = root, InstallKind = environment.Kind, InstallRoot = environment.InstallRoot, FeedUrl = UpdateServiceOptions.PreferredFeed(UpdateServiceOptions.LocalFeedPath) });
+        // Only the owner's personal build reads the local feed (release-local.ps1); public copies trust GitHub alone,
+        // so nothing else on the PC can plant an update for them.
+        var feed = AppIdentity.Edition == "Personal" ? UpdateServiceOptions.PreferredFeed(UpdateServiceOptions.LocalFeedPath) : new Uri(UpdateServiceOptions.DefaultFeed);
+        var updates = new UpdateService(new UpdateServiceOptions { DataRoot = root, InstallKind = environment.Kind, InstallRoot = environment.InstallRoot, FeedUrl = feed });
         var media = new MediaService(runner, components, temporaryWorkspaces);
         return new(new DownloadService(runner, components, temporaryWorkspaces), media, new FileKiwiSharingService(new HttpClient(new HttpClientHandler { AllowAutoRedirect = false }) { Timeout = Timeout.InfiniteTimeSpan }), new JsonLocalStore(root), components, new DesktopPlatform(), new VlcPlaybackService(), root, temporaryWorkspaces, updates,
             AppIdentity.WatchLinksIncluded ? WatchLinkService.Create(media, root) : null, Environment.GetFolderPath(Environment.SpecialFolder.MyVideos),

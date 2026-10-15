@@ -143,12 +143,12 @@ public sealed class DownloadQueue(IDownloadService downloads, ILocalStore store,
                 var playlistItems = string.IsNullOrWhiteSpace(job.Options.PlaylistItems) ? null : job.Options.PlaylistItems.Trim();
                 await store.AddHistoryAsync(new HistoryEntry(job.Id.ToString(), result.Media?.Title ?? job.Title, MediaValidation.SafeSourceUrl(job.Options.Url), result.Media?.Source, DateTimeOffset.UtcNow, result.FilePath, job.Options.Mode.ToString(), RecordedQuality(job.Options), result.SizeBytes, "Finished", playlistItems), job.Cancellation.Token).ConfigureAwait(false);
             }
-            catch (Exception ex) { job.Error = "Download finished, but history could not be saved: " + MediaValidation.Redact(ex.Message); }
+            catch (Exception ex) { job.Error = "Download finished, but history could not be saved: " + MediaValidation.RedactDiagnostics(ex.Message); }
             Settle(job, JobState.Finished, new(JobStage.Finished, 100));
             job.Source.TrySetResult(result);
         }
         catch (OperationCanceledException) { Settle(job, JobState.Cancelled, new(JobStage.Cancelled)); job.Source.TrySetCanceled(); }
-        catch (Exception ex) { var error = MediaValidation.Redact(ex.Message); Settle(job, JobState.Failed, new(JobStage.Failed, Message: error), error); job.Source.TrySetException(ex); _ = job.Source.Task.Exception; }
+        catch (Exception ex) { var error = MediaValidation.RedactDiagnostics(ex.Message); Settle(job, JobState.Failed, new(JobStage.Failed, Message: error), error); job.Source.TrySetException(ex); _ = job.Source.Task.Exception; }
         finally { Notify(job); Pump(); }
     }
     // The quality choice the record keeps, in the picker's own words, so the Library says

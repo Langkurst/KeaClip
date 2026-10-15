@@ -49,7 +49,7 @@ public sealed partial class MainViewModel
     private void CancelDownloadWork() => CancelDownloadOperationCommand.Execute(null);
     /// <summary>Analyse and Try again: a link is entered and nothing blocks checking it.</summary>
     public bool CanCheckLink => !DownloadWorkRunning && HasUrl;
-    /// <summary>Prepare components and Update downloader can start.</summary>
+    /// <summary>Download the tools and Update downloader can start.</summary>
     public bool CanRunSetup => CanMaintain;
 
     public IRelayCommand ClearUrlCommand => _clearUrlCommand ??= new RelayCommand(() => Url = "");
@@ -232,7 +232,7 @@ public sealed partial class MainViewModel
     /// <summary>The friendly reason without a first sentence that only repeats the title.</summary>
     public string AnalysisProblemText => ProblemKind(_analysisProblem) switch
     {
-        "setup" => "KeaClip's media tools aren't ready yet. Prepare components once, then try again.",
+        "setup" => "KeaClip's helper tools aren't downloaded yet. Press Download the tools, then try again.",
         "browser-cookies" => WithoutLead(_analysisProblem, "Browser sign-in could not be read."),
         "sign-in" => WithoutLead(_analysisProblem, "Sign-in is required."),
         "private" => WithoutLead(_analysisProblem, "This video is private."),
@@ -242,12 +242,12 @@ public sealed partial class MainViewModel
     };
     public string AnalysisProblemTitle => ProblemKind(_analysisProblem) switch
     {
-        "setup" => "Setup needed",
+        "setup" => "One more step",
         "browser-cookies" => "Couldn't read your browser sign-in",
         "sign-in" => "Sign-in required",
         "private" => "This media is private",
-        "unsupported" => "This link isn't supported",
-        "changed-site" => "The site may have changed",
+        "unsupported" => "This website isn't supported",
+        "changed-site" => "Couldn't find a video here",
         "network" => "Can't reach the site",
         _ => "Couldn't analyse this link",
     };
@@ -613,7 +613,7 @@ public sealed partial class MainViewModel
         if (message.Contains("Browser sign-in could not be read", StringComparison.Ordinal)) return "browser-cookies";
         if (message.Contains("Sign-in is required", StringComparison.Ordinal)) return "sign-in";
         if (message.Contains("is private", StringComparison.Ordinal)) return "private";
-        if (message.Contains("not supported by the installed downloader", StringComparison.Ordinal)) return "unsupported";
+        if (message.Contains("can't save from this website", StringComparison.Ordinal) || message.Contains("not supported by the installed downloader", StringComparison.Ordinal)) return "unsupported";
         if (message.Contains("website may have changed", StringComparison.Ordinal)) return "changed-site";
         if (message.Contains("Could not reach the media service", StringComparison.Ordinal)) return "network";
         return "other";

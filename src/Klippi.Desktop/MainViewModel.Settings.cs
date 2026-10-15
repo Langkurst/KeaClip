@@ -594,7 +594,7 @@ public sealed partial class MainViewModel
     public bool ShowComponentsNotChecked => SettingsComponents.Count == 0 && !ShowComponentSkeleton;
     public bool ComponentUpdateFailed => _componentUpdateFailed;
     /// <summary>What the running component task is doing, named by the page rather than the shared status line.</summary>
-    public string ComponentTaskTitle => ProvisionCommand.IsRunning ? "Preparing components…" : UpdateDownloaderCommand.IsRunning ? "Updating the downloader…"
+    public string ComponentTaskTitle => ProvisionCommand.IsRunning ? "Downloading the tools…" : UpdateDownloaderCommand.IsRunning ? "Updating the downloader…"
         : RollbackComponentsCommand.IsRunning ? "Restoring the previous components…" : SupportedSitesCommand.IsRunning ? "Reading the supported sites list…"
         : InspectComponentsCommand.IsRunning ? "Checking components…" : "";
     /// <summary>Progress reported by the task itself; empty until it reports, so older messages never show here.</summary>

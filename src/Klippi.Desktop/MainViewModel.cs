@@ -40,7 +40,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private int _volume = 80;
     private IReadOnlyList<float> _waveform = [];
     private string _shareUrl = "";
-    private string _shareInfo = "Sharing is optional. Only upload media you are allowed to share.";
+    private string _shareInfo = "Only share videos you're allowed to share.";
     private string _estimateText = "Open a local file to estimate an export.";
     private bool _queuePaused;
     private bool _previewFullscreen;
@@ -84,6 +84,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private string _temporaryCleanupStatus = "Cleanup runs only when you choose Clean temporary files.";
     private string _rangeStart = "1", _rangeEnd = "1";
     private readonly Dictionary<string, Bitmap> _thumbnailCache = new(StringComparer.Ordinal);
+    private readonly Queue<string> _thumbnailOrder = new();
     private readonly Dictionary<Guid, Uri> _jobThumbnails = [];
     private string? _lastClipboardText;
     private CancellationTokenSource? _thumbnailLoad;
@@ -202,7 +203,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     public ObservableCollection<EncoderInfo> Encoders { get; } = [];
     public string SupportedSitesText { get; private set; } = "Click Supported sites to read the installed downloader's actual extractor list.";
     public bool QueuePaused { get => _queuePaused; private set { SetProperty(ref _queuePaused, value); OnPropertyChanged(nameof(PauseQueueLabel)); } }
-    public string PauseQueueLabel => QueuePaused ? "Resume new starts" : "Pause new starts";
+    public string PauseQueueLabel => QueuePaused ? "Resume queue" : "Pause queue";
     // Typing filters after a short pause instead of rebuilding the list on every keystroke.
     public string HistorySearch { get => _historySearch; set { if (SetProperty(ref _historySearch, value)) { _historySearchDebounce?.Dispose(); _historySearchDebounce = new System.Threading.Timer(_ => Dispatcher.UIThread.Post(() => { if (!_disposed) FilterHistory(); }), null, 180, Timeout.Infinite); } } }
     public string Quality { get => _quality; set => SetProperty(ref _quality, value); }
@@ -289,7 +290,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     public double ClipEndRatio { get => _probe is { Duration.TotalSeconds: > 0 } && MediaValidation.TryTimecode(EndTime, out var time) ? time.TotalSeconds / _probe.Duration.TotalSeconds : 1; set { if (_probe is not null) EndTime = MediaValidation.Timecode(TimeSpan.FromSeconds(Math.Clamp(value, 0, 1) * _probe.Duration.TotalSeconds)); } }
     public IReadOnlyList<float> Waveform { get => _waveform; private set => SetProperty(ref _waveform, value); }
     public double PlaybackPosition { get => _playbackPosition; set { if (SetProperty(ref _playbackPosition, value)) Playback.Seek(value); } }
-    public string PlaybackTime => MediaValidation.Timecode(Playback.Time);
+
     public string PlayLabel => Playback.IsPlaying ? "Pause" : "Play";
     public bool IsPlaying => Playback.IsPlaying;
     public int Volume { get => _volume; set { if (SetProperty(ref _volume, value)) Playback.SetVolume(value); } }
@@ -365,9 +366,9 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     public IRelayCommand SelectPlaylistCommand { get; }
     public IRelayCommand ClearPlaylistCommand { get; }
 
-    // The Download page shows its own Prepare components button for this, so the status
+    // The Download page shows its own Download the tools button for this, so the status
     // names that action instead of sending people to Settings.
-    internal const string FirstRunStatus = "One-time setup: choose Prepare components to get started.";
+    internal const string FirstRunStatus = "One more step: KeaClip needs its helper tools. Press Download the tools.";
     public async Task InitializeAsync() => await RunAsync(OperationLane.Maintenance, async ct =>
     {
         RefreshPlatformPreferences();
@@ -380,7 +381,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         // The queue comes back after settings (its concurrency) and history (Replace records) have loaded.
         var queueNotes = new List<string>();
         await RestoreQueueAsync(ct, queueNotes);
-        var ready = ComponentsReady ? "Ready. Paste a link or open a local file." : FirstRunStatus;
+        var ready = ComponentsReady ? "Ready. Paste a link, or open a video from your PC." : FirstRunStatus;
         Status = problems.Count + queueNotes.Count == 0 ? ready
             : string.Join(" ", problems.Concat(queueNotes)) + (problems.Count == 0 && !ComponentsReady ? " " + FirstRunStatus : "");
         StartUpdates();
@@ -389,7 +390,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         StartFirstRunSetup();
     });
     // First start of a real copy: fetch the media tools straight away (the setup card shows progress) instead of
-    // waiting for a click. Offline or failed, the card keeps its Prepare components button to try again.
+    // waiting for a click. Offline or failed, the card keeps its Download the tools button to try again.
     // Start-up holds the maintenance lane, so the setup starts just after it finishes.
     private void StartFirstRunSetup()
     {
@@ -439,7 +440,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             // cleared on purpose) is not pasted back on every window activation.
             if (text == _lastClipboardText) return;
             _lastClipboardText = text;
-            // A File.Kiwi share link holds its decryption key after '#'. It is the user's own upload,
+            // A file.kiwi share link holds its decryption key after '#'. It is the user's own upload,
             // not a download, and the key must never reach the Download box or the downloader.
             // Only links that look like video or audio are filled in; any link can still be pasted or typed.
             if (MediaValidation.TryMediaUrl(text, out var uri) && !MediaValidation.IsPrivateShareLink(uri!) && MediaValidation.LooksLikeMediaLink(uri!)) { Url = uri!.AbsoluteUri; Status = "Link detected in your clipboard. Review it before downloading."; }
@@ -774,7 +775,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         // instead of "Added to your queue" next to "already in your queue".
         Status = asked > 0 && queued > 0 ? $"Added {queued} to your queue. {asked} already saved {(asked == 1 ? "item needs" : "items need")} a choice below: Open existing, Download again, Replace or Skip." + notes
             : asked > 0 ? "Already saved media found. Choose Open existing, Download again, Replace or Skip before those items start." + notes
-            : queued > 0 ? "Added to your queue. " + (ShareWhenFinished ? "It is shared with an encrypted File.Kiwi link when it finishes. " : "") + "Pause stops new starts; Cancel stops an active item." + notes
+            : queued > 0 ? "Added to your queue. " + (ShareWhenFinished ? "It'll be shared when it's done. " : "") + "You can watch it in the Queue." + notes
             : "Nothing new was queued." + notes;
     }
     public void ResolveDuplicate(PendingDownload item, string choice)
@@ -830,8 +831,14 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             var image = await Task.Run(() => DecodeThumbnail(data), ct);
             if (image is null) return;
             if (_disposed) { image.Dispose(); return; }
-            _thumbnailCache[uri.AbsoluteUri] = image; if (isCurrent()) Thumbnail = image; foreach (var row in Queue) row.ThumbnailChanged();
-            while (_thumbnailCache.Count > 24) { var oldest = _thumbnailCache.First(p => !ReferenceEquals(p.Value, Thumbnail)); _thumbnailCache.Remove(oldest.Key); foreach (var row in Queue) row.ThumbnailChanged(); oldest.Value.Dispose(); }
+            _thumbnailCache[uri.AbsoluteUri] = image; _thumbnailOrder.Enqueue(uri.AbsoluteUri); if (isCurrent()) Thumbnail = image; foreach (var row in Queue) row.ThumbnailChanged();
+            // Drop the oldest pictures first (a Dictionary reuses freed slots, so its order is not age), never the one on screen.
+            for (var checks = _thumbnailOrder.Count; _thumbnailCache.Count > 24 && checks > 0 && _thumbnailOrder.TryDequeue(out var oldest); checks--)
+            {
+                if (!_thumbnailCache.TryGetValue(oldest, out var stale)) continue;
+                if (ReferenceEquals(stale, Thumbnail)) { _thumbnailOrder.Enqueue(oldest); continue; }
+                _thumbnailCache.Remove(oldest); foreach (var row in Queue) row.ThumbnailChanged(); stale.Dispose();
+            }
         }
         catch (Exception) { /* Optional thumbnail failures or cancellation never block the media workflow. */ }
     }
@@ -985,7 +992,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         catch (Exception error) when (error is not OperationCanceledException) { CaptureDiagnostics(error); }
         // Pages react after the overview waveform, so any detailed pass follows it.
         OnEditorOpened();
-        Status = previewProblem ?? waveformProblem ?? "Editor ready. Preview and choose a range, then Export." + (soundboardEnded ? " The soundboard preset from the previous file is off." : "");
+        Status = previewProblem ?? waveformProblem ?? "Ready. Drag the orange ends to keep the part you want, then Export." + (soundboardEnded ? " The soundboard preset from the previous file is off." : "");
     });
     public ExportOptions BuildExportOptions(string output)
     {
@@ -1093,7 +1100,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     public string ShareFileName { get => _shareFileName; private set => SetProperty(ref _shareFileName, value); }
     private Task ShareEditorAsync() => string.IsNullOrWhiteSpace(EditorPath) ? RunAsync(OperationLane.Share, _ => throw new MediaOperationException("Open or choose a local file first.")) : ShareFileAsync(EditorPath);
     /// <summary>
-    /// Shares a local file. A very large one waits for confirmation first, because File.Kiwi gives an upload
+    /// Shares a local file. A very large one waits for confirmation first, because file.kiwi gives an upload
     /// 36 hours to finish and an interrupted share cannot resume yet: choosing Share again for the
     /// same file (from any Share button), or <see cref="ConfirmLargeShareCommand"/>, starts it.
     /// </summary>
@@ -1116,7 +1123,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     {
         if (IsExporting && DeleteOriginal && string.Equals(Path.GetFullPath(path), Path.GetFullPath(EditorPath), StringComparison.OrdinalIgnoreCase)) throw new MediaOperationException("The running export may delete this file. Wait for it to finish, then share.");
         if (!automatic || IsPendingLargeShare(path)) ClearLargeShareRequest();
-        Status = "Encrypting and uploading to File.Kiwi…"; ShareUrl = ""; ShareFileName = Path.GetFileName(path); _shareLinkPath = path;
+        Status = "Encrypting and uploading to file.kiwi…"; ShareUrl = ""; ShareFileName = Path.GetFileName(path); _shareLinkPath = path;
         ShareInfo = "Encrypting on this device, then uploading. Keep the app open until the link appears.";
         ShareResult result;
         IsSharing = true; _sharingPath = path; ShareProgressText = "";
@@ -1127,14 +1134,14 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         ShareUrl = result.ShareUrl;
         RecordShareLink(path, result.ShareUrl);
         ShareInfo = (result.FreeDownloadHours is { } hours ? $"Free to download for about {hours:0.##} hours" + (result.EstimatedFreeUntil is { } until ? $", until about {until.ToLocalTime():g}. " : ". ")
-                : $"File.Kiwi did not say how long this link lasts; API uploads are usually free to download for {FreeDownloadHoursText(File.Exists(path) ? new FileInfo(path).Length : 0)}. ")
+                : $"file.kiwi did not say how long this link lasts; API uploads are usually free to download for {FreeDownloadHoursText(File.Exists(path) ? new FileInfo(path).Length : 0)}. ")
             + "After that the link stops working." + (result.Warning is { } warning ? " " + MediaValidation.Redact(warning) : "");
         if (!automatic) { SelectedTab = 3; Status = "Upload finished. Copy the full link to share; its decryption secret is not saved to history."; }
         return result;
     }
 
     // ----- Very large shares -----
-    // File.Kiwi gives an upload 36 hours to finish and an interrupted share cannot be resumed yet. A file
+    // file.kiwi gives an upload 36 hours to finish and an interrupted share cannot be resumed yet. A file
     // of about 100 GB, or one that would take over 30 hours at a modest 1 MB/s, could run out of
     // time, so the upload starts only after the user confirms they understand that.
     internal const long LargeShareBytes100Gb = 100_000_000_000;
@@ -1151,7 +1158,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     /// <summary>How long Share again confirms the prompt; after that the prompt is shown again.</summary>
     internal TimeSpan LargeShareConfirmWindow { get; set; } = TimeSpan.FromMinutes(5);
     /// <summary>True while a very large share waits for Upload anyway or Cancel.</summary>
-    /// <summary>File.Kiwi's table of how long API uploads stay free to download (they differ from the website's).</summary>
+    /// <summary>file.kiwi's table of how long API uploads stay free to download (they differ from the website's).</summary>
     public const string ShareHoursUrl = "https://file.kiwi/api#free-download-hours-by-file-size";
     public IRelayCommand OpenShareHoursCommand => _openShareHours ??= new RelayCommand(() => _services.Platform.OpenUri(new Uri(ShareHoursUrl)));
     private IRelayCommand? _openShareHours;
@@ -1161,7 +1168,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     public bool HasPendingLargeShare => _largeSharePath is not null;
     public string LargeShareTitle => _largeSharePath is null ? "" : $"Upload {Size(_largeShareBytes)}?";
     public string LargeShareWarning => _largeSharePath is null ? "" :
-        $"{Path.GetFileName(_largeSharePath)} is {Size(_largeShareBytes)}. At about 1 MB/s the upload takes around {EstimatedUploadTime(_largeShareBytes).TotalHours:0} hours. File.Kiwi gives an upload 36 hours to finish, and an interrupted share can't be resumed yet, so a slow or interrupted upload has to start again from the beginning.";
+        $"{Path.GetFileName(_largeSharePath)} is {Size(_largeShareBytes)}. At about 1 MB/s the upload takes around {EstimatedUploadTime(_largeShareBytes).TotalHours:0} hours. file.kiwi gives an upload 36 hours to finish, and an interrupted share can't be resumed yet, so a slow or interrupted upload has to start again from the beginning.";
     /// <summary>Starts the large share the user has confirmed.</summary>
     public IAsyncRelayCommand ConfirmLargeShareCommand => _confirmLargeShareCommand ??= new AsyncRelayCommand(() =>
     {
@@ -1196,7 +1203,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     {
         _largeSharePath = path; _largeShareBytes = bytes; _largeShareAskedAt = Stopwatch.GetTimestamp();
         RaiseLargeShare();
-        Status = $"Large upload ({Size(bytes)}): choose Share again to upload it anyway. File.Kiwi gives an upload 36 hours to finish and an interrupted upload can't resume, so a slow upload may have to start over.";
+        Status = $"Large upload ({Size(bytes)}): choose Share again to upload it anyway. file.kiwi gives an upload 36 hours to finish and an interrupted upload can't resume, so a slow upload may have to start over.";
     }
     private void ClearLargeShareRequest()
     {
@@ -1287,7 +1294,14 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         public string? Message => _message;
         public void Report(JobProgress value) { if (value.Stage == JobStage.Finished && !string.IsNullOrWhiteSpace(value.Message)) _message = value.Message; inner.Report(value); }
     }
-    private async Task InspectComponentsAsync(CancellationToken ct) { Components.Clear(); foreach (var component in await _services.Components.InspectAsync(ct)) Components.Add(component with { Error = MediaValidation.Redact(component.Error) }); OnPropertyChanged(nameof(ComponentsReady)); }
+    // Read first, then swap in one go: two overlapping checks can never list a tool twice or flash an empty list.
+    private async Task InspectComponentsAsync(CancellationToken ct)
+    {
+        var found = await _services.Components.InspectAsync(ct);
+        Components.Clear();
+        foreach (var component in found) Components.Add(component with { Error = MediaValidation.Redact(component.Error) });
+        OnPropertyChanged(nameof(ComponentsReady));
+    }
     public void RefreshPlatformPreferences()
     {
         if (_disposed) return;
@@ -1345,8 +1359,16 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private void PlaybackChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (_disposed) return;
-        if (e.PropertyName == nameof(IPlaybackService.Position)) SetProperty(ref _playbackPosition, Playback.Position, nameof(PlaybackPosition));
-        OnPropertyChanged(nameof(PlaybackTime)); OnPropertyChanged(nameof(PlayLabel)); OnPropertyChanged(nameof(IsPlaying));
+        // Position arrives every frame while playing, so it touches only the position and (once a second) the clock.
+        switch (e.PropertyName)
+        {
+            case nameof(IPlaybackService.Position):
+                SetProperty(ref _playbackPosition, Playback.Position, nameof(PlaybackPosition)); RefreshPlaybackClock(); break;
+            case nameof(IPlaybackService.Time):
+                RefreshPlaybackClock(); break;
+            default:
+                RefreshPlaybackClock(); OnPropertyChanged(nameof(PlayLabel)); OnPropertyChanged(nameof(IsPlaying)); break;
+        }
     }
     private void TryAction(Action action) { try { action(); } catch (Exception error) { Status = FriendlyError(error); } }
     private static string FriendlyError(Exception error) => error is MediaOperationException ? MediaValidation.Redact(error.Message) : error is FileNotFoundException ? "This file is no longer available. Choose another local file." : "Could not finish: " + MediaValidation.Redact(error.Message);
@@ -1362,6 +1384,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     public void Dispose()
     {
         if (_disposed) return;
+        FlushBetaNotes();
         // Jobs still waiting or running are saved as they are now, before closing cancels them.
         SaveQueueBeforeExit();
         _disposed = true; CancelAllLanes(); StopUpdates(); _thumbnailLoad?.Cancel(); _historySearchDebounce?.Dispose(); _queue.JobChanged -= QueueChanged;

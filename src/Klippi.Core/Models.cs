@@ -176,7 +176,7 @@ public sealed record SavedQueueJob
 public sealed record SavedQueue
 {
     public int Version { get; init; } = 1;
-    /// <summary>"Pause new starts" was on: restored jobs wait instead of starting.</summary>
+    /// <summary>The queue was paused (Pause queue): restored jobs wait instead of starting.</summary>
     public bool Paused { get; init; }
     public IReadOnlyList<SavedQueueJob?> Jobs { get; init; } = [];
 }

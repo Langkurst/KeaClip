@@ -61,12 +61,26 @@ public sealed class ReleaseManifestScriptTests : IDisposable
         Assert.False(File.Exists(Path.Combine(_output, UpdateManifest.FileName)));
     }
 
-    private string PortableZip(string version)
+    [Theory]
+    [InlineData("Personal", "Release", null)]
+    [InlineData("Public", "Beta", null)]
+    [InlineData("Public", "Release", "Components/ffmpeg.exe")]
+    public void Only_a_public_release_build_without_bundled_tools_can_be_published(string edition, string channel, string? extra)
+    {
+        var installer = Path.Combine(_inputs, "KeaClip.Setup.exe"); File.Copy(typeof(AppIdentity).Assembly.Location, installer, overwrite: true);
+        var result = Run("-Installer", installer, "-Portable", PortableZip(AppIdentity.Version, edition, channel, extra), "-Notes", "x", "-OutputDirectory", _output);
+        if (result is null) return; // PowerShell 7 is not installed here.
+        Assert.NotEqual(0, result.Value.ExitCode);
+        Assert.False(File.Exists(Path.Combine(_output, UpdateManifest.FileName)));
+    }
+
+    private string PortableZip(string version, string edition = "Public", string channel = "Release", string? extra = null)
     {
         var path = Path.Combine(_inputs, $"KeaClip-{version}-{Guid.NewGuid():N}.zip");
         using var zip = ZipFile.Open(path, ZipArchiveMode.Create);
         void Entry(string name, string text) { using var writer = new StreamWriter(zip.CreateEntry($"KeaClip-{version}-win-x64/{name}").Open(), new UTF8Encoding(false)); writer.Write(text); }
-        Entry("BUILD_INFO.json", $"{{\"Version\":\"{version}\"}}"); Entry("portable.marker", "portable"); Entry("KeaClip.exe", "fixture");
+        if (extra is not null) Entry(extra, "bundled tool");
+        Entry("BUILD_INFO.json", $"{{\"Version\":\"{version}\",\"Edition\":\"{edition}\",\"Channel\":\"{channel}\"}}"); Entry("portable.marker", "portable"); Entry("KeaClip.exe", "fixture");
         return path;
     }
 

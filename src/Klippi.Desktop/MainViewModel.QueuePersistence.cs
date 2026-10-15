@@ -150,7 +150,7 @@ public sealed partial class MainViewModel
         // Saves the queue as it now is, so dropped entries are reported once and then forgotten.
         SynchroniseQueue();
         if (accepted.Count > 0)
-            notes.Add($"Restored {Count(accepted.Count, "download")} from your last session." + (paused ? " Your queue is paused: choose Resume new starts to continue." : ""));
+            notes.Add($"Restored {Count(accepted.Count, "download")} from your last session." + (paused ? " Your queue is paused: press Resume queue to continue." : ""));
         if (missingFolder > 0)
             notes.Add($"{Count(missingFolder, "saved download")} {(missingFolder == 1 ? "was" : "were")} not restored because {(missingFolder == 1 ? "its save folder is" : "their save folders are")} gone. Add {(missingFolder == 1 ? "it" : "them")} again with a folder that exists.");
         if (withheld > 0)

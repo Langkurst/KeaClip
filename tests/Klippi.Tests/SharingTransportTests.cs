@@ -19,7 +19,7 @@ using Xunit;
 namespace Klippi.Tests;
 
 /// <summary>
-/// Transport behaviour of the File.Kiwi adapter: deadlines, outage retries, progress, keep-alive, threading and checksums. No external network is used;
+/// Transport behaviour of the file.kiwi adapter: deadlines, outage retries, progress, keep-alive, threading and checksums. No external network is used;
 /// the real-socket cases talk to a TLS listener on 127.0.0.1 only.
 /// </summary>
 public sealed class SharingTransportTests
@@ -221,7 +221,7 @@ public sealed class SharingTransportTests
         using var server = new TransportServer(file.Bytes.Length, 4) { AfterPut = () => clock.Advance(TimeSpan.FromMinutes(31)), StatusResponse = _ => code };
         using var client = new HttpClient(server);
         var exception = await Assert.ThrowsAsync<MediaOperationException>(() => new FileKiwiSharingService(client, options: new() { TimeProvider = clock }).ShareAsync(file.Path));
-        Assert.Equal("File.Kiwi upload expired.", exception.Message);
+        Assert.Equal("file.kiwi upload expired.", exception.Message);
         Assert.Equal([1], server.PutAttempts);
         Assert.DoesNotContain(TransportServer.SyntheticAuth, exception.ToString() + exception.Details);
     }
@@ -233,7 +233,7 @@ public sealed class SharingTransportTests
         using var server = new TransportServer(3, 4) { PutStatus = _ => HttpStatusCode.Forbidden };
         using var client = new HttpClient(server);
         var exception = await Assert.ThrowsAsync<MediaOperationException>(() => new FileKiwiSharingService(client).ShareAsync(file.Path));
-        Assert.Equal("File.Kiwi upload expired.", exception.Message);
+        Assert.Equal("file.kiwi upload expired.", exception.Message);
         Assert.Contains("HTTP 403", exception.Details);
         Assert.Equal([1], server.PutAttempts);
         Assert.Equal(0, server.StatusRequests);
@@ -248,7 +248,7 @@ public sealed class SharingTransportTests
         using var server = new TransportServer(file.Bytes.Length, 4) { AfterPut = () => clock.Advance(TimeSpan.FromHours(37)) };
         using var client = new HttpClient(server);
         var exception = await Assert.ThrowsAsync<MediaOperationException>(() => new FileKiwiSharingService(client, options: new() { TimeProvider = clock }).ShareAsync(file.Path));
-        Assert.Equal("File.Kiwi upload expired.", exception.Message);
+        Assert.Equal("file.kiwi upload expired.", exception.Message);
         Assert.Equal([1], server.PutAttempts);
     }
 
@@ -336,7 +336,7 @@ public sealed class SharingTransportTests
         {
             RetryDelay = TimeSpan.FromMilliseconds(5), MaximumRetryDelay = TimeSpan.FromMilliseconds(10), ConnectionOutageBudget = TimeSpan.FromMinutes(5),
         }).ShareAsync(file.Path));
-        Assert.Equal("File.Kiwi could not be reached.", exception.Message);
+        Assert.Equal("file.kiwi could not be reached.", exception.Message);
         Assert.Contains("kept dropping", exception.Details);
         Assert.Equal(FileKiwiSharingService.MaximumInterruptedAttempts, server.PutAttempts.Count);
         Assert.Empty(server.AcceptedOrder);
@@ -426,7 +426,7 @@ public sealed class SharingTransportTests
         {
             TimeProvider = clock, RetryDelay = TimeSpan.FromMilliseconds(10), MaximumRetryDelay = TimeSpan.FromMilliseconds(20),
         }).ShareAsync(file.Path));
-        Assert.Equal("File.Kiwi could not be reached.", exception.Message);
+        Assert.Equal("file.kiwi could not be reached.", exception.Message);
         Assert.Equal(7, server.PutAttempts.Count);
     }
 
@@ -446,7 +446,7 @@ public sealed class SharingTransportTests
         {
             RetryDelay = TimeSpan.FromMilliseconds(10), MaximumRetryDelay = TimeSpan.FromMilliseconds(50), ConnectionOutageBudget = TimeSpan.FromSeconds(2),
         }).ShareAsync(file.Path));
-        Assert.Equal("File.Kiwi upload expired.", exception.Message);
+        Assert.Equal("file.kiwi upload expired.", exception.Message);
         Assert.Contains("HTTP 403", exception.Details);
         bool[] expected = mode == StorageMode.RefuseEarlyAndClose ? [false, true] : [false];
         Assert.Equal(expected, storage.ExpectContinue);
@@ -457,7 +457,7 @@ public sealed class SharingTransportTests
     [Fact]
     public async Task ChunkUploadsOverRealSocketsDoNotAskToContinueFirst()
     {
-        // Like File.Kiwi's browser uploader, normal chunks are sent without "Expect: 100-continue", so storage that never answers it costs nothing.
+        // Like file.kiwi's browser uploader, normal chunks are sent without "Expect: 100-continue", so storage that never answers it costs nothing.
         using var file = new TestFile(Pattern(1024 * 1024 + 4099));
         using var api = new TransportServer(file.Bytes.Length, 1024 * 1024);
         await using var storage = new LoopbackStorage(StorageMode.Accept, api);
@@ -493,7 +493,7 @@ public sealed class SharingTransportTests
     [Fact]
     public async Task HangingKeepAliveUsesItsOwnShortDeadlineAndBacksOffInsteadOfDelayingEveryChunk()
     {
-        // 40 chunks of one minute each while File.Kiwi's API hangs: keep-alives fall due at 30 minutes and, after each failure, 5 minutes later.
+        // 40 chunks of one minute each while file.kiwi's API hangs: keep-alives fall due at 30 minutes and, after each failure, 5 minutes later.
         using var file = new TestFile(Pattern(40));
         var clock = new ManualClock();
         using var server = new TransportServer(file.Bytes.Length, 1) { AfterPut = () => clock.Advance(TimeSpan.FromMinutes(1)), StatusHangsWhileIncomplete = true };
@@ -768,7 +768,7 @@ public sealed class SharingTransportTests
         private static HttpResponseMessage Json(string body, HttpStatusCode code = HttpStatusCode.OK) => new(code) { Content = new StringContent(body, Encoding.UTF8, "application/json") };
     }
 
-    /// <summary>Sends File.Kiwi API calls to the in-memory fake and storage calls to a real SocketsHttpHandler; anything else is refused.</summary>
+    /// <summary>Sends file.kiwi API calls to the in-memory fake and storage calls to a real SocketsHttpHandler; anything else is refused.</summary>
     private sealed class RoutingHandler(HttpMessageHandler api, HttpMessageHandler storage) : HttpMessageHandler
     {
         private readonly HttpMessageInvoker _api = new(api, disposeHandler: false), _storage = new(storage, disposeHandler: true);

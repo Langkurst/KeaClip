@@ -370,7 +370,7 @@ public sealed class FunctionalityTests
     {
         var fake = new UiFakes(); fake.Components.Ready = false;
         using var model = new MainViewModel(fake.Services); await model.InitializeAsync();
-        Assert.Equal("One-time setup: choose Prepare components to get started.", model.Status);
+        Assert.Equal("One more step: KeaClip needs its helper tools. Press Download the tools.", model.Status);
     }
 
     // ----- #19/#20 library rows -----
@@ -550,7 +550,7 @@ public sealed class FunctionalityTests
             await model.ShareFileAsync(file);
             // The prompt stays on the page where Share was chosen, so the same button can confirm it.
             Assert.Equal(0, fake.Sharing.Calls); Assert.True(model.HasPendingLargeShare); Assert.True(model.ShowShareCard); Assert.Equal(2, model.SelectedTab);
-            Assert.StartsWith("Large upload (", model.Status); Assert.Contains(" KB): choose Share again to upload it anyway. File.Kiwi gives an upload 36 hours", model.Status);
+            Assert.StartsWith("Large upload (", model.Status); Assert.Contains(" KB): choose Share again to upload it anyway. file.kiwi gives an upload 36 hours", model.Status);
             Assert.Contains("36 hours", model.LargeShareWarning); Assert.Contains("can't be resumed", model.LargeShareWarning); Assert.Contains(Path.GetFileName(file), model.LargeShareWarning);
             model.CancelLargeShareCommand.Execute(null);
             Assert.False(model.HasPendingLargeShare); Assert.Equal(0, fake.Sharing.Calls); Assert.Equal("Large upload cancelled. Nothing was uploaded.", model.Status);

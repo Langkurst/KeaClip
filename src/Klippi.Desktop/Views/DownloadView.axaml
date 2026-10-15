@@ -3,12 +3,12 @@
     <!-- Soft accent button for the inline Analyse step (Download stays the one primary action). -->
     <Style Selector="Button.soft /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="Background" Value="{DynamicResource AppAccentSubtle}" />
-      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AppClear}" />
       <Setter Property="Foreground" Value="{DynamicResource AppAccentSubtleText}" />
     </Style>
     <Style Selector="Button.soft:pointerover /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="Background" Value="{DynamicResource AppAccent}" />
-      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AppClear}" />
       <Setter Property="Foreground" Value="{DynamicResource AccentText}" />
     </Style>
     <Style Selector="Button.soft:pressed /template/ ContentPresenter#PART_ContentPresenter">
@@ -18,7 +18,7 @@
     <!-- Disabled looks like every other unavailable secondary action, never like a live accent. -->
     <Style Selector="Button.soft:disabled /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="Background" Value="{DynamicResource AppSurfaceRaised}" />
-      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AppClear}" />
       <Setter Property="Foreground" Value="{DynamicResource AppFaint}" />
     </Style>
     <Style Selector="Button.soft"><Setter Property="FontWeight" Value="SemiBold" /></Style>
@@ -27,7 +27,7 @@
     <Style Selector="Border.row">
       <Setter Property="Padding" Value="10,2" />
       <Setter Property="CornerRadius" Value="8" />
-      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Background" Value="{DynamicResource AppClear}" />
       <Setter Property="Transitions"><Transitions><BrushTransition Property="Background" Duration="0:0:0.12" /></Transitions></Setter>
     </Style>
     <Style Selector="Border.row:pointerover"><Setter Property="Background" Value="{DynamicResource AppSurfaceHover}" /></Style>
@@ -87,8 +87,8 @@
             <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
               <Border Classes="well raised"><c:StrokeIcon Data="{StaticResource IconPackage}" /></Border>
               <StackPanel Grid.Column="1" Spacing="4" VerticalAlignment="Center">
-                <TextBlock Text="One-time setup" Classes="strong" />
-                <TextBlock Text="KeaClip needs a few free media tools before it can read links. Prepare fetches them from their official sites into KeaClip's own folder. Nothing else on your PC changes." Classes="caption muted" TextWrapping="Wrap" />
+                <TextBlock Text="Getting KeaClip ready" Classes="strong" />
+                <TextBlock Text="KeaClip downloads a few free helper tools, just once. Nothing else on your PC changes." Classes="caption muted" TextWrapping="Wrap" />
                 <TextBlock Text="{Binding MissingComponentsText}" Classes="caption muted" TextWrapping="Wrap" />
                 <StackPanel Spacing="7" Margin="0,8,0,0" IsVisible="{Binding ProvisionCommand.IsRunning}">
                   <ProgressBar Minimum="0" Maximum="100" Value="{Binding MaintenancePercent}" IsVisible="{Binding HasMaintenancePercent}" />
@@ -104,7 +104,7 @@
                 </StackPanel>
               </StackPanel>
               <Button Name="PrepareComponentsButton" Grid.Column="2" Classes="primary" Command="{Binding ProvisionCommand}" IsEnabled="{Binding CanRunSetup}" VerticalAlignment="Center">
-                <StackPanel Orientation="Horizontal" Spacing="8"><c:StrokeIcon Data="{StaticResource IconDownload}" Size="16" /><TextBlock Text="Prepare components" VerticalAlignment="Center" /></StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="8"><c:StrokeIcon Data="{StaticResource IconDownload}" Size="16" /><TextBlock Text="Download the tools" VerticalAlignment="Center" /></StackPanel>
               </Button>
             </Grid>
           </Border>
@@ -147,7 +147,7 @@
               </Grid>
               <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" Margin="4,0,0,0">
                 <c:StrokeIcon Data="{StaticResource IconShield}" Size="15" Classes="faint" VerticalAlignment="Top" Margin="0,1,0,0" />
-                <TextBlock Grid.Column="1" Text="Only save media you own or are allowed to keep. Sign-ins stay on this PC." Classes="caption muted" TextWrapping="Wrap" />
+                <TextBlock Grid.Column="1" Text="Only save videos you're allowed to keep." Classes="caption muted" TextWrapping="Wrap" />
               </Grid>
 
               <!-- Analysis problems stay next to the link they belong to. -->
@@ -159,7 +159,7 @@
                     <TextBlock Name="AnalysisProblemBodyText" Text="{Binding AnalysisProblemText}" Classes="caption muted" TextWrapping="Wrap" />
                     <WrapPanel ItemSpacing="8" LineSpacing="8" Margin="0,6,0,0">
                       <Button Name="PrepareFromProblemButton" Classes="small primary" Command="{Binding ProvisionCommand}" IsEnabled="{Binding CanRunSetup}" IsVisible="{Binding AnalysisSuggestsSetup}" ToolTip.Tip="Fetches the media tools from their official sites into KeaClip's own folder">
-                        <StackPanel Orientation="Horizontal" Spacing="6"><c:StrokeIcon Data="{StaticResource IconPackage}" Size="14" /><TextBlock Text="Prepare components" VerticalAlignment="Center" /></StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="6"><c:StrokeIcon Data="{StaticResource IconPackage}" Size="14" /><TextBlock Text="Download the tools" VerticalAlignment="Center" /></StackPanel>
                       </Button>
                       <Button Name="RetryAnalysisButton" Classes="small" Command="{Binding AnalyseCommand}" Click="OnLinkAction" IsEnabled="{Binding CanCheckLink}">
                         <StackPanel Orientation="Horizontal" Spacing="6"><c:StrokeIcon Data="{StaticResource IconRetry}" Size="14" /><TextBlock Text="Try again" VerticalAlignment="Center" /></StackPanel>
@@ -183,7 +183,7 @@
           <!-- Nothing analysed yet: a light hint instead of an empty card. -->
           <Grid Name="MediaHint" ColumnDefinitions="Auto,*" ColumnSpacing="10" Margin="26,-4,26,0" IsVisible="{Binding ShowMediaHint}">
             <c:StrokeIcon Data="{StaticResource IconSparkle}" Size="16" Classes="accent" VerticalAlignment="Top" Margin="0,1,0,0" />
-            <TextBlock Grid.Column="1" Text="Analyse shows the title, picture and quality first. Or press Download to go straight ahead." Classes="caption muted" />
+            <TextBlock Grid.Column="1" Text="Paste a link and press Download. Press Analyse first if you want to check it." Classes="caption muted" />
           </Grid>
 
           <!-- Analysing: a skeleton in the shape of the result, until the thumbnail and entries are in too. -->
@@ -263,7 +263,7 @@
                 <Border Classes="well"><c:StrokeIcon Data="{StaticResource IconPaste}" /></Border>
                 <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
                   <TextBlock Text="Review pasted links" Classes="section" />
-                  <TextBlock Text="Nothing is added until you choose. Analyse a playlist link to pick its videos." Classes="caption muted" TextWrapping="Wrap" />
+                  <TextBlock Text="Tick the ones you want, then add them." Classes="caption muted" TextWrapping="Wrap" />
                 </StackPanel>
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Top" ToolTip.Tip="{Binding BatchSummary}">
                   <Border Classes="chip"><TextBlock Text="{Binding BatchCountText}" Classes="tabular" /></Border>
@@ -303,7 +303,7 @@
                 <Border Classes="well"><c:StrokeIcon Data="{StaticResource IconQueue}" /></Border>
                 <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
                   <TextBlock Text="Choose playlist entries" Classes="section" />
-                  <TextBlock Text="Only checked entries are added. Whole playlists never download automatically." Classes="caption muted" TextWrapping="Wrap" />
+                  <TextBlock Text="Tick the videos you want. Nothing downloads until you say so." Classes="caption muted" TextWrapping="Wrap" />
                 </StackPanel>
                 <Border Grid.Column="2" Classes="chip accent" VerticalAlignment="Top"><TextBlock Name="PlaylistSelectionChip" Text="{Binding PlaylistSelectionText}" Classes="tabular" /></Border>
               </Grid>
@@ -376,12 +376,12 @@
                       </StackPanel>
                     </Grid>
                   </RadioButton>
-                  <RadioButton Name="ArchiveTile" Classes="tile" GroupName="DownloadAs" AutomationProperties.Name="Preservation archive" ToolTip.Tip="Preservation archive: the best original streams untouched, with metadata, subtitles and checksums" IsChecked="{Binding DownloadMode, Mode=TwoWay, Converter={x:Static conv:EnumEqualsConverter.Instance}, ConverterParameter={x:Static core:DownloadMode.Archive}}">
+                  <RadioButton Name="ArchiveTile" Classes="tile" GroupName="DownloadAs" AutomationProperties.Name="Preservation archive" ToolTip.Tip="Keeps the best original copy with its details and subtitles, all in one folder" IsChecked="{Binding DownloadMode, Mode=TwoWay, Converter={x:Static conv:EnumEqualsConverter.Instance}, ConverterParameter={x:Static core:DownloadMode.Archive}}">
                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="11">
                       <c:StrokeIcon Data="{StaticResource IconArchive}" Size="20" VerticalAlignment="Top" Margin="0,1,0,0" />
                       <StackPanel Grid.Column="1" Spacing="2">
                         <TextBlock Text="Archive" Classes="strong" TextTrimming="CharacterEllipsis" />
-                        <TextBlock Text="Best source, untouched" Classes="caption muted" />
+                        <TextBlock Text="Full copy with details" Classes="caption muted" />
                       </StackPanel>
                     </Grid>
                   </RadioButton>
@@ -432,19 +432,19 @@
                 <Border Name="OriginalAudioNote" Classes="notice accent" Padding="14,12" IsVisible="{Binding IsOriginalAudio}">
                   <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
                     <c:StrokeIcon Data="{StaticResource IconSparkle}" Size="16" Classes="accent" VerticalAlignment="Top" Margin="0,1,0,0" />
-                    <TextBlock Grid.Column="1" Classes="caption" Foreground="{DynamicResource AppAccentSubtleText}" TextWrapping="Wrap" Text="Best fidelity. Original audio keeps the stream exactly as the site provides it, with no extra conversion." />
+                    <TextBlock Grid.Column="1" Classes="caption" Foreground="{DynamicResource AppAccentSubtleText}" TextWrapping="Wrap" Text="Best sound. Original keeps the audio exactly as the site has it." />
                   </Grid>
                 </Border>
                 <Border Name="ConversionNote" Classes="notice" Padding="14,12" IsVisible="{Binding !IsOriginalAudio}">
                   <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
                     <c:StrokeIcon Data="{StaticResource IconInfo}" Size="16" Foreground="{DynamicResource AppInfo}" VerticalAlignment="Top" Margin="0,1,0,0" />
-                    <TextBlock Grid.Column="1" Classes="caption muted" TextWrapping="Wrap" Text="Converting can't add quality: a higher bitrate on a lower-quality source only makes a bigger file. Choose Original audio for the best sound, or convert when you need this format." />
+                    <TextBlock Grid.Column="1" Classes="caption muted" TextWrapping="Wrap" Text="Changing the type can't make it sound better, only bigger. Pick Original for the best sound." />
                   </Grid>
                 </Border>
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
                   <StackPanel Spacing="2" VerticalAlignment="Center">
-                    <TextBlock Text="Prefer the smallest file" Classes="strong" />
-                    <TextBlock Text="Picks the smallest audio stream the site offers instead of the best one." Classes="caption muted" TextWrapping="Wrap" />
+                    <TextBlock Text="Smallest file" Classes="strong" />
+                    <TextBlock Text="Picks the smallest audio the site has, not the best." Classes="caption muted" TextWrapping="Wrap" />
                   </StackPanel>
                   <ToggleSwitch Name="SmallestAudioSwitch" Grid.Column="1" IsChecked="{Binding PreferSmallestAudio, Mode=TwoWay}" AutomationProperties.Name="Prefer the smallest audio file" />
                 </Grid>
@@ -455,13 +455,13 @@
                 <Border Classes="notice" Padding="14,12">
                   <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
                     <c:StrokeIcon Data="{StaticResource IconInfo}" Size="16" Foreground="{DynamicResource AppInfo}" VerticalAlignment="Top" Margin="0,1,0,0" />
-                    <TextBlock Grid.Column="1" Classes="caption muted" TextWrapping="Wrap" Text="Keeps the original video and audio untouched, with the description, thumbnail, subtitles and checksums, all in one folder. Quality and format choices don't apply; make an edited or smaller copy afterwards." />
+                    <TextBlock Grid.Column="1" Classes="caption muted" TextWrapping="Wrap" Text="Saves the original video with its description, picture and subtitles, all in one folder. To cut or shrink it, use the Editor afterwards." />
                   </Grid>
                 </Border>
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
                   <StackPanel Spacing="2" VerticalAlignment="Center">
                     <TextBlock Text="Also create a ZIP copy" Classes="strong" />
-                    <TextBlock Text="Packs the complete archive folder into one verified .zip file." Classes="caption muted" TextWrapping="Wrap" />
+                    <TextBlock Text="Also packs the folder into one .zip file." Classes="caption muted" TextWrapping="Wrap" />
                   </StackPanel>
                   <ToggleSwitch Name="ArchiveZipSwitch" Grid.Column="1" IsChecked="{Binding ArchiveZip, Mode=TwoWay}" IsVisible="{Binding IsArchiveDownload}" AutomationProperties.Name="Create a ZIP copy of the complete archive folder" />
                 </Grid>
@@ -471,7 +471,7 @@
               <Border Name="FormatConflictNotice" Classes="notice warning reveal" Padding="14,12" IsVisible="{Binding HasFormatConflict}" AutomationProperties.LiveSetting="Polite" AutomationProperties.Name="Format conflict: WebM can't hold H.264 or HEVC video">
                 <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
                   <c:StrokeIcon Data="{StaticResource IconAlert}" Size="16" Foreground="{DynamicResource AppWarning}" VerticalAlignment="Top" Margin="0,1,0,0" />
-                  <TextBlock Grid.Column="1" Classes="caption muted" TextWrapping="Wrap" VerticalAlignment="Center" Text="WebM can't hold H.264 or HEVC video. Choose MKV, MP4 or Automatic, or the AV1 codec in More options." />
+                  <TextBlock Grid.Column="1" Classes="caption muted" TextWrapping="Wrap" VerticalAlignment="Center" Text="WebM can't hold this kind of video. Pick MP4, MKV or Automatic." />
                   <Button Name="UseMkvButton" Grid.Column="2" Classes="small" Command="{Binding UseMkvCommand}" VerticalAlignment="Center" Content="Use MKV" />
                 </Grid>
               </Border>
@@ -510,7 +510,7 @@
                     <StackPanel Orientation="Horizontal" Spacing="5"><TextBlock Text="How long links last" VerticalAlignment="Center" /><c:StrokeIcon Data="{StaticResource IconExternal}" Size="12" /></StackPanel>
                   </Button>
                 </StackPanel>
-                <ToggleSwitch Name="ShareWhenFinishedSwitch" Grid.Column="1" IsChecked="{Binding ShareWhenFinished, Mode=TwoWay}" AutomationProperties.Name="Share when finished" AutomationProperties.HelpText="Uploads each finished download to File.Kiwi, encrypted, and copies its link." />
+                <ToggleSwitch Name="ShareWhenFinishedSwitch" Grid.Column="1" IsChecked="{Binding ShareWhenFinished, Mode=TwoWay}" AutomationProperties.Name="Share when finished" AutomationProperties.HelpText="Uploads each finished download to file.kiwi, encrypted, and copies its link." />
               </Grid>
 
               <!-- Advanced choices stay folded away. -->
@@ -521,7 +521,7 @@
                       <c:StrokeIcon Data="{StaticResource IconSettings}" Classes="muted" VerticalAlignment="Center" />
                       <StackPanel Grid.Column="1" Spacing="1">
                         <TextBlock Text="More options" Classes="strong" />
-                        <TextBlock Text="Codec, frame rate, subtitles, embedding, sign-in and naming" Classes="caption muted" TextTrimming="CharacterEllipsis" />
+                        <TextBlock Text="Video type, subtitles, sign-in and file names" Classes="caption muted" TextTrimming="CharacterEllipsis" />
                       </StackPanel>
                     </Grid>
                   </Expander.Header>
@@ -540,11 +540,11 @@
                           </ComboBox>
                         </StackPanel>
                         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10" IsEnabled="{Binding IsVideoDownload}">
-                          <TextBlock Text="Convert HDR to SDR" VerticalAlignment="Center" TextWrapping="Wrap" />
+                          <TextBlock Text="Fix washed-out colours (HDR)" VerticalAlignment="Center" TextWrapping="Wrap" />
                           <ToggleSwitch Grid.Column="1" IsChecked="{Binding HdrToSdr, Mode=TwoWay}" AutomationProperties.Name="Convert HDR to SDR" />
                         </Grid>
                         <TextBlock Text="Applies to Video + audio and Video only." Classes="caption muted" IsVisible="{Binding !IsVideoDownload}" TextWrapping="Wrap" />
-                        <TextBlock Text="Only HDR sources are converted; SDR video is kept exactly as downloaded." Classes="caption muted" IsVisible="{Binding IsVideoDownload}" TextWrapping="Wrap" />
+                        <TextBlock Text="Only changes HDR videos. Normal videos stay exactly as they are." Classes="caption muted" IsVisible="{Binding IsVideoDownload}" TextWrapping="Wrap" />
                       </StackPanel>
                     </Border>
                     <Border Grid.Column="1" Classes="inset">
@@ -554,7 +554,7 @@
                           <TextBlock Text="Audio language (optional)" Classes="label" />
                           <TextBox Text="{Binding AudioLanguage, Mode=TwoWay}" PlaceholderText="Example: en" AutomationProperties.Name="Audio language" />
                         </StackPanel>
-                        <TextBlock Text="Picks a dubbed or alternate track when the site offers one." Classes="caption muted" TextWrapping="Wrap" />
+                        <TextBlock Text="Picks another language if the site has one." Classes="caption muted" TextWrapping="Wrap" />
                       </StackPanel>
                     </Border>
                     <Border Grid.Row="1" Classes="inset">
@@ -590,10 +590,10 @@
                       <StackPanel Spacing="12">
                         <TextBlock Text="Browser sign-in" Classes="overline" />
                         <StackPanel>
-                          <TextBlock Text="Use a browser session (opt-in)" Classes="label" />
+                          <TextBlock Text="Use my browser sign-in" Classes="label" />
                           <ComboBox Name="BrowserPicker" ItemsSource="{Binding Browsers}" SelectedItem="{Binding Browser, Mode=TwoWay}" AutomationProperties.Name="Browser session" />
                         </StackPanel>
-                        <TextBlock Text="Firefox works best. KeaClip only reads your sign-in while analysing or downloading, and never keeps a copy." Classes="caption muted" TextWrapping="Wrap" />
+                        <TextBlock Text="For videos you have to log in to see. Firefox works best. KeaClip only reads the sign-in while downloading and never keeps it." Classes="caption muted" TextWrapping="Wrap" />
                       </StackPanel>
                     </Border>
                     <Border Grid.Row="2" Grid.Column="1" Classes="inset">
@@ -606,7 +606,7 @@
                         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
                           <StackPanel Spacing="2" VerticalAlignment="Center">
                             <TextBlock Text="Replace existing files" TextWrapping="Wrap" />
-                            <TextBlock Text="Deliberately overwrites a file with the same name." Classes="caption muted" TextWrapping="Wrap" />
+                            <TextBlock Text="Saves over a file with the same name." Classes="caption muted" TextWrapping="Wrap" />
                           </StackPanel>
                           <ToggleSwitch Grid.Column="1" IsChecked="{Binding ReplaceExisting, Mode=TwoWay}" AutomationProperties.Name="Replace existing output files (deliberate overwrite)" />
                         </Grid>
@@ -614,7 +614,7 @@
                     </Border>
                   </Grid>
                 </Expander>
-                <TextBlock Text="What's available depends on the site. If something can't be done, KeaClip tells you." Classes="caption muted" TextWrapping="Wrap" IsVisible="{Binding #MoreOptions.IsExpanded}" Margin="2,2,0,0" />
+                <TextBlock Text="What you can pick depends on the site." Classes="caption muted" TextWrapping="Wrap" IsVisible="{Binding #MoreOptions.IsExpanded}" Margin="2,2,0,0" />
               </StackPanel>
             </StackPanel>
           </Border>
@@ -626,7 +626,7 @@
                 <Border Classes="well warm"><c:StrokeIcon Data="{StaticResource IconCopy}" /></Border>
                 <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
                   <TextBlock Text="Already saved" Classes="section" />
-                  <TextBlock Text="Your existing files are safe. Download again saves a separate copy; Replace overwrites the saved file. Archives can only be kept or copied." Classes="caption muted" TextWrapping="Wrap" />
+                  <TextBlock Text="Your saved file is safe. Download again makes a second copy; Replace saves over it." Classes="caption muted" TextWrapping="Wrap" />
                 </StackPanel>
                 <Border Grid.Column="2" Classes="chip warm" VerticalAlignment="Top"><TextBlock Text="{Binding DuplicateCountText}" Classes="tabular" /></Border>
               </Grid>

@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Klippi.UiTests;
 
-// File.Kiwi asked that users are told how long API uploads stay downloadable (it differs from the website), with a
+// file.kiwi asked that users are told how long API uploads stay downloadable (it differs from the website), with a
 // link to their table. Both Share spots link to it, and the hours follow the published table.
 public sealed class ShareHoursTests
 {

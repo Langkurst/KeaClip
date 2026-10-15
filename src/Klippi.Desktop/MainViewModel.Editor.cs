@@ -52,8 +52,16 @@ public sealed partial class MainViewModel
 
     public TimeSpan EditorDuration => _probe?.Duration ?? TimeSpan.Zero;
     public string EditorDurationText => MediaValidation.Timecode(EditorDuration);
-    /// <summary>Compact transport clock (m:ss.mmm, or h:mm:ss.mmm for long files) so the controls fit at the minimum width.</summary>
+    /// <summary>The transport clock (m:ss, or h:mm:ss for long files).</summary>
     public string PlaybackClockText => ClockText(Playback.Time, EditorDuration);
+    private string _shownClock = "";
+    // Called every frame while playing; the text (and its layout) changes only when the shown second does.
+    private void RefreshPlaybackClock()
+    {
+        var clock = PlaybackClockText;
+        if (clock == _shownClock) return;
+        _shownClock = clock; OnPropertyChanged(nameof(PlaybackClockText));
+    }
     public string DurationClockText => ClockText(EditorDuration, EditorDuration);
 
     /// <summary>Pages are a 1040px column; with a file open the Editor widens so the video gets a proper size on big screens.</summary>
@@ -525,6 +533,8 @@ public sealed partial class MainViewModel
     private void OnEditorStateChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName is nameof(HasEditor) or nameof(SelectedTab)) OnPropertyChanged(nameof(PageMaxWidth));
+        // However the clock was refreshed (a new file, a seek), remember what is on screen now.
+        if (e.PropertyName == nameof(PlaybackClockText)) _shownClock = PlaybackClockText;
         switch (e.PropertyName)
         {
             case nameof(HasEditor) or nameof(EditorSummary):
@@ -542,9 +552,6 @@ public sealed partial class MainViewModel
                 break;
             case nameof(Status):
                 RefreshSoundboardText();
-                break;
-            case nameof(PlaybackTime):
-                OnPropertyChanged(nameof(PlaybackClockText));
                 break;
             case nameof(StartTime) or nameof(EndTime):
                 OnPropertyChanged(nameof(SelectionDurationText)); OnPropertyChanged(nameof(IsSelectionValid)); OnPropertyChanged(nameof(CanExport));

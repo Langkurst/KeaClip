@@ -200,7 +200,12 @@ public sealed class UpdateService : IUpdateService, IDisposable
             // A local feed's file is copied exactly like a download: size-capped, hashed, then checked again from disk.
             using var request = local ? null : new HttpRequestMessage(HttpMethod.Get, asset.Url);
             request?.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/octet-stream"));
-            using var response = request is null ? null : await _http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+            // A server that never answers must not hang the update: the reply's headers get the feed's time limit
+            // (the body then has its own stall timer below).
+            using var headersTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            headersTimeout.CancelAfter(_options.ManifestTimeout);
+            using var response = request is null ? null : await _http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, headersTimeout.Token).ConfigureAwait(false);
+            headersTimeout.CancelAfter(Timeout.InfiniteTimeSpan);
             if (response is not null) { response.EnsureSuccessStatusCode(); RequireAllowedFinalUrl(response); }
             else RequireNotLink(asset.Url.LocalPath);
             var length = response is null ? new FileInfo(asset.Url.LocalPath).Length : response.Content.Headers.ContentLength;

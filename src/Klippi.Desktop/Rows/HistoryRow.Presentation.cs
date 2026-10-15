@@ -132,7 +132,7 @@ public sealed partial class HistoryRow : ObservableObject
     public string OpenTip => IsMissing ? "File missing · " + MissingAdvice : "Open";
     public string RevealTip => !IsMissing ? "Show file in folder" : _folderExists ? "File missing · Open the folder it was saved in" : "File missing · Its folder is gone too";
     public string EditTip => IsMissing ? "File missing · " + MissingAdvice : "Edit in KeaClip";
-    public string ShareTip => IsMissing ? "File missing · " + MissingAdvice : "Share with File.Kiwi";
+    public string ShareTip => IsMissing ? "File missing · " + MissingAdvice : "Share with file.kiwi";
     private string MissingAdvice => HasSource ? "Download it again or remove the record" : "Remove the record from More actions";
 
     /// <summary>What a screen reader hears after the title: any status, then the meta line.</summary>

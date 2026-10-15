@@ -11,7 +11,7 @@ using Xunit;
 namespace Klippi.UiTests;
 
 // Share when finished: an opt-in upload after the user's own download, through the same encrypted
-// File.Kiwi share, one upload at a time, with the link kept in memory only.
+// file.kiwi share, one upload at a time, with the link kept in memory only.
 public sealed class ShareWhenFinishedTests
 {
     private const string Link = "https://file.kiwi/example#decryption-secret";
@@ -27,7 +27,7 @@ public sealed class ShareWhenFinishedTests
         model.ShareWhenFinished = true; Assert.Empty(fake.Downloads.Requests); Assert.Equal(0, fake.Sharing.Calls);
 
         model.Url = "https://example.com/video"; await model.QueueDownloadAsync(false);
-        Assert.Contains("shared with an encrypted File.Kiwi link when it finishes", model.Status);
+        Assert.Contains("shared when it's done", model.Status);
         await WaitUntil(() => fake.Sharing.Calls == 1 && model.Status.StartsWith("Shared: link copied", StringComparison.Ordinal));
         Assert.Equal("test-output.mp4", Assert.Single(fake.Sharing.Paths));
         Assert.Equal(Link, fake.Platform.Clipboard);
@@ -89,7 +89,7 @@ public sealed class ShareWhenFinishedTests
     [AvaloniaFact]
     public async Task A_failed_share_keeps_the_download_and_offers_Retry_share()
     {
-        var fake = new UiFakes(); fake.Sharing.Failure = new MediaOperationException("File.Kiwi could not be reached.");
+        var fake = new UiFakes(); fake.Sharing.Failure = new MediaOperationException("file.kiwi could not be reached.");
         using var model = new MainViewModel(fake.Services);
         await model.InitializeAsync();
         model.ShareWhenFinished = true; model.Url = "https://example.com/video"; await model.QueueDownloadAsync(false);
@@ -97,7 +97,7 @@ public sealed class ShareWhenFinishedTests
 
         var row = model.Queue[0];
         Assert.True(row.IsFinished); Assert.Equal(JobState.Finished, row.State); Assert.Single(fake.Store.History);
-        Assert.Contains("File.Kiwi could not be reached.", row.ShareFailureText);
+        Assert.Contains("file.kiwi could not be reached.", row.ShareFailureText);
         Assert.False(row.HasShareLink);
         Assert.Contains("could not be shared", model.Status); Assert.Contains("Retry share", model.Status);
 
@@ -157,7 +157,7 @@ public sealed class ShareWhenFinishedTests
     [AvaloniaFact]
     public async Task Pages_bind_the_switches_and_show_Copy_link_and_Retry_share_only_when_they_apply()
     {
-        var fake = new UiFakes(); fake.Sharing.Failure = new MediaOperationException("File.Kiwi could not be reached.");
+        var fake = new UiFakes(); fake.Sharing.Failure = new MediaOperationException("file.kiwi could not be reached.");
         using var model = new MainViewModel(fake.Services) { ReducedMotion = true };
         var window = new MainWindow { DataContext = model, Width = 1100, Height = 820 }; window.Show();
         try

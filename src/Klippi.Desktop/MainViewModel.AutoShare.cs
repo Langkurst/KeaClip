@@ -8,7 +8,7 @@ public enum AutoShareState { None, Waiting, Uploading, NeedsConfirmation, Failed
 
 // Share when finished. The Download page switch (its starting value is a Settings default, off
 // unless chosen) marks the jobs queued while it is on. When such a job finishes successfully, its
-// file goes through the same encrypted File.Kiwi share as the Share buttons, in the Share lane, one
+// file goes through the same encrypted file.kiwi share as the Share buttons, in the Share lane, one
 // upload at a time: an automatic share waits for any upload already running instead of failing.
 // A very large file is never uploaded automatically; it waits for the usual confirmation. The
 // finished link is copied to the clipboard and kept in memory only (with its decryption secret),
@@ -127,8 +127,8 @@ public sealed partial class MainViewModel
         {
             _autoShares.Remove(jobId); RaiseAutoShare(jobId);
             Status = await TryCopyToClipboardAsync(result.ShareUrl)
-                ? $"Shared: link copied. {share.Title} has an expiring File.Kiwi link; keep the full link private."
-                : $"Shared: {share.Title} has an expiring File.Kiwi link, but the clipboard is busy in another app. Choose Copy link on it in your queue.";
+                ? $"Shared: link copied. {share.Title} has an expiring file.kiwi link; keep the full link private."
+                : $"Shared: {share.Title} has an expiring file.kiwi link, but the clipboard is busy in another app. Choose Copy link on it in your queue.";
             return;
         }
         share.State = AutoShareState.Failed;

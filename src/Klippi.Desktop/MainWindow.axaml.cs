@@ -315,7 +315,7 @@ public sealed partial class MainWindow : Window
             var menu = new NativeMenu();
             var open = new NativeMenuItem("Open KeaClip"); open.Click += (_, _) => RestoreFromTray();
             var queue = new NativeMenuItem("Downloads"); queue.Click += (_, _) => { if (Model is { } model) model.SelectedTab = 1; RestoreFromTray(); };
-            var pause = new NativeMenuItem("Pause / resume new starts"); pause.Click += (_, _) => Model?.PauseQueueCommand.Execute(null);
+            var pause = new NativeMenuItem("Pause or resume the queue"); pause.Click += (_, _) => Model?.PauseQueueCommand.Execute(null);
             var folder = new NativeMenuItem("Open downloads folder"); folder.Click += (_, _) => { if (Model is { } model && Directory.Exists(model.DownloadDirectory)) new DesktopPlatform().OpenFolder(model.DownloadDirectory); };
             var exit = new NativeMenuItem("Exit"); exit.Click += (_, _) => ExitFromTray();
             menu.Items.Add(open); menu.Items.Add(queue); menu.Items.Add(pause); menu.Items.Add(folder); menu.Items.Add(new NativeMenuItemSeparator()); menu.Items.Add(exit);

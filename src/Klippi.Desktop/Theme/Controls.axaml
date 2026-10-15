@@ -64,11 +64,11 @@
     <Setter Property="TextElement.FontWeight" Value="Medium" />
     <Setter Property="TextElement.Foreground" Value="{DynamicResource AppMuted}" />
   </Style>
-  <Style Selector="Border.chip.accent"><Setter Property="Background" Value="{DynamicResource AppAccentSubtle}" /><Setter Property="BorderBrush" Value="Transparent" /><Setter Property="TextElement.Foreground" Value="{DynamicResource AppAccentSubtleText}" /></Style>
-  <Style Selector="Border.chip.warm"><Setter Property="Background" Value="{DynamicResource AppWarmSubtle}" /><Setter Property="BorderBrush" Value="Transparent" /><Setter Property="TextElement.Foreground" Value="{DynamicResource AppWarmText}" /></Style>
-  <Style Selector="Border.chip.danger"><Setter Property="Background" Value="{DynamicResource AppDangerSubtle}" /><Setter Property="BorderBrush" Value="Transparent" /><Setter Property="TextElement.Foreground" Value="{DynamicResource AppDanger}" /></Style>
-  <Style Selector="Border.chip.warning"><Setter Property="Background" Value="{DynamicResource AppWarningSubtle}" /><Setter Property="BorderBrush" Value="Transparent" /><Setter Property="TextElement.Foreground" Value="{DynamicResource AppWarning}" /></Style>
-  <Style Selector="Border.chip.info"><Setter Property="Background" Value="{DynamicResource AppInfoSubtle}" /><Setter Property="BorderBrush" Value="Transparent" /><Setter Property="TextElement.Foreground" Value="{DynamicResource AppInfo}" /></Style>
+  <Style Selector="Border.chip.accent"><Setter Property="Background" Value="{DynamicResource AppAccentSubtle}" /><Setter Property="BorderBrush" Value="{DynamicResource AppClear}" /><Setter Property="TextElement.Foreground" Value="{DynamicResource AppAccentSubtleText}" /></Style>
+  <Style Selector="Border.chip.warm"><Setter Property="Background" Value="{DynamicResource AppWarmSubtle}" /><Setter Property="BorderBrush" Value="{DynamicResource AppClear}" /><Setter Property="TextElement.Foreground" Value="{DynamicResource AppWarmText}" /></Style>
+  <Style Selector="Border.chip.danger"><Setter Property="Background" Value="{DynamicResource AppDangerSubtle}" /><Setter Property="BorderBrush" Value="{DynamicResource AppClear}" /><Setter Property="TextElement.Foreground" Value="{DynamicResource AppDanger}" /></Style>
+  <Style Selector="Border.chip.warning"><Setter Property="Background" Value="{DynamicResource AppWarningSubtle}" /><Setter Property="BorderBrush" Value="{DynamicResource AppClear}" /><Setter Property="TextElement.Foreground" Value="{DynamicResource AppWarning}" /></Style>
+  <Style Selector="Border.chip.info"><Setter Property="Background" Value="{DynamicResource AppInfoSubtle}" /><Setter Property="BorderBrush" Value="{DynamicResource AppClear}" /><Setter Property="TextElement.Foreground" Value="{DynamicResource AppInfo}" /></Style>
   <Style Selector="Border.notice">
     <Setter Property="CornerRadius" Value="8" />
     <Setter Property="Padding" Value="16,14" />
@@ -152,12 +152,12 @@
   </Style>
   <Style Selector="Button.primary /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource AppAccent}" />
-    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="{DynamicResource AppClear}" />
     <Setter Property="Foreground" Value="{DynamicResource AccentText}" />
   </Style>
   <Style Selector="Button.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource AppAccentHover}" />
-    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="{DynamicResource AppClear}" />
     <Setter Property="Foreground" Value="{DynamicResource AccentText}" />
     <Setter Property="BoxShadow" Value="{DynamicResource ShadowAccent}" />
   </Style>
@@ -196,12 +196,12 @@
   <Style Selector="Button.primary.cta:disabled c|StrokeIcon"><Setter Property="Foreground" Value="{DynamicResource AccentButtonForegroundDisabled}" /></Style>
 
   <Style Selector="Button.ghost /template/ ContentPresenter#PART_ContentPresenter">
-    <Setter Property="Background" Value="Transparent" />
-    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="Background" Value="{DynamicResource AppClear}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource AppClear}" />
   </Style>
   <Style Selector="Button.ghost:pointerover /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource AppSurfaceHover}" />
-    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="{DynamicResource AppClear}" />
   </Style>
   <Style Selector="Button.ghost:pressed /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource AppSurfacePressed}" />
@@ -243,8 +243,8 @@
     <Setter Property="MinHeight" Value="0" />
     <Setter Property="Foreground" Value="{DynamicResource AppAccent}" />
   </Style>
-  <Style Selector="Button.link /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="Transparent" /><Setter Property="BorderBrush" Value="Transparent" /></Style>
-  <Style Selector="Button.link:pointerover /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="Transparent" /><Setter Property="Foreground" Value="{DynamicResource AppAccentHover}" /></Style>
+  <Style Selector="Button.link /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="{DynamicResource AppClear}" /><Setter Property="BorderBrush" Value="{DynamicResource AppClear}" /></Style>
+  <Style Selector="Button.link:pointerover /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="{DynamicResource AppClear}" /><Setter Property="Foreground" Value="{DynamicResource AppAccentHover}" /></Style>
 
   <!-- Navigation rail -->
   <Style Selector="Button.nav">
@@ -257,17 +257,19 @@
     <Setter Property="Foreground" Value="{DynamicResource AppMuted}" />
   </Style>
   <Style Selector="Button.nav /template/ ContentPresenter#PART_ContentPresenter">
-    <Setter Property="Background" Value="Transparent" />
-    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="Background" Value="{DynamicResource AppClear}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource AppClear}" />
   </Style>
   <Style Selector="Button.nav:pointerover /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource AppSurfaceHover}" />
     <Setter Property="Foreground" Value="{DynamicResource AppText}" />
   </Style>
   <Style Selector="Button.nav.selected /template/ ContentPresenter#PART_ContentPresenter">
-    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Background" Value="{DynamicResource AppClear}" />
     <Setter Property="Foreground" Value="{DynamicResource AppAccentSubtleText}" />
   </Style>
+  <!-- The current page already wears the sliding highlight: hovering it changes nothing (no grey box over the green). -->
+  <Style Selector="Button.nav.selected:pointerover /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="{DynamicResource AppClear}" /></Style>
   <Style Selector="Button.nav.selected"><Setter Property="FontWeight" Value="SemiBold" /></Style>
   <Style Selector="Button.nav c|StrokeIcon"><Setter Property="Foreground" Value="{Binding $parent[Button].Foreground}" /></Style>
   <Style Selector="Button.nav:pointerover c|StrokeIcon"><Setter Property="Foreground" Value="{DynamicResource AppText}" /></Style>
@@ -354,7 +356,7 @@
     <Setter Property="Focusable" Value="False" />
     <Setter Property="Foreground" Value="{DynamicResource AppMuted}" />
   </Style>
-  <Style Selector="Button.caption /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="Transparent" /><Setter Property="BorderBrush" Value="Transparent" /></Style>
+  <Style Selector="Button.caption /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="{DynamicResource AppClear}" /><Setter Property="BorderBrush" Value="{DynamicResource AppClear}" /></Style>
   <Style Selector="Button.caption:pointerover /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="{DynamicResource AppSurfaceHover}" /></Style>
   <Style Selector="Button.caption:pressed /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Background" Value="{DynamicResource AppSurfacePressed}" /></Style>
   <Style Selector="Button.caption c|StrokeIcon"><Setter Property="Foreground" Value="{DynamicResource AppMuted}" /></Style>

@@ -48,6 +48,19 @@ public static partial class UpgradeMode
         if (next <= current) throw new IOException($"KeaClip {installed} is already installed, which is the same as or newer than this installer ({incoming}). Nothing was changed.");
     }
 
+    /// <summary>
+    /// The setup window and --silent may reinstall the same version (a repair) but never put an older one over a
+    /// newer one, whose settings the older app might not read.
+    /// </summary>
+    public static void RefuseDowngrade(string target, string? incomingVersion = null)
+    {
+        target = InstallEngine.SafeTarget(target);
+        if (!File.Exists(Path.Combine(target, InstallEngine.ReceiptName))) return;
+        var installed = InstallEngine.ReadReceipt(target).Version; var incoming = incomingVersion ?? IncomingVersion;
+        if (Version.TryParse(installed, out var current) && Version.TryParse(incoming, out var next) && next < current)
+            throw new IOException($"KeaClip {installed} is already installed, which is newer than this setup ({incoming}). Nothing was changed.");
+    }
+
     /// <summary>Keeps what the installation already has: shortcuts that still exist and the link handler.</summary>
     public static InstallChoices ChoicesFrom(InstallReceipt receipt)
     {

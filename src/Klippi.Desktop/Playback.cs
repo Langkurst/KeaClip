@@ -184,7 +184,8 @@ public sealed class VlcPlaybackService : ObservableObject, IPlaybackService
         Raise();
     }
 
-    public void Tick() { if (!_disposed && !_priming && _player is { IsPlaying: true }) Raise(); }
+    // Per frame only the position moves; play state and errors are reported by the player's own events.
+    public void Tick() { if (!_disposed && !_priming && _player is { IsPlaying: true }) OnPropertyChanged(nameof(Position)); }
 
     private void Refresh()
     {

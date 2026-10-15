@@ -10,7 +10,7 @@ public sealed class EngineFailureTests
     [InlineData("ERROR: Sign in to confirm your age", "Sign-in")]
     [InlineData("Could not copy Chrome cookies database (locked)", "Browser sign-in")]
     [InlineData("Requested format is not available", "unavailable")]
-    [InlineData("Unsupported URL", "not supported")]
+    [InlineData("Unsupported URL", "can't save from this website")]
     [InlineData("Unable to extract uploader id", "website may have changed")]
     [InlineData("Unable to download webpage: network is unreachable", "internet")]
     [InlineData("No space left on device", "disk space")]

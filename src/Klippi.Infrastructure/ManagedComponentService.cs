@@ -489,7 +489,7 @@ public sealed partial class ManagedComponentService(IProcessRunner runner, strin
             _verified.Clear();
             // Activation is done; cleanup failures must not be reported as install failures.
             if (!quarantined) BestEffort(PruneVersions);
-            progress?.Report(new(JobStage.Finished, 100, "Components are ready."));
+            progress?.Report(new(JobStage.Finished, 100, "All set. Paste a link to start."));
         }
         catch (Exception ex) when (FriendlyInstallFailure(ex, token.IsCancellationRequested) is { } friendly) { throw friendly; }
         finally
@@ -643,7 +643,7 @@ public sealed partial class ManagedComponentService(IProcessRunner runner, strin
                     await output.WriteAsync(buffer.AsMemory(0, count), idle.Token).ConfigureAwait(false);hasher.AppendData(buffer.AsSpan(0,count));
                     if(DateTime.UtcNow-lastReport>TimeSpan.FromMilliseconds(250))
                     {
-                        progress?.Report(new(JobStage.Downloading, response.Content.Headers.ContentLength is > 0 ? received * 100d / response.Content.Headers.ContentLength : null, "Downloading components…"));lastReport=DateTime.UtcNow;
+                        progress?.Report(new(JobStage.Downloading, response.Content.Headers.ContentLength is > 0 ? received * 100d / response.Content.Headers.ContentLength : null, "Downloading the tools…"));lastReport=DateTime.UtcNow;
                     }
                 }
             }

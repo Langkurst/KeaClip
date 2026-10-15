@@ -32,7 +32,7 @@ public sealed partial class MainViewModel
             if (downloads > 0) work.Add(downloads == 1 ? "1 download" : $"{downloads} downloads");
             else if (IsLaneBusy(OperationLane.Download) && !IsAnalysing) work.Add("downloads being added to your queue");
             if (IsExporting) work.Add("an export");
-            if (IsSharing || IsLaneBusy(OperationLane.Share)) work.Add(_sharingWatchLink ? "a watch link upload" : "a File.Kiwi upload");
+            if (IsSharing || IsLaneBusy(OperationLane.Share)) work.Add(_sharingWatchLink ? "a watch link upload" : "a file.kiwi upload");
             if (IsDownloadingUpdate) work.Add("an app update download");
             // Loading settings at startup is not interrupted work (_initialized and _settingsUnreadable are both set once it ends).
             if (IsLaneBusy(OperationLane.Maintenance) && (_initialized || _settingsUnreadable))

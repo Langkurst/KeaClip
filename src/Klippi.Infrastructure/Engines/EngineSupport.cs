@@ -53,9 +53,9 @@ internal static partial class EngineSupport
         if (Has("http error 403", "403: forbidden")) return "The site refused the download. Update the downloader in Components, or choose a browser you are signed into, then retry.";
         if (Has("http error 429", "too many requests")) return "The site is limiting requests right now. Wait a while, then retry.";
         // 5xx: the site itself failed, after yt-dlp's own retries.
-        if (Has("http error 5", "internal server error", "service unavailable", "bad gateway", "gateway time")) return "The site is having problems right now. Wait a few minutes, then retry.";
-        if (Has("unsupported url", "no suitable extractor")) return "This link is not supported by the installed downloader. Check the link or update the downloader.";
-        if (Has("unable to extract", "extractor error", "please report this issue", "no video formats found", "signature extraction failed", "nsig extraction failed")) return "This website may have changed and the downloader needs an update. Update it in Components, then analyse the link again.";
+        if (Has("http error 5", "internal server error", "service unavailable", "bad gateway", "gateway time")) return "The website is having trouble right now. Wait a few minutes, then try again.";
+        if (Has("unsupported url", "no suitable extractor")) return "KeaClip can't save from this website yet. Check the link, or update the downloader.";
+        if (Has("unable to extract", "extractor error", "please report this issue", "no video formats found", "signature extraction failed", "nsig extraction failed")) return "KeaClip couldn't find a video at this link. Check the link is right. If it is, the website may have changed: update the downloader and try again.";
         // Includes a transfer cut off mid-file ("... bytes read, ... more expected").
         if (Has("name resolution", "failed to resolve", "getaddrinfo", "network is unreachable", "connection refused", "actively refused", "connection reset", "connection aborted", "remote end closed", "timed out", "10054", "10060", "10061", "more expected", "incomplete read", "incompleteread", "content too short", "unable to download video data", "unable to download webpage")) return "Could not reach the media service, or the transfer was cut off. Check your internet connection and try again.";
         return null;

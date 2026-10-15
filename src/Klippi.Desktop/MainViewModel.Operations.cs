@@ -7,7 +7,7 @@ namespace Klippi.Desktop;
 public enum OperationLane { Download, Editor, Share, Maintenance }
 
 // Long operations run in lanes instead of behind one app-wide busy gate, so a long
-// File.Kiwi upload or export no longer locks Analyse, Download, Settings or the editor.
+// file.kiwi upload or export no longer locks Analyse, Download, Settings or the editor.
 public sealed partial class MainViewModel
 {
     private sealed class LaneState

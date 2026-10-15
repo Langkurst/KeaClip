@@ -29,7 +29,8 @@
           <StackPanel Orientation="Horizontal" Spacing="12" Margin="20,4,16,26">
             <c:KeaMascot Classes="mascot" Size="42" VerticalAlignment="Center" Background="{DynamicResource AppAccentSubtle}" RenderTransformOrigin="50%,85%" AutomationProperties.Name="KeaClip" />
             <StackPanel VerticalAlignment="Center" Spacing="1">
-              <TextBlock Text="{Binding AppName}" Classes="wordmark" />
+              <!-- "Kea" in the bird's own colours (olive body, blue-green flight feathers, orange underwing); "Clip" in the ink. -->
+              <TextBlock Name="Wordmark" Classes="wordmark" AutomationProperties.Name="{Binding AppName}"><Run Text="K" Foreground="{DynamicResource AppAccent}" /><Run Text="e" Foreground="{DynamicResource KeaFeather}" /><Run Text="a" Foreground="{DynamicResource AppWarm}" /><Run Text="Clip" /></TextBlock>
               <TextBlock Text="Save. Shape. Share." Classes="caption faint" />
             </StackPanel>
           </StackPanel>
@@ -79,7 +80,20 @@
             <Button Name="UpdateAvailableButton" Classes="small reveal" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Command="{Binding ShowUpdateCommand}" IsVisible="{Binding ShowUpdateBadge}" ToolTip.Tip="{Binding UpdateTitle}" AutomationProperties.Name="{Binding UpdateTitle}">
               <StackPanel Orientation="Horizontal" Spacing="8"><c:StrokeIcon Data="{StaticResource IconSparkle}" Size="14" Classes="accent" /><TextBlock Name="UpdateBadgeText" Text="{Binding UpdateBadgeText}" VerticalAlignment="Center" /></StackPanel>
             </Button>
-            <TextBlock Text="{Binding AppVersion}" Classes="caption faint" Margin="4,0" />
+            <!-- Version, with a quiet way to report a problem beside it. -->
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Text="{Binding AppVersion}" Classes="caption faint" Margin="4,0" VerticalAlignment="Center" />
+              <Button Name="FeedbackButton" Grid.Column="1" Classes="small ghost" Padding="8,4" ToolTip.Tip="Report a problem, suggest an idea or ask a question" AutomationProperties.Name="Feedback">
+                <StackPanel Orientation="Horizontal" Spacing="6"><c:StrokeIcon Data="{StaticResource IconBug}" Size="14" /><TextBlock Text="Feedback" FontSize="12" VerticalAlignment="Center" /></StackPanel>
+                <Button.Flyout>
+                  <MenuFlyout Placement="TopEdgeAlignedRight">
+                    <MenuItem Name="ReportOnGitHubItem" Header="Report a problem" Command="{Binding ReportOnGitHubCommand}" ToolTip.Tip="Opens a ready-made report on GitHub (free account). Personal folder names are left out." />
+                    <MenuItem Name="SuggestIdeaItem" Header="Suggest an idea" Command="{Binding SuggestIdeaCommand}" ToolTip.Tip="Opens a new idea on GitHub (free account)." />
+                    <MenuItem Name="ReportByEmailItem" Header="Email keaclip@proton.me" Command="{Binding ReportByEmailCommand}" ToolTip.Tip="For problems, ideas or questions. Your email app opens with the details filled in." />
+                  </MenuFlyout>
+                </Button.Flyout>
+              </Button>
+            </Grid>
           </StackPanel>
         </Grid>
       </ScrollViewer>
@@ -94,7 +108,7 @@
         <!-- Always in layout (only faded and disabled while idle), so the header never reflows when work starts.
              The negative margin centres the 36px button on the title line without making that line taller. -->
         <Button Name="CancelOperationButton" Grid.Column="1" Classes="danger shell-cancel" Classes.active="{Binding IsBusy}" Command="{Binding CancelOperationCommand}" IsEnabled="{Binding IsBusy}" IsHitTestVisible="{Binding IsBusy}" VerticalAlignment="Center" Margin="0,-4" ToolTip.Tip="Stop the current operation. A running upload keeps going unless it is the only task; stop it from Share." AutomationProperties.Name="Cancel operation">
-          <StackPanel Orientation="Horizontal" Spacing="8"><c:StrokeIcon Data="{StaticResource IconClose}" Size="16" /><TextBlock Text="Cancel operation" VerticalAlignment="Center" /></StackPanel>
+          <StackPanel Orientation="Horizontal" Spacing="8"><c:StrokeIcon Data="{StaticResource IconClose}" Size="16" /><TextBlock Text="Stop" VerticalAlignment="Center" /></StackPanel>
         </Button>
       </Grid>
       <Panel Grid.Row="1">
@@ -129,7 +143,7 @@
               </Panel>
             </Button>
             <Slider Grid.Column="1" Minimum="0" Maximum="1" SmallChange="0.005" LargeChange="0.05" Value="{Binding PlaybackPosition, Mode=TwoWay}" AutomationProperties.Name="Fullscreen playback position" VerticalAlignment="Center" />
-            <TextBlock Grid.Column="2" Text="{Binding PlaybackTime}" Classes="tabular" Foreground="{DynamicResource AppOnScrim}" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="2" Text="{Binding PlaybackClockText}" Classes="tabular" Foreground="{DynamicResource AppOnScrim}" VerticalAlignment="Center" />
             <Button Name="ExitFullscreenButton" Grid.Column="3" Classes="icon on-scrim" Click="ToggleFullscreen" ToolTip.Tip="Exit fullscreen · Esc" AutomationProperties.Name="Exit fullscreen">
               <c:StrokeIcon Data="{StaticResource IconExitFullscreen}" />
             </Button>

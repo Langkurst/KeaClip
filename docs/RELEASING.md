@@ -65,20 +65,21 @@ drive (network shares are refused). Delete that folder to fall back to the GitHu
 
 1. Raise `<Version>` in `Directory.Build.props` and `AppIdentity.Version` in
    `src/Klippi.Core/Models.cs` (a test checks they match), add the CHANGELOG entry and commit.
-2. Build and verify as for any release: `dotnet build Klippi.sln -c Release --no-restore`, both
-   test suites, then `pwsh -File build/package.ps1 -IncludeComponents` and
-   `pwsh -File build/installer-publish.ps1 -Payload <portable zip> -SelfTest` (the installer
-   self-test includes the upgrade-mode checks and a real `--test-upgrade` process run).
-3. Write the feed:
-   `pwsh -File build/release-manifest.ps1 -Installer artifacts\installer\KeaClip.Setup.exe -Portable <portable zip> -NotesFile <notes.md>`
-   It checks that both files are the version in `Directory.Build.props`, copies them to
-   `artifacts\release\<version>\` as `KeaClip-<version>-Setup.exe` and
-   `KeaClip-<version>-win-x64.zip`, and writes `keaclip-update.json` and `SHA256SUMS.txt` with the
-   exact hashes and sizes. The notes are plain text (up to 8,000 characters).
-4. Create the GitHub release `v<version>` (a normal release, not a draft or pre-release) and upload
-   the four files from `artifacts\release\<version>\` unchanged. Uploading them under other names
-   breaks the links in the feed.
-5. Check it: in an installed copy of the previous version choose Settings, About, Check for
+2. Build and verify: `pwsh -File build/verify.ps1` (restore, build, both test suites), then
+   `pwsh -File build/package.ps1` (a public build: no `-IncludeComponents`, `-Edition` or `-Beta`) and
+   `pwsh -File build/installer-publish.ps1 -Payload <portable zip> -SelfTest` (the installer self-test
+   includes upgrades, silent install, downgrade refusal and the uninstall clean-up).
+3. Gather the files in one folder, `artifacts\release-<version>\`: the setup as
+   `KeaClip-<version>-Setup.exe`, the portable zip as `KeaClip-<version>-win-x64.zip`, the
+   `KeaClip-<version>-source.zip` from the package folder, and the VLC/LibVLCSharp source from
+   `pwsh -File build/third-party-source.ps1 -OutputDirectory <that folder>` (it needs the source archives
+   listed in `docs/research/REDISTRIBUTION.md` in `local\license-audit\sources`).
+4. Write the feed:
+   `pwsh -File build/release-manifest.ps1 -Installer <setup> -Portable <zip> -Notes "What changed" -OutputDirectory <that folder>`
+   It refuses anything but a public release build (no bundled FFmpeg, yt-dlp or Deno), checks the version,
+   and writes `keaclip-update.json` and `SHA256SUMS.txt` (all four files). Then create the GitHub release
+   `v<version>` (a normal release, not a draft or pre-release) and upload the six files unchanged:
+   other names break the links in the feed.5. Check it: in an installed copy of the previous version choose Settings, About, Check for
    updates; the new version and its notes should appear. Optionally download the feed and compare
    `SHA256SUMS.txt` with `Get-FileHash`.
 

@@ -296,8 +296,8 @@
             <Border Classes="divider" />
             <Grid Classes="row" ColumnDefinitions="*,Auto">
               <StackPanel>
-                <TextBlock Text="Detect copied links" Classes="row-title" />
-                <TextBlock Text="When you switch to KeaClip, a copied media link fills the empty link box. Detection never starts a download." Classes="caption muted" />
+                <TextBlock Text="Fill in copied links" Classes="row-title" />
+                <TextBlock Text="When you come back to KeaClip, a video link you copied is pasted in for you. It never starts downloading by itself." Classes="caption muted" />
               </StackPanel>
               <ToggleSwitch Name="DetectClipboardSwitch" Grid.Column="1" IsChecked="{Binding DetectClipboard, Mode=TwoWay}" AutomationProperties.Name="Detect copied links" />
             </Grid>
@@ -338,7 +338,7 @@
               <Grid Classes="row" ColumnDefinitions="*,Auto">
                 <StackPanel>
                   <TextBlock Text="Check for updates automatically" Classes="row-title" />
-                  <TextBlock Text="Once a day KeaClip asks its release page whether a newer version exists. Nothing is downloaded or installed until you choose Update now." Classes="caption muted" />
+                  <TextBlock Text="Once a day KeaClip checks for a new version. Nothing installs until you press Update now." Classes="caption muted" />
                 </StackPanel>
                 <ToggleSwitch Name="CheckForUpdatesSwitch" Grid.Column="1" IsChecked="{Binding CheckForUpdates, Mode=TwoWay}" AutomationProperties.Name="Check for updates automatically" />
               </Grid>
@@ -411,7 +411,8 @@
                 </Button>
               </StackPanel>
               <TextBlock Text="KeaClip works with open-source tools including yt-dlp, FFmpeg, LibVLC, Deno and Avalonia. Their licences and notices ship with the app in its Licenses folder." Classes="caption muted" />
-              <TextBlock Text="Download only media you own or are allowed to save. KeaClip never bypasses DRM." Classes="caption muted" />
+              <TextBlock Name="PrivacyText" Text="No tracking, no ads, no account. Your files never leave your PC unless you share them." Classes="caption muted" TextWrapping="Wrap" />
+              <TextBlock Text="Only save or share what you're allowed to. KeaClip never gets around copy protection." Classes="caption muted" TextWrapping="Wrap" />
             </StackPanel>
           </StackPanel></Border>
 
@@ -505,7 +506,7 @@
             <Grid Name="ShareWhenFinishedDefaultRow" Classes="row" ColumnDefinitions="*,Auto">
               <StackPanel>
                 <TextBlock Text="Share when finished" Classes="row-title" />
-                <TextBlock Text="Off by default. When on, the Download page starts with Share when finished switched on: each finished download is encrypted, uploaded to File.Kiwi and its link copied." Classes="caption muted" />
+                <TextBlock Text="Off by default. When on, the Download page starts with Share when finished switched on: each finished download is encrypted, uploaded to file.kiwi and its link copied." Classes="caption muted" />
               </StackPanel>
               <ToggleSwitch Name="ShareWhenFinishedDefaultSwitch" Grid.Column="1" IsChecked="{Binding ShareWhenFinishedDefault, Mode=TwoWay}" AutomationProperties.Name="Share downloads when finished by default" />
             </Grid>
@@ -736,7 +737,7 @@
 
             <WrapPanel ItemSpacing="8" LineSpacing="8">
               <Button Name="PrepareComponentsButton" Classes.primary="{Binding SettingsComponentsNeedAttention}" Command="{Binding ProvisionCommand}" IsEnabled="{Binding CanRunSettingsTask}" ToolTip.Tip="Download and verify any missing media tools">
-                <StackPanel Orientation="Horizontal" Spacing="8"><c:StrokeIcon Data="{StaticResource IconDownload}" Size="16" /><TextBlock Text="Prepare components" VerticalAlignment="Center" /></StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="8"><c:StrokeIcon Data="{StaticResource IconDownload}" Size="16" /><TextBlock Text="Download the tools" VerticalAlignment="Center" /></StackPanel>
               </Button>
               <Button Name="CheckComponentsButton" Command="{Binding InspectComponentsCommand}" IsEnabled="{Binding CanRunSettingsTask}" ToolTip.Tip="Check each tool's integrity and version">
                 <StackPanel Orientation="Horizontal" Spacing="8"><c:StrokeIcon Data="{StaticResource IconSearch}" Size="16" /><TextBlock Text="Check status" VerticalAlignment="Center" /></StackPanel>
@@ -800,7 +801,7 @@
                 <TextBlock Text="Free up space used by unfinished work." Classes="caption muted" />
               </StackPanel>
             </Grid>
-            <TextBlock Text="Remove verified inactive working files left by this app. Active jobs, recovery copies and folders without verified ownership are kept. Saved media and settings are kept." Classes="caption muted" />
+            <TextBlock Text="Deletes leftover temporary files from finished work. Your videos, settings and running downloads are safe." Classes="caption muted" />
             <StackPanel Orientation="Horizontal" Spacing="12">
               <Button Name="CleanTemporaryFilesButton" Command="{Binding CleanTemporaryFilesCommand}" IsEnabled="{Binding CanCleanTemporaryFiles}" HorizontalAlignment="Left">
                 <StackPanel Orientation="Horizontal" Spacing="8"><c:StrokeIcon Data="{StaticResource IconBroom}" Size="16" /><TextBlock Text="Clean temporary files" VerticalAlignment="Center" /></StackPanel>

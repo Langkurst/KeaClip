@@ -156,13 +156,6 @@ public sealed partial class MediaService(IProcessRunner runner, IComponentServic
         return offset;
     }
 
-    public Task<ExportResult> ExportAsync(ExportOptions options, IProgress<JobProgress>? progress = null, CancellationToken cancellationToken = default) => ExportAsync(options, PreserveExtras.None, progress, cancellationToken);
-
-    /// <summary>
-    /// Exports like <see cref="ExportAsync(ExportOptions, IProgress{JobProgress}?, CancellationToken)"/> and
-    /// carries the chosen source extras over when the export covers the whole source
-    /// (no start, end or silence trimming). Clips never carry them.
-    /// </summary>
     /// <summary>Longest GIF export: GIFs grow fast, and a minute is already tens of megabytes.</summary>
     public static readonly TimeSpan MaxGifLength = TimeSpan.FromSeconds(60);
     internal const string GifFilter = "fps=15,scale='min(480,iw)':-2:flags=lanczos,split[a][b];[a]palettegen=max_colors=192:stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=4:diff_mode=rectangle";
@@ -200,6 +193,13 @@ public sealed partial class MediaService(IProcessRunner runner, IComponentServic
     }
     private static string Seconds(TimeSpan time) => time.TotalSeconds.ToString("0.###", EngineSupport.Invariant);
 
+    public Task<ExportResult> ExportAsync(ExportOptions options, IProgress<JobProgress>? progress = null, CancellationToken cancellationToken = default) => ExportAsync(options, PreserveExtras.None, progress, cancellationToken);
+
+    /// <summary>
+    /// Exports like <see cref="ExportAsync(ExportOptions, IProgress{JobProgress}?, CancellationToken)"/> and
+    /// carries the chosen source extras over when the export covers the whole source
+    /// (no start, end or silence trimming). Clips never carry them.
+    /// </summary>
     public async Task<ExportResult> ExportAsync(ExportOptions options, PreserveExtras extras, IProgress<JobProgress>? progress = null, CancellationToken cancellationToken = default)
     {
         var input = EngineSupport.Input(options.InputPath);

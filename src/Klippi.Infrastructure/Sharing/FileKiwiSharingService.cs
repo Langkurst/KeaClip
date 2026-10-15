@@ -15,7 +15,7 @@ public sealed class FileKiwiSharingOptions
     public TimeSpan RequestTimeout { get; init; } = TimeSpan.FromMinutes(2);
     public TimeSpan MaximumRetryDelay { get; init; } = TimeSpan.FromSeconds(30);
     public TimeSpan RetryDelay { get; init; } = TimeSpan.FromSeconds(1);
-    /// <summary>Attempts allowed while File.Kiwi or its storage answers with a retryable status (408, 429 or 5xx).</summary>
+    /// <summary>Attempts allowed while file.kiwi or its storage answers with a retryable status (408, 429 or 5xx).</summary>
     public int MaximumAttempts { get; init; } = 3;
     public int MaximumChunkBytes { get; init; } = 64 * 1024 * 1024;
     /// <summary>A chunk upload is abandoned only after no bytes could be sent for this long, so slow but steady connections still finish.</summary>
@@ -41,7 +41,7 @@ public sealed class FileKiwiSharingService : ISharingService
     // 999 GiB with the documented example 10 MiB chunks needs about 100,000 signatures.
     internal const int MaximumResponseBytes = 16_777_216;
     private const int UploadSliceBytes = 65_536, RecheckBufferBytes = 1_048_576;
-    private const string UploadExpiredMessage = "File.Kiwi upload expired.";
+    private const string UploadExpiredMessage = "file.kiwi upload expired.";
     private static readonly TimeSpan ProgressInterval = TimeSpan.FromMilliseconds(200), MinimumOutageDelay = TimeSpan.FromMilliseconds(50);
     // A chunk attempt that sent data before its connection broke restarts the outage budget, but only this many times, so a link that always cuts the body still stops.
     internal const int MaximumInterruptedAttempts = 10;
@@ -60,7 +60,7 @@ public sealed class FileKiwiSharingService : ISharingService
     public FileKiwiSharingService(HttpClient httpClient, Uri? apiEndpoint = null, FileKiwiSharingOptions? options = null)
     {
         _http = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
-        // Say who is calling, so File.Kiwi can tell KeaClip uploads apart (a caller's own agent is kept).
+        // Say who is calling, so file.kiwi can tell KeaClip uploads apart (a caller's own agent is kept).
         if (!_http.DefaultRequestHeaders.UserAgent.Any()) _http.DefaultRequestHeaders.UserAgent.ParseAdd("KeaClip/" + AppIdentity.Version);
         _endpoint = apiEndpoint ?? new Uri("https://api.file.kiwi/");
         if (!_endpoint.IsAbsoluteUri || !string.IsNullOrEmpty(_endpoint.UserInfo) || !string.IsNullOrEmpty(_endpoint.Query) || !string.IsNullOrEmpty(_endpoint.Fragment)
@@ -102,7 +102,7 @@ public sealed class FileKiwiSharingService : ISharingService
             var source = new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.Read, 65_536, FileOptions.Asynchronous | FileOptions.RandomAccess);
             await using var sourceScope = source.ConfigureAwait(false);
             long sourceLength = source.Length;
-            if (sourceLength is <= 0 or > MaximumFileBytes) throw new MediaOperationException("File.Kiwi sharing needs a nonempty file of at most 999 GiB.");
+            if (sourceLength is <= 0 or > MaximumFileBytes) throw new MediaOperationException("file.kiwi sharing needs a nonempty file of at most 999 GiB.");
             string secret = Base64Url(key);
             byte[] secretBytes = Encoding.UTF8.GetBytes(secret);
             string ske;
@@ -133,7 +133,7 @@ public sealed class FileKiwiSharingService : ISharingService
             foreach (int chunkIndex in ChunkOrder(registration.Chunks))
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                if (clock.GetElapsedTime(registeredAt) >= SignatureValidity) throw UploadExpired("The upload links are older than File.Kiwi's 36-hour limit.");
+                if (clock.GetElapsedTime(registeredAt) >= SignatureValidity) throw UploadExpired("The upload links are older than file.kiwi's 36-hour limit.");
                 if (source.Length != sourceLength) throw ChangedFile();
                 long offset = checked((long)chunkIndex * registration.ChunkSize);
                 int length = (int)Math.Min(registration.ChunkSize, sourceLength - offset), cipherLength;
@@ -157,7 +157,7 @@ public sealed class FileKiwiSharingService : ISharingService
                 using var put = await SendAsync(attempt =>
                 {
                     var request = new HttpRequestMessage(HttpMethod.Put, putUri) { Content = new ChunkContent(cipher, cipherLength, attempt, _options.UploadStallTimeout, _options.RequestTimeout, Sent) };
-                    // Normal chunks are sent like File.Kiwi's own browser uploader, without "Expect: 100-continue". Storage that refuses a link (for example
+                    // Normal chunks are sent like file.kiwi's own browser uploader, without "Expect: 100-continue". Storage that refuses a link (for example
                     // an expired one) may answer early and close, which looks like a connection cut off mid-body. Only then does the retry ask to continue
                     // first, so a refusal arrives before the body instead of the chunk being re-sent until the retry limits run out.
                     if (attempt.FollowsInterruption) request.Headers.ExpectContinue = true;
@@ -210,7 +210,7 @@ public sealed class FileKiwiSharingService : ISharingService
             JsonElement root = statusJson.RootElement;
             if (!root.TryGetProperty("complete", out var complete) || complete.ValueKind != JsonValueKind.True
                 || !root.TryGetProperty("missing", out var missing) || missing.ValueKind != JsonValueKind.Array || missing.GetArrayLength() != 0)
-                throw new MediaOperationException("File.Kiwi has not confirmed the complete upload.", "The local file is safe. Share again to start a new upload.");
+                throw new MediaOperationException("file.kiwi has not confirmed the complete upload.", "The local file is safe. Share again to start a new upload.");
 
             DateTimeOffset uploadedAt = clock.GetUtcNow();
             DateTimeOffset? freeUntil = registration.FreeHours is { } hours ? uploadedAt.AddHours(hours) : null;
@@ -225,7 +225,7 @@ public sealed class FileKiwiSharingService : ISharingService
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or ArgumentException or JsonException or InvalidOperationException or CryptographicException or KeyNotFoundException or FormatException or HttpRequestException)
         {
             // Runtime/provider exceptions may contain media paths, signed URLs or server bodies. Do not retain them as inner exceptions.
-            throw new MediaOperationException("This file could not be shared with File.Kiwi.", "The source file was preserved. Check file access, the network and the service, then try again.");
+            throw new MediaOperationException("This file could not be shared with file.kiwi.", "The source file was preserved. Check file access, the network and the service, then try again.");
         }
         finally
         {
@@ -264,7 +264,7 @@ public sealed class FileKiwiSharingService : ISharingService
                     if (response.RequestMessage?.RequestUri is { } finalUri && finalUri != request.RequestUri)
                     {
                         response.Dispose();
-                        throw new MediaOperationException("File.Kiwi redirected the request unexpectedly.");
+                        throw new MediaOperationException("file.kiwi redirected the request unexpectedly.");
                     }
                     if (response.IsSuccessStatusCode) return response;
                     int status = (int)response.StatusCode;
@@ -278,7 +278,7 @@ public sealed class FileKiwiSharingService : ISharingService
                     try { delay = RetryDelay(response, ++refusals); }
                     finally { response.Dispose(); }
                     if (!retryable || !transient || refusals >= _options.MaximumAttempts)
-                        throw new MediaOperationException("File.Kiwi could not complete the request.", $"HTTP {status}. The source file was preserved; no paid capacity was requested.");
+                        throw new MediaOperationException("file.kiwi could not complete the request.", $"HTTP {status}. The source file was preserved; no paid capacity was requested.");
                     statusDelay = delay;
                 }
                 catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { timedOut = true; }
@@ -289,7 +289,7 @@ public sealed class FileKiwiSharingService : ISharingService
             {
                 // The service answered, so the connection works: a later outage gets a fresh budget.
                 (lastFailure, outage, failures) = (0, TimeSpan.Zero, 0);
-                await WaitRetry(wait, $"File.Kiwi is temporarily unavailable. Retrying in {Seconds(wait)} s…", progress, cancellationToken).ConfigureAwait(false);
+                await WaitRetry(wait, $"file.kiwi is temporarily unavailable. Retrying in {Seconds(wait)} s…", progress, cancellationToken).ConfigureAwait(false);
                 continue;
             }
             long now = clock.GetTimestamp();
@@ -310,7 +310,7 @@ public sealed class FileKiwiSharingService : ISharingService
         }
     }
 
-    // Best effort: an upload-status call with the matching uploadAuth lets File.Kiwi extend a file that is close to expiring during a long upload.
+    // Best effort: an upload-status call with the matching uploadAuth lets file.kiwi extend a file that is close to expiring during a long upload.
     // It runs between chunks under its own short deadline, so a slow API delays the upload only briefly. Returns false when the check could not be
     // made, so it is tried again after a back-off. Only a missing upload stops sharing.
     private async Task<bool> ExtendUploadAsync(Uri statusUri, CancellationToken cancellationToken)
@@ -321,7 +321,7 @@ public sealed class FileKiwiSharingService : ISharingService
         {
             using var request = new HttpRequestMessage(HttpMethod.Get, statusUri);
             using var response = await _http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, deadline.Token).ConfigureAwait(false);
-            if (response.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.Gone) throw UploadExpired($"HTTP {(int)response.StatusCode}. File.Kiwi no longer lists this upload.");
+            if (response.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.Gone) throw UploadExpired($"HTTP {(int)response.StatusCode}. file.kiwi no longer lists this upload.");
             if (!response.IsSuccessStatusCode || (response.RequestMessage?.RequestUri is { } finalUri && finalUri != request.RequestUri)) return false;
             using var json = await ReadJsonAsync(response, deadline.Token).ConfigureAwait(false);
             return json.RootElement.ValueKind == JsonValueKind.Object && json.RootElement.TryGetProperty("complete", out var complete) && complete.ValueKind is JsonValueKind.True or JsonValueKind.False;
@@ -408,7 +408,7 @@ public sealed class FileKiwiSharingService : ISharingService
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
-            throw new MediaOperationException("File.Kiwi's response timed out.");
+            throw new MediaOperationException("file.kiwi's response timed out.");
         }
     }
 
@@ -473,7 +473,7 @@ public sealed class FileKiwiSharingService : ISharingService
     {
         TimeSpan value = response.Headers.RetryAfter?.Delta ?? (response.Headers.RetryAfter?.Date is { } date ? date - DateTimeOffset.UtcNow : DefaultDelay(attempt));
         if (response.Headers.RetryAfter is not null && value > _options.MaximumRetryDelay)
-            throw new MediaOperationException("File.Kiwi asked for a longer wait before trying again.", "Share again later. The source file was preserved, and the service's retry interval was respected.");
+            throw new MediaOperationException("file.kiwi asked for a longer wait before trying again.", "Share again later. The source file was preserved, and the service's retry interval was respected.");
         return TimeSpan.FromMilliseconds(Math.Clamp(value.TotalMilliseconds, 0, _options.MaximumRetryDelay.TotalMilliseconds));
     }
     private static async Task WaitRetry(TimeSpan delay, string message, IProgress<JobProgress>? progress, CancellationToken cancellationToken)
@@ -492,10 +492,10 @@ public sealed class FileKiwiSharingService : ISharingService
     private static string String(JsonElement value, string property) => value.GetProperty(property).GetString() ?? throw InvalidResponse();
     private static bool Identifier(string value) => value.Length is >= 1 and <= 128 && value.All(c => char.IsAsciiLetterOrDigit(c) || c is '_' or '-');
     private static string Base64Url(byte[] value) => Convert.ToBase64String(value).TrimEnd('=').Replace('+', '-').Replace('/', '_');
-    private static MediaOperationException InvalidResponse() => new("File.Kiwi returned an unsupported response.", "No share was confirmed. Service limits or API behavior may have changed.");
+    private static MediaOperationException InvalidResponse() => new("file.kiwi returned an unsupported response.", "No share was confirmed. Service limits or API behavior may have changed.");
     private static MediaOperationException ChangedFile() => new("The file changed during sharing.", "No share was confirmed. Share a stable copy of the file instead.");
     private static MediaOperationException UploadExpired(string reason) => new(UploadExpiredMessage, reason + " The source file was preserved. Share again to start a new upload.");
-    private static MediaOperationException ConnectionFailure(bool timedOut, bool repeated) => new(timedOut ? "File.Kiwi did not respond in time." : "File.Kiwi could not be reached.",
+    private static MediaOperationException ConnectionFailure(bool timedOut, bool repeated) => new(timedOut ? "file.kiwi did not respond in time." : "file.kiwi could not be reached.",
         (repeated ? "The connection kept dropping during the upload. " : "") + "The source file was preserved. " + (timedOut ? "Share again when the connection is available." : "Check your connection and try again."));
 
     private sealed class ProgressThrottle(TimeProvider clock)

@@ -339,7 +339,7 @@ public sealed class SettingsViewTests
         components.Items = [new("yt-dlp", null, "2026.08.19", true), new("ffmpeg", null, "ffmpeg version 9.0.2-essentials_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers", true), new("ffprobe", null, "ffprobe version 9.0.2", true)];
         var check = model.InspectComponentsCommand.ExecuteAsync(null);
         await Until(() => model.IsComponentTaskRunning);
-        Assert.Empty(model.Components); // the shared list was cleared…
+        Assert.Equal(3, model.Components.Count); // the old list stays until the new one is ready…
         Assert.Equal(3, model.SettingsComponents.Count); Assert.Equal("1 of 3 ready", model.SettingsComponentsSummary); // …but the page keeps its rows
         Assert.False(model.ShowComponentsNotChecked); Assert.False(model.ShowComponentSkeleton);
         Assert.Equal("Checking components…", model.ComponentTaskTitle); Assert.Equal("", model.ComponentTaskDetail);
@@ -616,7 +616,7 @@ public sealed class SettingsViewTests
                 var running = model.ProvisionCommand.ExecuteAsync(null);
                 await Until(() => model.HasOperationPercent);
                 window.UpdateLayout(); Assert.True(window.FindNamed<Border>("ComponentProgress")!.IsVisible); Assert.False(window.FindNamed<Button>("CheckComponentsButton")!.IsEffectivelyEnabled);
-                Assert.False(model.AnimateComponentRing); Assert.Equal("Preparing components…", window.FindNamed<TextBlock>("ComponentTaskTitleText")!.Text);
+                Assert.False(model.AnimateComponentRing); Assert.Equal("Downloading the tools…", window.FindNamed<TextBlock>("ComponentTaskTitleText")!.Text);
                 Assert.Contains("Downloading verified FFprobe", model.ComponentTaskDetail);
                 model.ReducedMotion = true; await model.SettingsPreferenceSaveTask; HideSavedConfirmation(model);
                 ScrollTo(window, "ComponentsCard"); await Capture(window, $"settings-components-busy-{key}");

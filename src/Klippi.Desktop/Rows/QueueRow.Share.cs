@@ -17,7 +17,7 @@ public sealed partial class QueueRow
 
     public AutoShareState ShareState => IsFinished ? _owner.AutoShareStateFor(Id) : AutoShareState.None;
     public bool ShowShareProgress => ShareState is AutoShareState.Waiting or AutoShareState.Uploading;
-    public string ShareProgressText => ShareState == AutoShareState.Waiting ? "Sharing next · waiting for the current upload to finish" : ShareState == AutoShareState.Uploading ? "Sharing · encrypting and uploading to File.Kiwi" : "";
+    public string ShareProgressText => ShareState == AutoShareState.Waiting ? "Sharing next · waiting for the current upload to finish" : ShareState == AutoShareState.Uploading ? "Sharing · encrypting and uploading to file.kiwi" : "";
     public bool ShowShareFailed => ShareState == AutoShareState.Failed;
     public string ShareFailureText => ShowShareFailed ? "Saved, but not shared. " + _owner.AutoShareReasonFor(Id) : "";
     public bool ShowShareConfirm => ShareState == AutoShareState.NeedsConfirmation;

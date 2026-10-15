@@ -54,7 +54,7 @@ public sealed class WatchLinkCryptoTests
         Assert.Equal(vector.GetProperty("ciphertextSha256").GetString(), Convert.ToHexString(SHA256.HashData(cipher)).ToLowerInvariant());
         if (vector.TryGetProperty("ciphertext", out var expected)) Assert.Equal(FromBase64Url(expected.GetString()!), cipher);
         Assert.Equal(WatchLinkEncryption.EncryptedLength(length, vector.GetProperty("rs").GetInt32()), cipher.Length);
-        // The existing RFC 8188 decryptor (used for File.Kiwi) reads it as a standard message too.
+        // The existing RFC 8188 decryptor (used for file.kiwi) reads it as a standard message too.
         Assert.Equal(plaintext, Rfc8188Encryption.Decrypt(cipher, key));
     }
 

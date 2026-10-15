@@ -18,7 +18,7 @@
         <Transitions><BrushTransition Property="Background" Duration="0:0:0.2" /></Transitions>
       </Setter>
     </Style>
-    <Style Selector="Border.chip.quiet"><Setter Property="Background" Value="Transparent" /></Style>
+    <Style Selector="Border.chip.quiet"><Setter Property="Background" Value="{DynamicResource AppClear}" /></Style>
     <!-- The running dot breathes only while its job works and the page is on screen, so it stops when idle. -->
     <Style Selector="Window.motion Ellipse.live[IsVisible=True]">
       <Style.Animations>
@@ -220,7 +220,7 @@
                     <TextBlock Text="{Binding Slot.Caption}" Classes="caption" Foreground="{DynamicResource AppMuted}" IsVisible="{Binding !DataContext.QueuePaused, RelativeSource={RelativeSource AncestorType=v:QueueView}}" />
                     <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding DataContext.QueuePaused, RelativeSource={RelativeSource AncestorType=v:QueueView}}">
                       <c:StrokeIcon Data="{StaticResource IconPause}" IsFilled="True" Size="11" Foreground="{DynamicResource AppWarning}" VerticalAlignment="Center" />
-                      <TextBlock Text="On hold · new starts are paused" Classes="caption" Foreground="{DynamicResource AppMuted}" VerticalAlignment="Center" />
+                      <TextBlock Text="On hold · the queue is paused" Classes="caption" Foreground="{DynamicResource AppMuted}" VerticalAlignment="Center" />
                     </StackPanel>
                   </Panel>
 
@@ -303,7 +303,7 @@
                             <TextBlock Text="Edit" VerticalAlignment="Center" />
                           </StackPanel>
                         </Button>
-                        <Button Classes="small" Command="{Binding ShareCommand}" ToolTip.Tip="Upload an expiring File.Kiwi share link" AutomationProperties.Name="{Binding DisplayTitle, StringFormat='Share {0} with a link'}">
+                        <Button Classes="small" Command="{Binding ShareCommand}" ToolTip.Tip="Upload an expiring file.kiwi share link" AutomationProperties.Name="{Binding DisplayTitle, StringFormat='Share {0} with a link'}">
                           <StackPanel Orientation="Horizontal" Spacing="8">
                             <c:StrokeIcon Data="{StaticResource IconShare}" Size="14" VerticalAlignment="Center" />
                             <TextBlock Text="Share" VerticalAlignment="Center" />
@@ -342,7 +342,7 @@
                     </Border>
                     <Grid Name="ShareLinkLine" Classes="reveal" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" IsVisible="{Binding HasShareLink}">
                       <c:StrokeIcon Data="{StaticResource IconLink}" Size="14" Classes="accent" VerticalAlignment="Center" />
-                      <TextBlock Grid.Column="1" Text="Shared with an expiring File.Kiwi link. Keep the full link private." Classes="caption" Foreground="{DynamicResource AppMuted}" TextWrapping="Wrap" VerticalAlignment="Center" />
+                      <TextBlock Grid.Column="1" Text="Shared with an expiring file.kiwi link. Keep the full link private." Classes="caption" Foreground="{DynamicResource AppMuted}" TextWrapping="Wrap" VerticalAlignment="Center" />
                       <Button Name="CopyShareLinkButton" Grid.Column="2" Classes="small" Command="{Binding CopyLinkCommand}" VerticalAlignment="Center" ToolTip.Tip="Copy the full share link" AutomationProperties.Name="{Binding DisplayTitle, StringFormat='Copy the share link for {0}'}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                           <c:StrokeIcon Data="{StaticResource IconCopy}" Size="14" VerticalAlignment="Center" />
@@ -386,7 +386,7 @@
         </ItemsControl.ItemTemplate>
       </ItemsControl>
 
-      <TextBlock Text="Pause stops new downloads starting; running ones carry on. Failed items can be retried. Removing an item never deletes its file." Classes="caption" Foreground="{DynamicResource AppMuted}" TextWrapping="Wrap" IsVisible="{Binding HasQueueItems}" />
+      <TextBlock Text="Removing something from this list never deletes the file." Classes="caption" Foreground="{DynamicResource AppMuted}" TextWrapping="Wrap" IsVisible="{Binding HasQueueItems}" />
     </StackPanel>
   </ScrollViewer>
 </UserControl>

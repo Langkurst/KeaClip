@@ -76,11 +76,13 @@ public sealed class SetupForm : Form
                 Program.LaunchUninstallWorker(_folder.Text, removeSettings: _removeSettings.Checked); Close(); return;
             }
             _busy = true; _desktop.Enabled = false; _startMenu.Enabled = false; _protocol.Enabled = false;
+            UpgradeMode.RefuseDowngrade(_folder.Text);
             var target = _folder.Text; var choices = new InstallChoices(_desktop.Checked, _startMenu.Checked, _protocol.Checked); _status.ForeColor = Muted; _status.Text = "Installing…";
             var completion = new TaskCompletionSource<InstallResult>(TaskCreationOptions.RunContinuationsAsynchronously);
             var thread = new Thread(() => { try { using var payload = Program.Payload(); completion.TrySetResult(new InstallEngine(new WindowsIntegration()).Install(payload, target, Environment.ProcessPath!, choices)); } catch (Exception error) { completion.TrySetException(error); } });
             thread.SetApartmentState(ApartmentState.STA); thread.IsBackground = false; thread.Start();
             var result = await completion.Task;
+            try { UpgradeMode.PruneOlderBackups(result.Root, result.Backup); } catch (Exception error) when (error is IOException or UnauthorizedAccessException) { }
             _installedApp = Path.Combine(result.Root, "KeaClip.exe");
             _status.Text = "KeaClip is installed." + (string.IsNullOrWhiteSpace(result.Warning) ? "" : " " + result.Warning);
             _main.Text = "Open KeaClip"; _main.Enabled = true; _main.Focus();

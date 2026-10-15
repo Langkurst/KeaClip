@@ -6,7 +6,7 @@ namespace Klippi.Desktop;
 
 // Watch links: a link that opens KeaClip's web player, where the recipient watches the video in the browser. The file is
 // encrypted on this PC (key only in the link's #fragment) and stored in the user's own S3-compatible bucket (Cloudflare R2).
-// The File.Kiwi "Share" option is unchanged. The storage secret is entered once in Settings, kept DPAPI-protected by the
+// The file.kiwi "Share" option is unchanged. The storage secret is entered once in Settings, kept DPAPI-protected by the
 // service and never read back into the UI.
 public sealed partial class MainViewModel
 {

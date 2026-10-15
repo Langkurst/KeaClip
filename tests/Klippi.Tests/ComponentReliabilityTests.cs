@@ -316,7 +316,7 @@ public sealed class ComponentReliabilityTests
         var progress = new EngineProgress();
         await f.Service.ProvisionAsync(progress).WaitAsync(TimeSpan.FromSeconds(20));
         Assert.Equal(new[] { FakeNetwork.MediaTools + ".sha256", FakeNetwork.MediaTools }, f.Network.Requests.Select(u => u.AbsoluteUri));
-        Assert.Contains(progress.Values, p => p.Stage == JobStage.Finished && p.Message == "Components are ready.");
+        Assert.Contains(progress.Values, p => p.Stage == JobStage.Finished && p.Message == "All set. Paste a link to start.");
         var ffmpeg = f.Service.Find("ffmpeg"); var ffprobe = f.Service.Find("ffprobe");
         Assert.StartsWith(Path.Combine(f.Root, "versions") + Path.DirectorySeparatorChar, ffmpeg);
         Assert.NotEqual(Path.GetDirectoryName(f.Owned(f.Root, managed[0])), Path.GetDirectoryName(ffmpeg));

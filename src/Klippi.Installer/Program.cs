@@ -37,12 +37,16 @@ internal static class Program
                     string? dataProblem = null;
                     try { InstallEngine.RemoveAppData(InstallEngine.DefaultDataRoot, removeSettings); }
                     catch (Exception error) when (error is IOException or UnauthorizedAccessException) { dataProblem = error.Message; }
+                    // Earlier versions kept beside the install for rollback go too (only files matching their receipts).
+                    try { UpgradeMode.PruneOlderBackups(target, keep: null); }
+                    catch (Exception error) when (error is IOException or UnauthorizedAccessException) { dataProblem ??= error.Message; }
                     ApplicationConfiguration.Initialize();
                     MessageBox.Show("KeaClip was removed, along with the tools it downloaded."
                         + (removeSettings ? " Your settings and history were removed too." : " Your settings and history were kept, in case you install it again.")
                         + " Your videos were not touched."
                         + (dataProblem is null ? "" : " Some downloaded files could not be removed: " + dataProblem)
                         + (preserved.Count > 0 ? $" {preserved.Count} app file(s) you changed were kept for you to review." : ""), "KeaClip removed", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    RemoveOwnWorkerFolderAfterExit();
                 }
                 return 0;
             }
@@ -94,9 +98,35 @@ internal static class Program
         using var payload = Payload();
         _ = SilentInstall(payload, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "KeaClip"), Environment.ProcessPath!, new InstallEngine(new WindowsIntegration()));
     }
-    public static InstallResult SilentInstall(Stream payload, string target, string installerExecutable, InstallEngine engine) => engine.Install(payload, target, installerExecutable, SilentChoices(target));
+    public static InstallResult SilentInstall(Stream payload, string target, string installerExecutable, InstallEngine engine)
+    {
+        UpgradeMode.RefuseDowngrade(target);
+        var result = engine.Install(payload, target, installerExecutable, SilentChoices(target));
+        // Like the in-app update: keep the newest rollback copy, drop older ones.
+        try { UpgradeMode.PruneOlderBackups(result.Root, result.Backup); } catch (Exception error) when (error is IOException or UnauthorizedAccessException) { }
+        return result;
+    }
     public static InstallChoices SilentChoices(string target) =>
         File.Exists(Path.Combine(target, InstallEngine.ReceiptName)) ? UpgradeMode.ChoicesFrom(InstallEngine.ReadReceipt(target)) : new InstallChoices(false, true, false);
+    /// <summary>
+    /// The uninstall worker runs from its own copy in %TEMP%\KeaClip.Uninstall.Workers\&lt;id&gt;, which it cannot delete while
+    /// running: a hidden command removes that folder a few seconds after this process exits. Only that exact kind of
+    /// folder is ever removed.
+    /// </summary>
+    private static void RemoveOwnWorkerFolderAfterExit()
+    {
+        var folder = Path.GetFullPath(AppContext.BaseDirectory).TrimEnd(Path.DirectorySeparatorChar);
+        var workers = Path.Combine(Path.GetFullPath(Path.GetTempPath()), "KeaClip.Uninstall.Workers");
+        if (!string.Equals(Path.GetDirectoryName(folder), workers, StringComparison.OrdinalIgnoreCase) || !File.Exists(Path.Combine(folder, "worker-owned.json"))) return;
+        try
+        {
+            var command = new ProcessStartInfo(Path.Combine(Environment.SystemDirectory, "cmd.exe")) { UseShellExecute = false, CreateNoWindow = true, WindowStyle = ProcessWindowStyle.Hidden };
+            command.ArgumentList.Add("/d"); command.ArgumentList.Add("/c");
+            command.ArgumentList.Add($"ping -n 4 127.0.0.1 >nul & rd /s /q \"{folder}\"");
+            Process.Start(command)?.Dispose();
+        }
+        catch (Exception error) when (error is IOException or System.ComponentModel.Win32Exception) { /* A leftover temp folder is harmless. */ }
+    }
     public static Stream Payload() => Assembly.GetExecutingAssembly().GetManifestResourceStream("KeaClip.Payload.zip") ?? throw new IOException("This setup build has no embedded app payload. Build it with the installer publish script.");
     public static string LaunchUninstallWorker(string target, string? testWorkerRoot = null, bool testMode = false, bool removeSettings = false)
     {

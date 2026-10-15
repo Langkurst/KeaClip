@@ -22,7 +22,7 @@ The LGPL libraries (LibVLC, LibVLCSharp) are shipped as separate, replaceable fi
 
 ## Downloaded by KeaClip on your PC, not included
 
-The public download does **not** contain FFmpeg, yt-dlp or Deno. When you choose **Prepare components**, KeaClip downloads them on your PC directly from their publishers and checks them:
+The public download does **not** contain FFmpeg, yt-dlp or Deno. The first time it starts, KeaClip downloads them on your PC directly from their publishers and checks them:
 
 | Component | Downloaded from | Licence |
 | --- | --- | --- |
@@ -34,6 +34,6 @@ Those publishers distribute them and provide their source. Personal builds made 
 
 ## Written offer
 
-For at least three years after you received this copy, the person or organisation who distributed it to you will, on request, provide the complete corresponding source code of the GPL- and LGPL-licensed components included in it (as built for this release), on a medium customarily used for software interchange, for no more than the cost of physically performing the distribution. Requests: the distributor of your copy (GitHub: Langkurst).
+For at least three years after you received this copy, the person or organisation who distributed it to you will, on request, provide the complete corresponding source code of the GPL- and LGPL-licensed components included in it (as built for this release), on a medium customarily used for software interchange, for no more than the cost of physically performing the distribution. Requests: the distributor of your copy (GitHub: Langkurst, email: keaclip@proton.me).
 
 This file describes licensing obligations as understood by the project; it is not legal advice.
