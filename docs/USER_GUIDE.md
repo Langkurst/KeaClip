@@ -37,6 +37,7 @@ Open a video from the Library, with **Open local media**, by dropping it on the 
 - **Make it smaller** offers lighter or stronger size savings.
 - **Audio clip** saves just the sound. **Make a Discord soundboard sound** sets everything up for the soundboard.
 - **Make a GIF of this part** makes a short, silent, looping GIF.
+- When the clip is ready, **Copy clip** puts the file itself on the clipboard: press Ctrl+V in Discord, a chat or an email to attach it. You can also drag the "Your clip is ready" card straight into another app. In the Library, **More actions, Copy file** does the same for anything you saved.
 - **Advanced** has the cut type, video settings and **Delete the original afterwards**. Your original is always kept unless you turn that on, and even then only after the new file checks out.
 
 | Key | What it does |

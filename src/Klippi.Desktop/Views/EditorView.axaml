@@ -563,7 +563,9 @@
           <!-- Latest export: stays after the editor closes (for example when the original was deleted). -->
           <Border Name="ResultCard" Classes="card reveal" IsVisible="{Binding HasLastExport}">
             <StackPanel Spacing="14">
-              <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+              <!-- Drag this part out of KeaClip into Discord, a chat, an email or a folder. -->
+              <Grid Name="ResultDragHandle" ColumnDefinitions="Auto,*" ColumnSpacing="12" Background="{DynamicResource AppClear}" Cursor="Hand"
+                    ToolTip.Tip="Drag the clip into Discord, a chat or a folder" AutomationProperties.Name="Drag the exported clip into another app">
                 <Border Width="38" Height="38" CornerRadius="19" Background="{DynamicResource AppAccent}" VerticalAlignment="Top" Classes="pop">
                   <c:StrokeIcon Data="{StaticResource IconCheck}" Size="20" StrokeThickness="2.4" Foreground="{DynamicResource AccentText}" />
                 </Border>
@@ -571,6 +573,7 @@
                   <TextBlock Text="Your clip is ready" Classes="section" />
                   <TextBlock Name="LastExportTitle" Text="{Binding LastExportName}" Classes="strong" TextTrimming="CharacterEllipsis" MaxLines="1" ToolTip.Tip="{Binding LastExportName}" />
                   <TextBlock Text="{Binding LastExportDetail}" Classes="caption muted" />
+                  <TextBlock Text="Copy it and paste with Ctrl+V, or drag it straight into Discord." Classes="caption muted" TextWrapping="Wrap" />
                 </StackPanel>
               </Grid>
               <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10" IsVisible="{Binding ShowOriginalDeletedNote}">
@@ -578,6 +581,7 @@
                 <TextBlock Grid.Column="1" Text="The original was deleted after the clip passed verification, as you asked." Classes="caption muted" />
               </Grid>
               <WrapPanel ItemSpacing="8" LineSpacing="8">
+                <Button Name="CopyLastExportButton" Classes="small" Command="{Binding CopyLastExportCommand}" ToolTip.Tip="Copies the clip itself. Paste it into Discord, a chat or an email with Ctrl+V." AutomationProperties.Name="Copy the exported clip"><StackPanel Orientation="Horizontal" Spacing="6"><c:StrokeIcon Data="{StaticResource IconCopy}" Size="14" /><TextBlock Text="Copy clip" VerticalAlignment="Center" /></StackPanel></Button>
                 <Button Classes="small" Command="{Binding OpenLastExportCommand}" AutomationProperties.Name="Open the exported clip"><StackPanel Orientation="Horizontal" Spacing="6"><c:StrokeIcon Data="{StaticResource IconPlay}" Size="13" IsFilled="True" /><TextBlock Text="Open" VerticalAlignment="Center" /></StackPanel></Button>
                 <Button Classes="small" Command="{Binding RevealLastExportCommand}" AutomationProperties.Name="Show the exported clip in its folder"><StackPanel Orientation="Horizontal" Spacing="6"><c:StrokeIcon Data="{StaticResource IconFolder}" Size="14" /><TextBlock Text="Show in folder" VerticalAlignment="Center" /></StackPanel></Button>
                 <Button Name="EditLastExportButton" Classes="small" Command="{Binding EditLastExportCommand}" IsEnabled="{Binding CanEdit}" AutomationProperties.Name="Edit the exported clip"><StackPanel Orientation="Horizontal" Spacing="6"><c:StrokeIcon Data="{StaticResource IconScissors}" Size="14" /><TextBlock Text="Edit this clip" VerticalAlignment="Center" /></StackPanel></Button>

@@ -33,7 +33,7 @@ public sealed partial class MainViewModel
     private ProbeInfo? _waveformDetailFailed;
     private int _editorSession;
     private IRelayCommand? _toggleMuteCommand, _openLastExportCommand, _revealLastExportCommand;
-    private IAsyncRelayCommand? _shareLastExportCommand, _editLastExportCommand;
+    private IAsyncRelayCommand? _shareLastExportCommand, _editLastExportCommand, _copyLastExportCommand;
 
     partial void OnEditorOpened()
     {
@@ -375,6 +375,8 @@ public sealed partial class MainViewModel
     /// <summary>The editor closes only when a verified export deleted its original as requested.</summary>
     public bool ShowOriginalDeletedNote => HasLastExport && !HasEditor;
     public IRelayCommand OpenLastExportCommand => _openLastExportCommand ??= new RelayCommand(() => { if (_lastExport is { } entry) OpenFile(entry.FilePath); });
+    public IAsyncRelayCommand CopyLastExportCommand => _copyLastExportCommand ??= new AsyncRelayCommand(() => _lastExport is { } entry ? CopyFileAsync(entry.FilePath) : Task.CompletedTask);
+    public string? LastExportPath => _lastExport?.FilePath;
     public IRelayCommand RevealLastExportCommand => _revealLastExportCommand ??= new RelayCommand(() => { if (_lastExport is { } entry) RevealFile(entry.FilePath); });
     public IAsyncRelayCommand ShareLastExportCommand => _shareLastExportCommand ??= new AsyncRelayCommand(() => _lastExport is { } entry ? ShareFileAsync(entry.FilePath) : ShareEditorAsync());
     public IAsyncRelayCommand EditLastExportCommand => _editLastExportCommand ??= new AsyncRelayCommand(() => _lastExport is { } entry ? OpenEditorAsync(entry.FilePath) : Task.CompletedTask);
@@ -658,7 +660,7 @@ public sealed partial class MainViewModel
             return new EditorRecentItem(entry.Title, detail, isAudio, new AsyncRelayCommand(() => OpenEditorAsync(path)));
         }).ToArray();
         _lastExport = last;
-        foreach (var name in (string[])[nameof(RecentMedia), nameof(HasRecentMedia), nameof(HasLastExport), nameof(LastExportName), nameof(LastExportDetail), nameof(CanShareEditorFile), nameof(ShowShareOriginalInstead), nameof(ShowShareCard), nameof(ShowOriginalDeletedNote), nameof(IsExportPrimary), nameof(ExportButtonText)])
+        foreach (var name in (string[])[nameof(RecentMedia), nameof(HasRecentMedia), nameof(HasLastExport), nameof(LastExportName), nameof(LastExportDetail), nameof(LastExportPath), nameof(CanShareEditorFile), nameof(ShowShareOriginalInstead), nameof(ShowShareCard), nameof(ShowOriginalDeletedNote), nameof(IsExportPrimary), nameof(ExportButtonText)])
             OnPropertyChanged(name);
     }
 }

@@ -165,6 +165,44 @@ public sealed class EditorViewTests
 
             model.OpenLastExportCommand.Execute(null); model.RevealLastExportCommand.Execute(null);
             Assert.Equal(export.Path, Assert.Single(fake.Platform.OpenedFiles)); Assert.Equal(export.Path, Assert.Single(fake.Platform.RevealedFiles));
+
+            // The finished clip goes straight into Discord or a chat: Copy clip puts the file itself on the clipboard,
+            // and the card's header can be dragged out.
+            Assert.True(window.FindNamed<Button>("CopyLastExportButton")!.IsEffectivelyVisible);
+            Assert.Equal(export.Path, model.LastExportPath);
+            Assert.NotNull(window.FindNamed<Grid>("ResultDragHandle"));
+            await model.CopyLastExportCommand.ExecuteAsync(null);
+            Assert.Equal(export.Path, fake.Platform.CopiedFile);
+            Assert.Contains("Ctrl+V", model.Status);
+        }
+        finally { model.CloseBehavior = CloseBehavior.Exit; window.Close(); }
+    }
+
+    // Demo GIF frames (1180x780, wide layout): the good bit picked and Fit for Discord on, then the finished clip
+    // with Copy clip, which is the "paste it into Discord" moment.
+    [AvaloniaFact]
+    public async Task Demo_frames_show_fit_for_discord_then_copy_clip()
+    {
+        using var export = new TempMedia("kea-steals-a-chip-clip.mp4");
+        var fake = new EditorFakes(); fake.Platform.SavePath = export.Path;
+        using var model = new MainViewModel(fake.Services);
+        var window = new MainWindow { DataContext = model, Width = 1180, Height = 780 }; window.Show();
+        try
+        {
+            await model.InitializeAsync(); model.ReducedMotion = true; model.Theme = "Dark";
+            await model.OpenEditorAsync("kea-steals-a-chip.mp4");
+            model.StartTime = "00:00:02.000"; model.EndTime = "00:00:07.000";
+            Capture(window, "demo-editor-trim-dark");
+            model.FitForCommand.Execute("10");
+            window.FindNamed<Button>("FitDiscordButton")!.BringIntoView(); Dispatcher.UIThread.RunJobs();
+            Capture(window, "demo-editor-fit-dark");
+            // The fake export cannot hit a size target, so the second frame is a plain export of the same selection.
+            model.FitForCommand.Execute("10");
+            await model.ExportAsync();
+            Assert.True(await Eventually(() => { Dispatcher.UIThread.RunJobs(); return model.HasLastExport; }), "Export did not finish: " + model.Status);
+            var card = window.FindNamed<Border>("ResultCard")!; card.BringIntoView(); Dispatcher.UIThread.RunJobs();
+            Assert.True(window.FindNamed<Button>("CopyLastExportButton")!.IsEffectivelyVisible);
+            Capture(window, "demo-editor-ready-dark");
         }
         finally { model.CloseBehavior = CloseBehavior.Exit; window.Close(); }
     }
@@ -916,11 +954,29 @@ public sealed class EditorViewTests
         while (!condition()) await Task.Delay(10, timeout.Token);
     }
 
+    private static async Task<bool> Eventually(Func<bool> condition)
+    {
+        var limit = DateTime.UtcNow.AddSeconds(5);
+        while (!condition() && DateTime.UtcNow < limit) await Task.Delay(10);
+        return condition();
+    }
+
     private sealed class TempMedia : IDisposable
     {
-        public TempMedia() { Path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "keaclip-editor-" + Guid.NewGuid().ToString("N") + ".mp4"); File.WriteAllText(Path, "owned test fixture"); }
+        public TempMedia() : this(null) { }
+        // A readable name lives in its own new folder, so it can never meet another test's file.
+        public TempMedia(string? name)
+        {
+            var folder = System.IO.Path.GetTempPath();
+            if (name is not null) { folder = System.IO.Path.Combine(folder, "keaclip-editor-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(folder); _folder = folder; }
+            Path = System.IO.Path.Combine(folder, name ?? "keaclip-editor-" + Guid.NewGuid().ToString("N") + ".mp4"); File.WriteAllText(Path, "owned test fixture");
+        }
+        private readonly string? _folder;
         public string Path { get; }
-        public void Dispose() { try { File.Delete(Path); } catch (IOException) { } }
+        public void Dispose()
+        {
+            try { File.Delete(Path); if (_folder is not null) Directory.Delete(_folder); } catch (IOException) { }
+        }
     }
 
     // ===== Fakes (nested so they cannot collide with other test files) =====
@@ -1016,6 +1072,8 @@ public sealed class EditorViewTests
         public Task<string?> SaveMediaAsync(string name, string extension) => Task.FromResult(SavePath);
         public Task<string?> ReadClipboardAsync() => Task.FromResult<string?>(null);
         public Task CopyAsync(string value) { Clipboard = value; return Task.CompletedTask; }
+        public string? CopiedFile { get; private set; }
+        public Task CopyFileAsync(string path) { CopiedFile = path; return Task.CompletedTask; }
         public void OpenFile(string path) => OpenedFiles.Add(path);
         public void RevealFile(string path) => RevealedFiles.Add(path);
         public void OpenFolder(string path) { }

@@ -8,14 +8,14 @@ No ads, no account, no tracking.</p>
 
 <p align="center"><a href="https://github.com/Langkurst/KeaClip/releases/latest"><b>Download for Windows</b></a> · <a href="https://langkurst.github.io/KeaClip/">Website</a> · <a href="https://ko-fi.com/keaclip">Support on Ko-fi</a></p>
 
-![KeaClip: paste a link, analyse, download, then trim](docs/images/keaclip-demo.gif)
+![KeaClip: paste a link, keep the good part, fit it for Discord, then copy the clip and paste it into the chat](docs/images/keaclip-demo.gif)
 
 ## What it does
 
 - **Save** video or audio from a link: pick Video + audio, Audio only, Video only or a full Archive, choose quality and format, or just press Download. Playlists let you pick which videos you want, and **Just part of it** saves only the bit you need (say 0:45 to 1:20 of a long stream) without downloading the rest.
 - **Queue** as many as you like. Downloads keep going while you use the rest of the app, can be paused and retried, and your queue is still there after a restart.
 - **Trim** any video or audio file: drag the orange handles, then export just that part. Pull out the sound as MP3, fade in and out, make a short soundboard clip, or export the selection as a **GIF**.
-- **Fit it for Discord** in one click: Discord (10 MB), Email (25 MB), Nitro Basic (50 MB) or Nitro (500 MB) aims the clip just under that size.
+- **Fit it for Discord** in one click: Discord (10 MB), Email (25 MB), Nitro Basic (50 MB) or Nitro (500 MB) aims the clip just under that size. Then press **Copy clip** and paste it straight into the chat with Ctrl+V, or drag it in.
 - **Your game clips** are waiting when you open the Editor: new recordings from Xbox Game Bar, AMD ReLive, NVIDIA and OBS show up ready to trim.
 - **Share** with an encrypted [file.kiwi](https://file.kiwi) link. Sharing uses the [file.kiwi API](https://file.kiwi/api): the file is encrypted on your PC before it uploads, and the link expires on its own.
 - **Keep** everything in your Library to open, edit or share again later. Removing a record never deletes the file.

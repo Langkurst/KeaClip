@@ -293,18 +293,19 @@ public sealed class LibraryViewTests
             var more = RowButton(list, 0, "MoreItemButton"); var menu = Assert.IsType<MenuFlyout>(more.Flyout);
             menu.ShowAt(more); await Settle(window);
             var items = menu.Items.OfType<MenuItem>().ToArray();
-            Assert.Equal(4, items.Length);
-            Assert.Same(row.CopyPathCommand, items[0].Command); Assert.Same(row.CopySourceCommand, items[1].Command); Assert.Same(row.RepeatCommand, items[2].Command); Assert.Same(row.RemoveRecordCommand, items[3].Command);
-            Assert.True(items[1].IsVisible); Assert.True(items[2].IsVisible);
+            Assert.Equal(5, items.Length);
+            Assert.Same(row.CopyFileCommand, items[0].Command); Assert.Same(row.CopyPathCommand, items[1].Command); Assert.Same(row.CopySourceCommand, items[2].Command); Assert.Same(row.RepeatCommand, items[3].Command); Assert.Same(row.RemoveRecordCommand, items[4].Command);
+            Assert.True(items[2].IsVisible); Assert.True(items[3].IsVisible);
             Capture(TopLevel.GetTopLevel(items[0])!, "library-more-menu-dark");
-            InvokeItem(items[0]); await Settle(window); Assert.Equal(row.Entry.FilePath, fake.Platform.Clipboard);
-            InvokeItem(items[1]); await Settle(window); Assert.Equal(row.Entry.SourceUrl, fake.Platform.Clipboard);
+            InvokeItem(items[0]); await Settle(window); Assert.Equal(row.Entry.FilePath, fake.Platform.CopiedFile);
+            InvokeItem(items[1]); await Settle(window); Assert.Equal(row.Entry.FilePath, fake.Platform.Clipboard);
+            InvokeItem(items[2]); await Settle(window); Assert.Equal(row.Entry.SourceUrl, fake.Platform.Clipboard);
             menu.Hide();
 
             // Local exports have no source: the source-only actions are hidden.
             var local = Row(model, "c1"); var localIndex = model.History.IndexOf(local); list.ScrollIntoView(localIndex); await Settle(window);
             var localMore = RowButton(list, localIndex, "MoreItemButton"); var localMenu = (MenuFlyout)localMore.Flyout!; localMenu.ShowAt(localMore); await Settle(window);
-            var localItems = localMenu.Items.OfType<MenuItem>().ToArray(); Assert.False(localItems[1].IsVisible); Assert.False(localItems[2].IsVisible);
+            var localItems = localMenu.Items.OfType<MenuItem>().ToArray(); Assert.False(localItems[2].IsVisible); Assert.False(localItems[3].IsVisible);
             localMenu.Hide();
 
             // Remove (from the menu, as a keyboard user would) keeps the media file, never takes the app-wide busy

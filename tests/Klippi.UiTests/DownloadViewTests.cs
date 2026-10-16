@@ -800,16 +800,17 @@ public sealed class DownloadViewTests
         foreach (var theme in new[] { "Dark", "Light" })
         {
             var fake = new UiFakes(); fake.Store.Settings = fake.Store.Settings with { DownloadDirectory = @"C:\Videos\KeaClip" };
-            var downloads = new GatedDownloads { Info = RichInfo };
+            // A short clip someone wants to pass on, not a whole video from a big platform.
+            var downloads = new GatedDownloads { Info = RichInfo with { Title = "A kea stole my chips at Arthur's Pass", Creator = "u/tramping_kiwi", Source = "Reddit", Duration = TimeSpan.FromSeconds(48) } };
             using var model = new MainViewModel(fake.Services with { Downloads = downloads });
             var window = Show(model, 1180, 780);
             try
             {
                 await model.InitializeAsync(); model.ReducedMotion = true; model.Theme = theme;
-                // Demo GIF frames (900x740): empty, link pasted.
-                window.Width = 900; window.Height = 740;
+                // Demo GIF frames (1180x780, the same size as the Editor's demo frames): empty, link pasted.
+                window.Width = 1180; window.Height = 780;
                 await Capture(window, $"readme-step1-{theme.ToLowerInvariant()}");
-                model.Url = "https://www.youtube.com/watch?v=kea";
+                model.Url = "https://www.reddit.com/r/newzealand/comments/kea";
                 await Capture(window, $"readme-step2-{theme.ToLowerInvariant()}");
                 await model.AnalyseCommand.ExecuteAsync(null);
                 using (var early = PreviewImage()) { SetThumbnail(model, early); await Capture(window, $"readme-step3-{theme.ToLowerInvariant()}"); }

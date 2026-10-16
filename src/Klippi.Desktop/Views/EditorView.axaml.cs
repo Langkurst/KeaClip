@@ -8,6 +8,7 @@ using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Platform.Storage;
 using Avalonia.VisualTree;
 
 namespace Klippi.Desktop.Views;
@@ -31,6 +32,7 @@ public sealed partial class EditorView : UserControl
         Waveform.SeekRequested += ratio => (DataContext as MainViewModel)?.Seek(ratio);
         DataContextChanged += (_, _) => AttachModel(DataContext as MainViewModel);
         AddHandler(KeyDownEvent, (_, e) => HandleShortcut(e));
+        ResultDragHandle.PointerPressed += OnResultDragStart;
         DragDrop.AddDragEnterHandler(DropZone, (_, _) => DropZone.Classes.Set("dragover", true));
         DragDrop.AddDragOverHandler(DropZone, (_, _) => DropZone.Classes.Set("dragover", true));
         DragDrop.AddDragLeaveHandler(DropZone, OnDropZoneLeave);
@@ -142,6 +144,23 @@ public sealed partial class EditorView : UserControl
             model.Playback.Tick();
             EnsurePlaybackFrames();
         });
+    }
+
+    // Drags the finished clip out as a real file, as Explorer does, so Discord, chats, mail and folders accept it.
+    private async void OnResultDragStart(object? sender, PointerPressedEventArgs e)
+    {
+        if (!e.GetCurrentPoint(ResultDragHandle).Properties.IsLeftButtonPressed || _model?.LastExportPath is not { } path || !File.Exists(path)) return;
+        if (TopLevel.GetTopLevel(this)?.StorageProvider is not { } storage) return;
+        try
+        {
+            if (await storage.TryGetFileFromPathAsync(Path.GetFullPath(path)) is not { } file) return;
+            var data = new DataTransfer(); data.Add(DataTransferItem.CreateFile(file));
+            await DragDrop.DoDragDropAsync(e, data, DragDropEffects.Copy);
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException or InvalidOperationException)
+        {
+            if (_model is { } model) model.Status = "The clip could not be dragged. Use Copy clip instead.";
+        }
     }
 
     private void OnDropZoneLeave(object? sender, DragEventArgs e)

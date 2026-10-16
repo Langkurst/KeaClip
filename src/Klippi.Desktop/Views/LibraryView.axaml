@@ -261,6 +261,9 @@
                   <c:StrokeIcon Data="{StaticResource IconMore}" Size="18" StrokeThickness="2.8" />
                   <Button.Flyout>
                     <MenuFlyout Placement="BottomEdgeAlignedRight" VerticalOffset="4" FlyoutPresenterClasses="library-menu">
+                      <MenuItem Header="Copy file (paste into Discord or a chat)" Command="{Binding CopyFileCommand}" IsEnabled="{Binding IsAvailable}">
+                        <MenuItem.Icon><c:StrokeIcon Data="{StaticResource IconFile}" Size="16" /></MenuItem.Icon>
+                      </MenuItem>
                       <MenuItem Header="Copy file path" Command="{Binding CopyPathCommand}">
                         <MenuItem.Icon><c:StrokeIcon Data="{StaticResource IconCopy}" Size="16" /></MenuItem.Icon>
                       </MenuItem>

@@ -10,7 +10,7 @@ public sealed partial class HistoryRow
     // actually used, and each getter keeps returning its first instance (bindings and tests
     // compare them by identity).
     private IRelayCommand? _openCommand, _revealCommand;
-    private IAsyncRelayCommand? _editCommand, _shareCommand, _removeCommand, _copyPathCommand, _copySourceCommand, _repeatCommand, _copyShareLinkCommand;
+    private IAsyncRelayCommand? _editCommand, _shareCommand, _removeCommand, _copyPathCommand, _copyFileCommand, _copySourceCommand, _repeatCommand, _copyShareLinkCommand;
 
     public HistoryRow(HistoryEntry entry, MainViewModel owner)
     {
@@ -26,6 +26,7 @@ public sealed partial class HistoryRow
     public IAsyncRelayCommand ShareCommand => _shareCommand ??= new AsyncRelayCommand(() => _owner.ShareFileAsync(Entry.FilePath));
     public IAsyncRelayCommand RemoveCommand => _removeCommand ??= new AsyncRelayCommand(() => _owner.RemoveHistoryAsync(Entry.Id));
     public IAsyncRelayCommand CopyPathCommand => _copyPathCommand ??= new AsyncRelayCommand(() => _owner.CopyPathAsync(Entry.FilePath));
+    public IAsyncRelayCommand CopyFileCommand => _copyFileCommand ??= new AsyncRelayCommand(() => _owner.CopyFileAsync(Entry.FilePath));
     public IAsyncRelayCommand CopySourceCommand => _copySourceCommand ??= new AsyncRelayCommand(() => _owner.CopySourceAsync(Entry));
     public IAsyncRelayCommand RepeatCommand => _repeatCommand ??= new AsyncRelayCommand(() => _owner.RepeatDownloadAsync(Entry));
     /// <summary>A share link was made for this file in this session; Copy link copies it (it is kept in memory only).</summary>

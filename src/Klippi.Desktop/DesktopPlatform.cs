@@ -15,6 +15,8 @@ public interface IDesktopPlatform
     Task<string?> SaveMediaAsync(string name, string extension, string? directory) => SaveMediaAsync(name, extension);
     Task<string?> ReadClipboardAsync();
     Task CopyAsync(string value);
+    // The file itself (not its path), as Explorer's Copy does, so Ctrl+V in Discord, a chat or an email attaches it.
+    Task CopyFileAsync(string path) => Task.FromException(new NotSupportedException("Copying files is not available here."));
     void OpenFile(string path);
     void RevealFile(string path);
     void OpenFolder(string path);
@@ -52,7 +54,22 @@ public sealed class DesktopPlatform : IDesktopPlatform
         return file?.TryGetLocalPath();
     }
     public async Task<string?> ReadClipboardAsync() => _window?.Clipboard is { } clipboard ? await clipboard.TryGetTextAsync() : null;
-    public async Task CopyAsync(string value) { if (_window?.Clipboard is { } clipboard) await clipboard.SetTextAsync(value); }
+    public async Task CopyAsync(string value) { if (_window?.Clipboard is { } clipboard) { await clipboard.SetTextAsync(value); await KeepAfterExitAsync(clipboard); } }
+    // Windows drops what an app copied when that app exits unless the clipboard is flushed: someone who copies a clip,
+    // quits KeaClip and then pastes would get nothing. The copy itself already worked, so a failed flush is not an error.
+    private static async Task KeepAfterExitAsync(IClipboard clipboard)
+    {
+        try { await clipboard.FlushAsync(); }
+        catch (System.Runtime.InteropServices.ExternalException) { }
+    }
+    public async Task CopyFileAsync(string path)
+    {
+        RequireFile(path);
+        if (_window?.Clipboard is not { } clipboard || Storage is null) throw new InvalidOperationException("The clipboard is not available.");
+        var file = await Storage.TryGetFileFromPathAsync(Path.GetFullPath(path)) ?? throw new FileNotFoundException("The file is no longer available.");
+        await clipboard.SetFileAsync(file);
+        await KeepAfterExitAsync(clipboard);
+    }
     // A file that is no longer there is reported, never silently ignored: callers turn the
     // FileNotFoundException into "This file is no longer available".
     public void OpenFile(string path)

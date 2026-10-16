@@ -1219,6 +1219,12 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private void FilterHistory() => SyncHistoryRows();
     public Task RemoveHistoryAsync(string id) => RunAsync(OperationLane.Maintenance, async ct => { await _services.Store.RemoveHistoryAsync(id, ct); await ReloadHistoryAsync(ct); Status = "History record removed. The media file was kept."; });
     public Task CopyPathAsync(string path) => CopyToClipboardAsync(path, "File path copied.");
+    public async Task CopyFileAsync(string path)
+    {
+        try { await _services.Platform.CopyFileAsync(path); Status = "Copied. Paste it into Discord, a chat or an email with Ctrl+V."; }
+        catch (FileNotFoundException) { Status = "This file is no longer available. It may have been moved or deleted."; }
+        catch (Exception error) { CaptureDiagnostics(error); Status = "The clipboard is busy in another app. Try copying again."; }
+    }
     public Task CopySourceAsync(HistoryEntry entry) => entry.SourceUrl is { } url ? CopyToClipboardAsync(url, "Saved source link copied.") : Task.CompletedTask;
     // Another app can hold the clipboard; that must never crash or lose state.
     private async Task CopyToClipboardAsync(string value, string done)

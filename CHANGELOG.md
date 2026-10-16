@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.2 (2026-10-16)
+
+- **Copy clip**: when a clip is ready, one button copies the file itself, so Ctrl+V in Discord, a chat or an email attaches it. You can also drag the finished clip straight out of KeaClip. In the Library, More actions has **Copy file** too.
+- **Links from a second launch arrive on busy PCs**: opening several links at once while KeaClip starts no longer loses one.
+
 ## 0.4.1 (2026-10-15)
 
 - **Feedback email**: choosing Email also copies keaclip@proton.me, since many PCs have no email app; there's a Copy the email address item too.

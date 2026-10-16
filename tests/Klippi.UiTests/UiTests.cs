@@ -372,6 +372,13 @@ public sealed class FakePlatform : IDesktopPlatform
     public Task<string?> ReadClipboardAsync() => Task.FromResult(Clipboard);
     public Exception? CopyFailure { get; set; }
     public Task CopyAsync(string value) { if (CopyFailure is { } error) return Task.FromException(error); Clipboard = value; return Task.CompletedTask; }
+    public string? CopiedFile { get; private set; }
+    public Task CopyFileAsync(string path)
+    {
+        if (FilesMissing) return Task.FromException(new FileNotFoundException("The file is no longer available."));
+        if (CopyFailure is { } error) return Task.FromException(error);
+        CopiedFile = path; return Task.CompletedTask;
+    }
     // Like DesktopPlatform for a file that has been moved or deleted.
     public bool FilesMissing { get; set; }
     public void OpenFile(string path) { if (FilesMissing) throw new FileNotFoundException("The file is no longer available."); OpenedFiles.Add(path); }
