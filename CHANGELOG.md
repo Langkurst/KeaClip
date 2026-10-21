@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.4 (2026-10-22)
+
+- **Drag anything over KeaClip** and the whole window says what letting go will do: "Drop to edit clip.mp4", "Drop to share these 3 items with one link" or "Drop to paste this link", on any page.
+- **Ctrl+V pastes files**: copy files or a folder in File Explorer, press Ctrl+V in KeaClip, and it's the same as dropping them.
+- **Share copies the link for you**: when an upload finishes, the link is already on the clipboard, ready to paste.
+
 ## 0.4.3 (2026-10-22)
 
 - **Share any files or folders**: drag them onto KeaClip and a Ready to share card appears; press Share for one encrypted file.kiwi link. Several files or a folder are packed into one .zip for you (videos and photos aren't squashed), and the .zip is deleted once the link is ready. Nothing uploads until you press Share. A single video or audio file still opens in the Editor, now including WMV, FLV, MPG, TS, 3GP and similar.

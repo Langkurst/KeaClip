@@ -59,6 +59,28 @@ public sealed partial class MainWindow : Window
         // its release or a focused button would still fire.
         AddHandler(KeyUpEvent, (_, e) => { if (e.Key == Key.Space && _swallowSpaceRelease) { _swallowSpaceRelease = false; e.Handled = true; } }, RoutingStrategies.Tunnel);
         DragDrop.SetAllowDrop(this, true); AddHandler(DragDrop.DropEvent, OnDrop);
+        // Whatever page is open, a drag over the window says what letting go will do.
+        AddHandler(DragDrop.DragEnterEvent, OnDragOver); AddHandler(DragDrop.DragOverEvent, OnDragOver);
+        AddHandler(DragDrop.DragLeaveEvent, OnDragLeave);
+    }
+
+    private void OnDragOver(object? sender, DragEventArgs e)
+    {
+        if (Model is not { } model) return;
+        var paths = e.DataTransfer.TryGetFiles()?.Select(item => item.TryGetLocalPath()).OfType<string>().ToArray() ?? [];
+        // If the source only reveals its files on drop, the hint stays general but the drop is still accepted.
+        var hint = paths.Length > 0 ? model.DropHintFor(paths)
+            : e.DataTransfer.Contains(DataFormat.File) ? MainViewModel.GeneralDropHint
+            : e.DataTransfer.TryGetText() is { Length: > 0 } ? "Drop to paste this link" : null;
+        model.DropHint = hint;
+        e.DragEffects = hint is null ? DragDropEffects.None : DragDropEffects.Copy;
+    }
+
+    // Leaving a child element also raises DragLeave; only leaving the window itself hides the hint.
+    private void OnDragLeave(object? sender, DragEventArgs e)
+    {
+        var point = e.GetPosition(this);
+        if (Model is { } model && !new Rect(Bounds.Size).Contains(point)) model.DropHint = null;
     }
 
     private MainViewModel? Model => DataContext as MainViewModel;
@@ -192,6 +214,8 @@ public sealed partial class MainWindow : Window
         }
         if (e.KeyModifiers == KeyModifiers.Control && Model is { } shortcuts)
         {
+            // Files copied in File Explorer: Ctrl+V does what dropping them would. Text boxes keep their own paste.
+            if (e.Key == Key.V && FocusManager?.GetFocusedElement() is not TextBox) { _ = shortcuts.PasteFilesAsync(); return; }
             if (e.Key is >= Key.D1 and <= Key.D5 && !shortcuts.PreviewFullscreen) { shortcuts.SelectedTab = e.Key - Key.D1; e.Handled = true; return; }
             if (e.Key == Key.O && shortcuts.CanEdit) { shortcuts.OpenMediaCommand.Execute(null); e.Handled = true; return; }
         }
@@ -209,6 +233,7 @@ public sealed partial class MainWindow : Window
     private async void OnDrop(object? sender, DragEventArgs e)
     {
         if (Model is not { } model) return;
+        model.DropHint = null;
         // One video or audio file opens in the Editor; other files, several items or folders wait to be shared.
         var paths = e.DataTransfer.TryGetFiles()?.Select(item => item.TryGetLocalPath()).OfType<string>().ToArray() ?? [];
         if (paths.Length > 0) { await model.AcceptDroppedAsync(paths); return; }

@@ -39,6 +39,7 @@ public sealed class DropShareTests : IDisposable
         }
         fake.Sharing.Gate.SetResult(); await sharing;
         Assert.True(model.HasShareUrl); Assert.False(model.HasDropShare);
+        Assert.Equal(model.ShareUrl, fake.Platform.Clipboard); Assert.Contains("link copied", model.Status); // ready to paste
         Assert.False(File.Exists(zip)); // the bundle is removed once the link exists
         Assert.True(File.Exists(Path.Combine(folder, "notes.txt"))); // the originals are never touched
     }
@@ -110,6 +111,64 @@ public sealed class DropShareTests : IDisposable
                 using var frame = window.CaptureRenderedFrame(); Directory.CreateDirectory(output);
                 frame!.Save(Path.Combine(output, "drop-share-card-dark.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
             }
+        }
+        finally { model.CloseBehavior = Klippi.Core.CloseBehavior.Exit; window.Close(); }
+    }
+
+    [AvaloniaFact]
+    public void The_drag_hint_says_what_letting_go_will_do()
+    {
+        Directory.CreateDirectory(Path.Combine(_root, "Holiday photos"));
+        using var model = new MainViewModel(new UiFakes().Services);
+        Assert.Equal("Drop to edit clip.mp4", model.DropHintFor([@"C:\Videos\clip.mp4"]));
+        Assert.Equal("Drop to share tickets.pdf with a link", model.DropHintFor([@"C:\Docs\tickets.pdf"]));
+        Assert.Equal("Drop to share Holiday photos with a link", model.DropHintFor([Path.Combine(_root, "Holiday photos") + Path.DirectorySeparatorChar]));
+        Assert.Equal("Drop to share these 3 items with one link", model.DropHintFor([@"C:\a.txt", @"C:\b.txt", @"C:\c.mp4"]));
+        model.DraggingOutPath = @"C:\Videos\clip.mp4";
+        Assert.Null(model.DropHintFor([@"C:\Videos\clip.mp4"])); // KeaClip's own clip being dragged out: no hint, no drop
+
+        model.DropHint = "Drop to edit clip.mp4";
+        Assert.True(model.IsDragOver); Assert.True(model.DropHintIsEdit); Assert.Contains("Editor", model.DropHintDetail);
+        model.DropHint = "Drop to share tickets.pdf with a link";
+        Assert.False(model.DropHintIsEdit); Assert.Contains("until you press Share", model.DropHintDetail);
+        model.DropHint = MainViewModel.GeneralDropHint; // the source shows its files only on drop
+        Assert.True(model.IsDragOver); Assert.False(model.DropHintIsEdit); Assert.Contains("press Share", model.DropHintDetail);
+        model.DropHint = null; Assert.False(model.IsDragOver);
+    }
+
+    [AvaloniaFact]
+    public async Task Ctrl_V_with_files_copied_in_Explorer_does_what_dropping_them_would()
+    {
+        var folder = Path.Combine(_root, "Holiday photos"); Directory.CreateDirectory(folder); File.WriteAllText(Path.Combine(folder, "a.txt"), "a");
+        var fake = new UiFakes();
+        using var model = new MainViewModel(fake.Services with { DataRoot = Path.Combine(_root, "data") });
+        await model.PasteFilesAsync(); // nothing copied: nothing happens
+        Assert.False(model.HasDropShare);
+        fake.Platform.ClipboardFiles.Add(folder);
+        await model.PasteFilesAsync();
+        Assert.True(model.HasDropShare); Assert.Equal("Holiday photos", model.DropShareName);
+    }
+
+    [AvaloniaFact]
+    public void The_drop_overlay_covers_any_page_while_dragging()
+    {
+        var fake = new UiFakes();
+        using var model = new MainViewModel(fake.Services) { ReducedMotion = true };
+        var window = new MainWindow { DataContext = model, Width = 1180, Height = 780 }; window.Show();
+        try
+        {
+            model.Theme = "Dark"; model.SelectedTab = 2;
+            var overlay = window.FindNamed<Avalonia.Controls.Panel>("DropOverlay")!;
+            Assert.False(overlay.IsEffectivelyVisible);
+            model.DropHint = "Drop to share these 3 items with one link"; Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+            Assert.True(overlay.IsEffectivelyVisible); Assert.False(overlay.IsHitTestVisible);
+            if (Environment.GetEnvironmentVariable("KEACLIP_UI_EVIDENCE_DIRECTORY") is { Length: > 0 } output)
+            {
+                using var frame = window.CaptureRenderedFrame(); Directory.CreateDirectory(output);
+                frame!.Save(Path.Combine(output, "drop-overlay-dark.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
+            }
+            model.DropHint = null; Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+            Assert.False(overlay.IsEffectivelyVisible);
         }
         finally { model.CloseBehavior = Klippi.Core.CloseBehavior.Exit; window.Close(); }
     }

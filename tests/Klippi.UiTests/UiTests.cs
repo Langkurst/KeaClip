@@ -373,6 +373,8 @@ public sealed class FakePlatform : IDesktopPlatform
     public Exception? CopyFailure { get; set; }
     public Task CopyAsync(string value) { if (CopyFailure is { } error) return Task.FromException(error); Clipboard = value; return Task.CompletedTask; }
     public string? CopiedFile { get; private set; }
+    public List<string> ClipboardFiles { get; } = [];
+    public Task<IReadOnlyList<string>> ReadClipboardFilesAsync() => Task.FromResult<IReadOnlyList<string>>(ClipboardFiles.ToArray());
     public Task CopyFileAsync(string path)
     {
         if (FilesMissing) return Task.FromException(new FileNotFoundException("The file is no longer available."));

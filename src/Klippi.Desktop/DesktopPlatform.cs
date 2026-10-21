@@ -17,6 +17,8 @@ public interface IDesktopPlatform
     Task CopyAsync(string value);
     // The file itself (not its path), as Explorer's Copy does, so Ctrl+V in Discord, a chat or an email attaches it.
     Task CopyFileAsync(string path) => Task.FromException(new NotSupportedException("Copying files is not available here."));
+    // Files (or folders) copied in File Explorer, as local paths; empty when the clipboard holds none.
+    Task<IReadOnlyList<string>> ReadClipboardFilesAsync() => Task.FromResult<IReadOnlyList<string>>([]);
     void OpenFile(string path);
     void RevealFile(string path);
     void OpenFolder(string path);
@@ -61,6 +63,11 @@ public sealed class DesktopPlatform : IDesktopPlatform
     {
         try { await clipboard.FlushAsync(); }
         catch (System.Runtime.InteropServices.ExternalException) { }
+    }
+    public async Task<IReadOnlyList<string>> ReadClipboardFilesAsync()
+    {
+        if (_window?.Clipboard is not { } clipboard || await clipboard.TryGetFilesAsync() is not { } items) return [];
+        return items.Select(item => item.TryGetLocalPath()).OfType<string>().ToArray();
     }
     public async Task CopyFileAsync(string path)
     {

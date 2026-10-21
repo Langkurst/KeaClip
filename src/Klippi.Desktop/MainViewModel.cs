@@ -1137,7 +1137,14 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         ShareInfo = (result.FreeDownloadHours is { } hours ? $"Free to download for about {hours:0.##} hours" + (result.EstimatedFreeUntil is { } until ? $", until about {until.ToLocalTime():g}. " : ". ")
                 : $"file.kiwi did not say how long this link lasts; API uploads are usually free to download for {FreeDownloadHoursText(File.Exists(path) ? new FileInfo(path).Length : 0)}. ")
             + "After that the link stops working." + (result.Warning is { } warning ? " " + MediaValidation.Redact(warning) : "");
-        if (!automatic) { SelectedTab = 3; Status = "Upload finished. Copy the full link to share; its decryption secret is not saved to history."; }
+        // Like Share when finished, the link goes straight on the clipboard: the next thing anyone does is paste it.
+        if (!automatic)
+        {
+            SelectedTab = 3;
+            Status = await TryCopyToClipboardAsync(result.ShareUrl)
+                ? "Upload finished: link copied, ready to paste. Keep the full link private; its secret is not saved to history."
+                : "Upload finished. The clipboard is busy in another app, so press Copy link. Its secret is not saved to history.";
+        }
         return result;
     }
 

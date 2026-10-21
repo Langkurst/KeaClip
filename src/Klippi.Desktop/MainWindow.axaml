@@ -119,6 +119,22 @@
         <v:EditorView Name="EditorPage" Classes="page" IsVisible="{Binding IsEditor}" />
         <v:SettingsView Name="SettingsPage" Classes="page" IsVisible="{Binding IsSettings}" />
         <v:BetaTestView Name="BetaTestPage" Classes="page" IsVisible="{Binding IsBetaTest}" />
+        <!-- While something is dragged over the window, on any page: what letting go will do. Never takes the drop itself. -->
+        <Panel Name="DropOverlay" IsVisible="{Binding IsDragOver}" IsHitTestVisible="False" Background="{DynamicResource AppScrim}">
+          <Rectangle Margin="24" Stroke="{DynamicResource AppAccent}" StrokeThickness="2" StrokeDashArray="6,5" RadiusX="16" RadiusY="16" />
+          <Border Classes="card" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="28,22" MaxWidth="520">
+            <StackPanel Spacing="12">
+              <Border Width="64" Height="64" CornerRadius="32" Background="{DynamicResource AppAccent}" HorizontalAlignment="Center">
+                <Panel>
+                  <c:StrokeIcon Data="{StaticResource IconShare}" Size="28" Foreground="{DynamicResource AccentText}" IsVisible="{Binding !DropHintIsEdit}" />
+                  <c:StrokeIcon Data="{StaticResource IconScissors}" Size="28" Foreground="{DynamicResource AccentText}" IsVisible="{Binding DropHintIsEdit}" />
+                </Panel>
+              </Border>
+              <TextBlock Name="DropHintText" Text="{Binding DropHint}" Classes="h1" TextAlignment="Center" TextWrapping="Wrap" />
+              <TextBlock Name="DropHintDetailText" Text="{Binding DropHintDetail}" Classes="caption muted" TextAlignment="Center" TextWrapping="Wrap" />
+            </StackPanel>
+          </Border>
+        </Panel>
       </Panel>
     </Grid>
 

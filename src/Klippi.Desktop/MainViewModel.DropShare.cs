@@ -27,12 +27,48 @@ public sealed partial class MainViewModel
     public IAsyncRelayCommand ShareDroppedCommand => _shareDroppedCommand ??= new AsyncRelayCommand(ShareDroppedAsync);
     public IRelayCommand CancelDroppedCommand => _cancelDroppedCommand ??= new RelayCommand(() => SetDropShare(null));
 
+    private string? _dropHint;
+    /// <summary>Shown over the whole window while something is dragged over it: what letting go will do.</summary>
+    public string? DropHint { get => _dropHint; set { if (SetProperty(ref _dropHint, value)) { OnPropertyChanged(nameof(IsDragOver)); OnPropertyChanged(nameof(DropHintIsEdit)); OnPropertyChanged(nameof(DropHintDetail)); } } }
+    public bool IsDragOver => _dropHint is not null;
+    internal const string GeneralDropHint = "Drop to edit or share";
+    public bool DropHintIsEdit => _dropHint is not GeneralDropHint && _dropHint?.StartsWith("Drop to edit", StringComparison.Ordinal) == true;
+    public string DropHintDetail => _dropHint switch
+    {
+        null => "",
+        GeneralDropHint => "A video or audio file opens in the Editor; anything else waits for you to press Share.",
+        _ when DropHintIsEdit => "It opens in the Editor. Your original is kept.",
+        _ when _dropHint.StartsWith("Drop to paste", StringComparison.Ordinal) => "It goes in the Download box, ready to check.",
+        _ => "Nothing uploads until you press Share.",
+    };
+
+    /// <summary>The overlay text for a drag carrying these paths, or null when KeaClip would ignore the drop (its own clip).</summary>
+    public string? DropHintFor(IReadOnlyList<string> paths)
+    {
+        if (paths.Count == 0 || IsOwnDrag(paths)) return null;
+        if (paths.Count == 1 && IsEditableMedia(paths[0]) && !Directory.Exists(paths[0])) return "Drop to edit " + Path.GetFileName(paths[0]);
+        if (paths.Count > 1) return $"Drop to share these {paths.Count} items with one link";
+        return "Drop to share " + Path.GetFileName(paths[0].TrimEnd(Path.DirectorySeparatorChar)) + " with a link";
+    }
+
+    /// <summary>Ctrl+V outside a text box: files copied in File Explorer are handled exactly like a drop.</summary>
+    public async Task PasteFilesAsync()
+    {
+        IReadOnlyList<string> paths;
+        try { paths = await _services.Platform.ReadClipboardFilesAsync(); }
+        catch (Exception error) { CaptureDiagnostics(error); return; }
+        if (paths.Count > 0) await AcceptDroppedAsync(paths);
+    }
+
+    private bool IsOwnDrag(IReadOnlyList<string> paths) =>
+        DraggingOutPath is { } own && paths.Count == 1 && string.Equals(Path.GetFullPath(paths[0]), Path.GetFullPath(own), StringComparison.OrdinalIgnoreCase);
+
     /// <summary>Handles a drop on the window: one video or audio file opens in the Editor; anything else is offered for sharing.</summary>
     public async Task AcceptDroppedAsync(IReadOnlyList<string> paths)
     {
         // The finished clip dragged out of the result card can land back on this window (a plain click on the card is
         // a zero-distance drag); that is not a request to open or share it.
-        if (paths.Count == 0 || (DraggingOutPath is { } own && paths.Count == 1 && string.Equals(Path.GetFullPath(paths[0]), Path.GetFullPath(own), StringComparison.OrdinalIgnoreCase))) return;
+        if (paths.Count == 0 || IsOwnDrag(paths)) return;
         if (paths.Count == 1 && File.Exists(paths[0]) && IsEditableMedia(paths[0])) { await OpenEditorAsync(paths[0]); return; }
         try
         {
