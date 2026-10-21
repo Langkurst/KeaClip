@@ -161,8 +161,8 @@ public sealed class DesignSystemTests
             // Nine Settings cards, including Watch links (shown only when the watch link service is present), and the
             // Advanced settings row, which wears the same heading well.
             Assert.Equal(10, settings.Count(border => border.Classes.Contains("large")));
-            // Export and Share; the preview header is one slim line without a well, so the picture gets the height.
-            Assert.Equal(2, editor.Count(border => border.Classes.Contains("large")));
+            // Ready to share (dropped files), Export and Share; the preview header is one slim line without a well, so the picture gets the height.
+            Assert.Equal(3, editor.Count(border => border.Classes.Contains("large")));
             Assert.NotEmpty(download);
             Assert.All(settings.Concat(editor).Where(border => border.Classes.Contains("large")), border => Assert.Equal(38, border.Width));
             Assert.All(download, border => Assert.Equal(36, border.Width));

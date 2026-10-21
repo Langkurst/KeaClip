@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.3 (2026-10-22)
+
+- **Share any files or folders**: drag them onto KeaClip and a Ready to share card appears; press Share for one encrypted file.kiwi link. Several files or a folder are packed into one .zip for you (videos and photos aren't squashed), and the .zip is deleted once the link is ready. Nothing uploads until you press Share. A single video or audio file still opens in the Editor, now including WMV, FLV, MPG, TS, 3GP and similar.
+- **Fixed**: clicking the "Your clip is ready" card could reopen the clip in the Editor, as if it had been dropped back onto KeaClip.
+
 ## 0.4.2 (2026-10-16)
 
 - **Copy clip**: when a clip is ready, one button copies the file itself, so Ctrl+V in Discord, a chat or an email attaches it. You can also drag the finished clip straight out of KeaClip. In the Library, More actions has **Copy file** too.

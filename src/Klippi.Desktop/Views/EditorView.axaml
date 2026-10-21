@@ -64,6 +64,27 @@
 
   <ScrollViewer Name="PageScroller" HorizontalScrollBarVisibility="Disabled" Padding="36,4,36,28">
     <StackPanel Spacing="18" MaxWidth="{Binding PageMaxWidth}">
+      <!-- Files or folders dropped on the window to share. Nothing uploads until Share is pressed. -->
+      <Border Name="DropShareCard" Classes="card reveal" IsVisible="{Binding HasDropShare}" AutomationProperties.LiveSetting="Polite" AutomationProperties.Name="Ready to share">
+        <StackPanel Spacing="14">
+          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+            <Border Classes="well large"><c:StrokeIcon Data="{StaticResource IconShare}" /></Border>
+            <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
+              <TextBlock Text="Ready to share" Classes="section" />
+              <TextBlock Name="DropShareTitle" Text="{Binding DropShareName}" Classes="strong" TextTrimming="CharacterEllipsis" MaxLines="1" ToolTip.Tip="{Binding DropShareName}" />
+              <TextBlock Text="{Binding DropShareDetail}" Classes="caption muted" />
+            </StackPanel>
+          </Grid>
+          <TextBlock Text="{Binding DropShareNotice}" Classes="caption muted" TextWrapping="Wrap" />
+          <WrapPanel ItemSpacing="8" LineSpacing="8">
+            <Button Name="ShareDroppedButton" Classes="primary" Command="{Binding ShareDroppedCommand}" IsEnabled="{Binding CanShare}" AutomationProperties.Name="Share the dropped files">
+              <StackPanel Orientation="Horizontal" Spacing="8"><c:StrokeIcon Data="{StaticResource IconShare}" Size="16" /><TextBlock Text="Share" VerticalAlignment="Center" /></StackPanel>
+            </Button>
+            <Button Name="CancelDroppedButton" Classes="ghost" Command="{Binding CancelDroppedCommand}" Content="Cancel" AutomationProperties.Name="Don't share the dropped files" />
+          </WrapPanel>
+        </StackPanel>
+      </Border>
+
       <!--
         One grid holds every editor state; EditorView.UpdateLayoutMode places the columns:
         narrow with a file: workspace, then output below; wide: output beside the workspace;
@@ -82,6 +103,7 @@
                 </Border>
                 <TextBlock Text="Drop a video or audio file here" Classes="h1" TextAlignment="Center" TextWrapping="Wrap" HorizontalAlignment="Center" />
                 <TextBlock Text="Trim it, pull out the sound or shrink it to send. Your original is kept unless you say otherwise." Classes="muted" TextAlignment="Center" />
+                <TextBlock Text="Or drop any other files or a whole folder to share them with one link." Classes="caption muted" TextAlignment="Center" TextWrapping="Wrap" />
                 <Button Name="EmptyOpenButton" Classes="primary large" HorizontalAlignment="Center" Margin="0,6,0,0" Command="{Binding OpenMediaCommand}" ToolTip.Tip="Open a video or audio file · Ctrl+O" AutomationProperties.Name="Open media">
                   <StackPanel Orientation="Horizontal" Spacing="9"><c:StrokeIcon Data="{StaticResource IconOpenFile}" /><TextBlock Text="Open media" VerticalAlignment="Center" /></StackPanel>
                 </Button>

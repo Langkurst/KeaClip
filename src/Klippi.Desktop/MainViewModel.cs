@@ -372,6 +372,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     public async Task InitializeAsync() => await RunAsync(OperationLane.Maintenance, async ct =>
     {
         RefreshPlatformPreferences();
+        CleanShareBundles();
         var problems = new List<string>();
         // Clipboard detection is only enabled from settings that really loaded; defaults
         // could switch it back on for someone who turned it off.

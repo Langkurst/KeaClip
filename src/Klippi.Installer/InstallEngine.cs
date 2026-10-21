@@ -266,7 +266,7 @@ public sealed class InstallEngine
     /// <summary>Where an installed KeaClip keeps its own state (portable copies keep a Data folder beside the app instead).</summary>
     public static string DefaultDataRoot => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "KeaClip");
     // Parts KeaClip downloads or makes for itself and can always fetch again: media tools, update downloads, temporary work.
-    private static readonly string[] DownloadedParts = ["Components", "Updates", "TemporaryWorkspaces"];
+    private static readonly string[] DownloadedParts = ["Components", "Updates", "TemporaryWorkspaces", "ShareBundles"];
     // The user's settings and history (with KeaClip's own backup and set-aside copies of them).
     private static readonly string[] StateFiles = ["settings.json", "history.json", "queue.json", "update-state.json", "watch-links.json", "watch-usage.json", "beta-test.json"];
 

@@ -56,6 +56,8 @@ Open a video from the Library, with **Open local media**, by dropping it on the 
 
 **Share when finished** on the Download page does the same for each download once it's done.
 
+**Share any files or a whole folder:** drag them onto KeaClip. A **Ready to share** card shows what's in it and how big it is, and nothing uploads until you press **Share**. One file goes as it is; several files or a folder are packed into one .zip first (you don't need to zip anything yourself), and the .zip is deleted from your PC once the link is ready. Your original files are never changed. Dropping a single video or audio file still opens it in the Editor.
+
 ## Settings
 
 **Appearance** (dark or light), **Downloads** (where files go, how many at once) and **About** are at the top. Everything else is under **Advanced settings**: startup, tray, history, editor presets, privacy, the helper tools and storage clean-up.

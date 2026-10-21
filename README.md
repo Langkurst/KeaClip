@@ -17,7 +17,7 @@ No ads, no account, no tracking.</p>
 - **Trim** any video or audio file: drag the orange handles, then export just that part. Pull out the sound as MP3, fade in and out, make a short soundboard clip, or export the selection as a **GIF**.
 - **Fit it for Discord** in one click: Discord (10 MB), Email (25 MB), Nitro Basic (50 MB) or Nitro (500 MB) aims the clip just under that size. Then press **Copy clip** and paste it straight into the chat with Ctrl+V, or drag it in.
 - **Your game clips** are waiting when you open the Editor: new recordings from Xbox Game Bar, AMD ReLive, NVIDIA and OBS show up ready to trim.
-- **Share** with an encrypted [file.kiwi](https://file.kiwi) link. Sharing uses the [file.kiwi API](https://file.kiwi/api): the file is encrypted on your PC before it uploads, and the link expires on its own.
+- **Share** with an encrypted [file.kiwi](https://file.kiwi) link. Sharing uses the [file.kiwi API](https://file.kiwi/api): the file is encrypted on your PC before it uploads, and the link expires on its own. Drag any other files or a whole folder onto KeaClip to send them with one link too (several items go as one .zip, made for you).
 - **Keep** everything in your Library to open, edit or share again later. Removing a record never deletes the file.
 
 | Trim and export | Your library |

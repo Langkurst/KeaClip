@@ -149,17 +149,19 @@ public sealed partial class EditorView : UserControl
     // Drags the finished clip out as a real file, as Explorer does, so Discord, chats, mail and folders accept it.
     private async void OnResultDragStart(object? sender, PointerPressedEventArgs e)
     {
-        if (!e.GetCurrentPoint(ResultDragHandle).Properties.IsLeftButtonPressed || _model?.LastExportPath is not { } path || !File.Exists(path)) return;
+        if (!e.GetCurrentPoint(ResultDragHandle).Properties.IsLeftButtonPressed || _model is not { } model || model.LastExportPath is not { } path || !File.Exists(path)) return;
         if (TopLevel.GetTopLevel(this)?.StorageProvider is not { } storage) return;
         try
         {
             if (await storage.TryGetFileFromPathAsync(Path.GetFullPath(path)) is not { } file) return;
             var data = new DataTransfer(); data.Add(DataTransferItem.CreateFile(file));
-            await DragDrop.DoDragDropAsync(e, data, DragDropEffects.Copy);
+            model.DraggingOutPath = path;
+            try { await DragDrop.DoDragDropAsync(e, data, DragDropEffects.Copy); }
+            finally { model.DraggingOutPath = null; }
         }
         catch (Exception error) when (error is IOException or UnauthorizedAccessException or InvalidOperationException)
         {
-            if (_model is { } model) model.Status = "The clip could not be dragged. Use Copy clip instead.";
+            model.Status = "The clip could not be dragged. Use Copy clip instead.";
         }
     }
 

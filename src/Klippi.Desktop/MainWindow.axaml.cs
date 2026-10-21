@@ -209,8 +209,9 @@ public sealed partial class MainWindow : Window
     private async void OnDrop(object? sender, DragEventArgs e)
     {
         if (Model is not { } model) return;
-        var files = e.DataTransfer.TryGetFiles(); var file = files?.FirstOrDefault()?.TryGetLocalPath();
-        if (file is not null) { await model.OpenEditorAsync(file); return; }
+        // One video or audio file opens in the Editor; other files, several items or folders wait to be shared.
+        var paths = e.DataTransfer.TryGetFiles()?.Select(item => item.TryGetLocalPath()).OfType<string>().ToArray() ?? [];
+        if (paths.Length > 0) { await model.AcceptDroppedAsync(paths); return; }
         var text = e.DataTransfer.TryGetText(); if (text is not null) model.AcceptLaunchArgument(text);
     }
 

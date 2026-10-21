@@ -29,11 +29,11 @@ public static class SelfTests
         checks.Add("An older setup is refused over a newer installation; the same version can be reinstalled");
         // Uninstall clean-up: downloaded tools always go; settings and history only when asked; anything else stays.
         var data = Path.Combine(run, "UserData"); Directory.CreateDirectory(data);
-        foreach (var part in new[] { "Components/yt-dlp/yt-dlp.exe", "Updates/0.9.0/KeaClip-0.9.0-Setup.exe", "TemporaryWorkspaces/owner.json" })
+        foreach (var part in new[] { "Components/yt-dlp/yt-dlp.exe", "Updates/0.9.0/KeaClip-0.9.0-Setup.exe", "TemporaryWorkspaces/owner.json", "ShareBundles/Holiday photos.zip" })
         { var file = Path.Combine(data, part.Replace('/', Path.DirectorySeparatorChar)); Directory.CreateDirectory(Path.GetDirectoryName(file)!); File.WriteAllText(file, "x"); }
         foreach (var file in new[] { "settings.json", "settings.json.backup", "history.json", "queue.json.corrupt-1", "holiday.mp4" }) File.WriteAllText(Path.Combine(data, file), "x");
         InstallEngine.RemoveAppData(data, settingsToo: false);
-        Require(!Directory.Exists(Path.Combine(data, "Components")) && !Directory.Exists(Path.Combine(data, "Updates")) && !Directory.Exists(Path.Combine(data, "TemporaryWorkspaces")) && File.Exists(Path.Combine(data, "settings.json")) && File.Exists(Path.Combine(data, "holiday.mp4")), "uninstall removes downloaded tools only");
+        Require(!Directory.Exists(Path.Combine(data, "Components")) && !Directory.Exists(Path.Combine(data, "Updates")) && !Directory.Exists(Path.Combine(data, "TemporaryWorkspaces")) && !Directory.Exists(Path.Combine(data, "ShareBundles")) && File.Exists(Path.Combine(data, "settings.json")) && File.Exists(Path.Combine(data, "holiday.mp4")), "uninstall removes downloaded tools only");
         InstallEngine.RemoveAppData(data, settingsToo: true);
         Require(Directory.EnumerateFileSystemEntries(data).Select(Path.GetFileName).SequenceEqual(["holiday.mp4"]), "uninstall removes settings when asked and keeps unknown files");
         File.Delete(Path.Combine(data, "holiday.mp4")); InstallEngine.RemoveAppData(data, settingsToo: true);
