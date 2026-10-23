@@ -3,7 +3,7 @@
 <h1 align="center">KeaClip</h1>
 
 <p align="center"><b>Save it. Trim it. Share it.</b><br>
-A free Windows app for saving videos and audio you're allowed to keep, cutting out the good part and sending it to someone.<br>
+A free Windows app for saving videos and audio you're allowed to keep, cutting out the good part and sending it to someone: paste it straight into Discord, or drop any files or a folder on it for one encrypted link.<br>
 No ads, no account, no tracking.</p>
 
 <p align="center"><a href="https://github.com/Langkurst/KeaClip/releases/latest"><b>Download for Windows</b></a> · <a href="https://langkurst.github.io/KeaClip/">Website</a> · <a href="https://ko-fi.com/keaclip">Support on Ko-fi</a></p>

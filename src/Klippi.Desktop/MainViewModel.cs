@@ -383,7 +383,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         // The queue comes back after settings (its concurrency) and history (Replace records) have loaded.
         var queueNotes = new List<string>();
         await RestoreQueueAsync(ct, queueNotes);
-        var ready = ComponentsReady ? "Ready. Paste a link, or open a video from your PC." : FirstRunStatus;
+        var ready = ComponentsReady ? "Ready. Paste a link, open a video, or drop any files here to share them." : FirstRunStatus;
         Status = problems.Count + queueNotes.Count == 0 ? ready
             : string.Join(" ", problems.Concat(queueNotes)) + (problems.Count == 0 && !ComponentsReady ? " " + FirstRunStatus : "");
         StartUpdates();

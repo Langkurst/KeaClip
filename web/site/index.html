@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>KeaClip: save, trim and share video clips</title>
-<meta name="description" content="A free Windows app to save a video from a link, cut out the good bit and send it. Fits clips under Discord's limit in one click. No ads, no account, no tracking.">
+<meta name="description" content="A free Windows app to save a video from a link, cut out the good bit and send it. Fits clips under Discord's limit in one click, copies them for Ctrl+V, and shares any files with an encrypted link. No ads, no account, no tracking.">
 <link rel="icon" href="images/kea-128.png">
 <meta property="og:title" content="KeaClip">
 <meta property="og:description" content="Save a video. Cut the good bit. Send it. Free for Windows, no ads, no account.">
@@ -86,7 +86,7 @@ footer p { margin: 0 0 8px; max-width: 760px; }
 
   <div class="hero">
     <h1>Save a video. Cut the good bit. Send it.</h1>
-    <p class="lead">KeaClip is a free Windows app for video clips. Paste a link to save it, trim it to the part that matters, and shrink it to fit Discord or email in one click.</p>
+    <p class="lead">KeaClip is a free Windows app for video clips. Paste a link to save it, trim it to the part that matters, shrink it to fit Discord in one click, then paste it straight into the chat. Need to send something bigger? Drop any files or a whole folder on it for one private link.</p>
     <div class="actions">
       <a class="btn primary" href="https://github.com/Langkurst/KeaClip/releases/latest">Download for Windows</a>
       <a class="btn quiet" href="https://github.com/Langkurst/KeaClip">See the code</a>
@@ -127,7 +127,7 @@ footer p { margin: 0 0 8px; max-width: 760px; }
     <details><summary>Windows says "Windows protected your PC". Is it safe?</summary><p>That warning shows for new apps that aren't code-signed yet. Click <em>More info</em>, then <em>Run anyway</em>. The full source code is public, and every download comes with a checksum so you can check the file wasn't changed.</p></details>
     <details><summary>What does it download when it first starts?</summary><p>A few free helper tools that do the heavy lifting: yt-dlp (reads video links), FFmpeg (cuts and converts) and Deno (helps with some sites). They come straight from their official sites, once. Uninstalling KeaClip removes them again.</p></details>
     <details><summary>Does it send my data anywhere?</summary><p>No. There's no tracking or analytics, and your files never leave your PC unless you share them. KeaClip only goes online to download what you paste, fetch and update its helper tools, check for a new KeaClip version (you can turn that off), and upload a file when you press Share.</p></details>
-    <details><summary>How long do share links last?</summary><p>Links made with file.kiwi are free to download for 24 hours (12 hours for 10 to 20 GB, 6 hours above that). <a href="https://file.kiwi/api#free-download-hours-by-file-size">Details from file.kiwi</a>.</p></details>
+    <details><summary>Can I share things that aren't videos?</summary><p>Yes. Drag any files or a whole folder onto KeaClip (or copy them in File Explorer and press Ctrl+V in KeaClip). A card shows what's in it, and nothing uploads until you press Share. Several files or a folder are packed into one .zip for you, then shared with one encrypted link.</p></details><p>Links made with file.kiwi are free to download for 24 hours (12 hours for 10 to 20 GB, 6 hours above that). <a href="https://file.kiwi/api#free-download-hours-by-file-size">Details from file.kiwi</a>.</p></details>
     <details><summary>Mac or Linux?</summary><p>Windows only for now.</p></details>
   </section>
 
