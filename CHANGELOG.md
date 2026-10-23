@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.5 (2026-10-22)
+
+- **You'll notice when it's done**: if KeaClip is behind a game or minimised when a download or upload finishes, its taskbar button flashes and the notice stays until you've seen it. Hidden in the tray? Hover the tray icon to see what finished. Uploads now get a "Link ready" notice too. (Settings, Completion notices turns all of this off.)
+- **Fixed**: the "Download finished" notice never actually appeared. It's now a card in the bottom-right corner of the window, with a close button.
+
 ## 0.4.4 (2026-10-22)
 
 - **Drag anything over KeaClip** and the whole window says what letting go will do: "Drop to edit clip.mp4", "Drop to share these 3 items with one link" or "Drop to paste this link", on any page.

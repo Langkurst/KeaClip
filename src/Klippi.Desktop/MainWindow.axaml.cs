@@ -2,7 +2,6 @@ using System.ComponentModel;
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
-using Avalonia.Controls.Notifications;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
@@ -23,7 +22,9 @@ public sealed partial class MainWindow : Window
     private TrayIcon? _tray;
     private bool _explicitExit;
     private WindowState _beforeFullscreen = WindowState.Normal;
-    private WindowNotificationManager? _notifications;
+    private static readonly TimeSpan NoticeShowTime = TimeSpan.FromSeconds(6), NoticeReadTime = TimeSpan.FromSeconds(10);
+    private readonly Avalonia.Threading.DispatcherTimer _noticeTimer = new() { Interval = NoticeShowTime };
+    private bool _noticeWaiting;
     private MainViewModel? _model;
     private bool _swallowSpaceRelease;
 
@@ -48,10 +49,18 @@ public sealed partial class MainWindow : Window
         };
         Activated += async (_, _) => { if (Model is { } model) { model.RefreshPlatformPreferences(); await model.DetectClipboardAsync(); } };
         Opened += (_, _) => UpdateDisplayInfo();
+        // Once the window is in front again, the tray icon goes back to plain "KeaClip".
+        Activated += (_, _) =>
+        {
+            if (_tray is { } tray) tray.ToolTipText = "KeaClip";
+            // Back in front with a notice waiting: give it time to be read, then let it go.
+            if (_noticeWaiting) { _noticeWaiting = false; _noticeTimer.Stop(); _noticeTimer.Interval = NoticeReadTime; _noticeTimer.Start(); }
+        };
+        _noticeTimer.Tick += (_, _) => { _noticeTimer.Stop(); _noticeTimer.Interval = NoticeShowTime; if (Model is { } model) model.Notice = null; };
         ScalingChanged += (_, _) => UpdateDisplayInfo();
         DataContextChanged += (_, _) => AttachModel(Model);
         Closing += OnClosing;
-        Closed += (_, _) => { _tray?.Dispose(); _tray = null; AttachModel(null); };
+        Closed += (_, _) => { _noticeTimer.Stop(); _tray?.Dispose(); _tray = null; AttachModel(null); };
         // Tunnel routing: shortcuts run before a focused Button (Space would click it) or
         // Slider (arrows would jump by 1% of the file) can consume the key.
         AddHandler(KeyDownEvent, OnKey, RoutingStrategies.Tunnel);
@@ -140,10 +149,23 @@ public sealed partial class MainWindow : Window
         Classes.Set("downloading", Model is { HasActiveQueue: true });
     }
 
-    private void ShowCompletion(string title)
+    // In the background (another app in front, minimised or in the tray) the notice stays until it's seen, the taskbar
+    // button flashes, and the tray icon's tooltip says what finished. In front, it fades after a few seconds as before.
+    private void ShowCompletion(CompletionNote note)
     {
-        _notifications ??= new WindowNotificationManager(this) { Position = NotificationPosition.BottomRight, MaxItems = 3 };
-        _notifications.Show(new Notification("Download finished", title, NotificationType.Success));
+        if (Model is not { } model) return;
+        var background = !IsActive || !IsVisible || WindowState == WindowState.Minimized;
+        model.Notice = note;
+        // In front: the card fades after a few seconds. In the background it waits; Activated starts the clock instead.
+        _noticeTimer.Stop();
+        if (!background) { _noticeTimer.Start(); return; }
+        _noticeWaiting = true;
+        WindowsTaskbar.Flash(this);
+        if (_tray is { IsVisible: true } tray)
+        {
+            var tip = "KeaClip · " + note.Heading + ": " + note.Detail;
+            tray.ToolTipText = tip.Length <= 120 ? tip : tip[..119] + "…"; // Windows cuts tray tooltips at 127 characters
+        }
     }
 
     private void Navigate(object? sender, RoutedEventArgs e)

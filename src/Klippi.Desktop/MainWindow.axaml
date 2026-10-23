@@ -119,6 +119,23 @@
         <v:EditorView Name="EditorPage" Classes="page" IsVisible="{Binding IsEditor}" />
         <v:SettingsView Name="SettingsPage" Classes="page" IsVisible="{Binding IsSettings}" />
         <v:BetaTestView Name="BetaTestPage" Classes="page" IsVisible="{Binding IsBetaTest}" />
+        <!-- A finished download or upload, bottom right on any page. It fades on its own; the close button dismisses it now. -->
+        <Border Name="NoticeCard" Classes="card reveal" IsVisible="{Binding HasNotice}" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                Margin="0,0,24,20" Padding="14,12" MaxWidth="380" BoxShadow="0 8 24 0 #40000000"
+                AutomationProperties.LiveSetting="Polite" AutomationProperties.Name="{Binding Notice.Heading}">
+          <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+            <Border Width="32" Height="32" CornerRadius="16" Background="{DynamicResource AppAccent}" VerticalAlignment="Top">
+              <c:StrokeIcon Data="{StaticResource IconCheck}" Size="16" StrokeThickness="2.4" Foreground="{DynamicResource AccentText}" />
+            </Border>
+            <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+              <TextBlock Name="NoticeHeadingText" Text="{Binding Notice.Heading}" Classes="strong" />
+              <TextBlock Name="NoticeDetailText" Text="{Binding Notice.Detail}" Classes="caption muted" TextTrimming="CharacterEllipsis" MaxLines="2" TextWrapping="Wrap" ToolTip.Tip="{Binding Notice.Detail}" />
+            </StackPanel>
+            <Button Name="DismissNoticeButton" Grid.Column="2" Classes="icon small ghost" VerticalAlignment="Top" Command="{Binding DismissNoticeCommand}" ToolTip.Tip="Dismiss" AutomationProperties.Name="Dismiss notice">
+              <c:StrokeIcon Data="{StaticResource IconClose}" Size="14" />
+            </Button>
+          </Grid>
+        </Border>
         <!-- While something is dragged over the window, on any page: what letting go will do. Never takes the drop itself. -->
         <Panel Name="DropOverlay" IsVisible="{Binding IsDragOver}" IsHitTestVisible="False" Background="{DynamicResource AppScrim}">
           <Rectangle Margin="24" Stroke="{DynamicResource AppAccent}" StrokeThickness="2" StrokeDashArray="6,5" RadiusX="16" RadiusY="16" />

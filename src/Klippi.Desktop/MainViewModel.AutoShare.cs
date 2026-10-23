@@ -126,9 +126,11 @@ public sealed partial class MainViewModel
         if (result is not null)
         {
             _autoShares.Remove(jobId); RaiseAutoShare(jobId);
-            Status = await TryCopyToClipboardAsync(result.ShareUrl)
+            var copied = await TryCopyToClipboardAsync(result.ShareUrl);
+            Status = copied
                 ? $"Shared: link copied. {share.Title} has an expiring file.kiwi link; keep the full link private."
                 : $"Shared: {share.Title} has an expiring file.kiwi link, but the clipboard is busy in another app. Choose Copy link on it in your queue.";
+            Notify("Link ready", share.Title + (copied ? " · link copied" : ""));
             return;
         }
         share.State = AutoShareState.Failed;

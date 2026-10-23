@@ -155,9 +155,9 @@ public sealed class UiTests
     public async Task Completion_notice_requires_user_setting_and_is_not_duplicated()
     {
         var fake = new UiFakes(); using var model = new MainViewModel(fake.Services) { Url = "https://example.com/video", NotifyCompleted = true };
-        var notices = new List<string>(); model.CompletionNotice += notices.Add;
+        var notices = new List<CompletionNote>(); model.CompletionNotice += notices.Add;
         await model.QueueDownloadAsync(false); await WaitUntil(() => notices.Count > 0); await Task.Delay(30);
-        Assert.Equal("A moment worth keeping", Assert.Single(notices));
+        Assert.Equal(new CompletionNote("Download finished", "A moment worth keeping"), Assert.Single(notices));
     }
 
     [AvaloniaFact]

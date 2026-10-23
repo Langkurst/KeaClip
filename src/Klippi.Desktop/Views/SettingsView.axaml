@@ -498,7 +498,7 @@
             <Grid Classes="row" ColumnDefinitions="*,Auto">
               <StackPanel>
                 <TextBlock Text="Completion notices" Classes="row-title" />
-                <TextBlock Text="Show a small in-app notice when a download finishes." Classes="caption muted" />
+                <TextBlock Text="Say when a download or upload finishes. If KeaClip is in the background, its taskbar button flashes too." Classes="caption muted" TextWrapping="Wrap" />
               </StackPanel>
               <ToggleSwitch Name="NotifyCompletedSwitch" Grid.Column="1" IsChecked="{Binding NotifyCompleted, Mode=TwoWay}" AutomationProperties.Name="Completion notices" />
             </Grid>

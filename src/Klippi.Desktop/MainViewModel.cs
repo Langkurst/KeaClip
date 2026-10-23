@@ -136,7 +136,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         ClearPlaylistCommand = new RelayCommand(() => { foreach (var item in Playlist) item.Selected = false; });
     }
     public IPlaybackService Playback => _services.Playback;
-    public event Action<string>? CompletionNotice;
+    /// <summary>A download or upload finished (when completion notices are on). The window shows it, and flashes the taskbar if it's in the background.</summary>
+    public event Action<CompletionNote>? CompletionNotice;
     public string AppName => AppIdentity.DisplayName;
     public string AppVersion => "v" + AppIdentity.Version + (IsBeta ? " · beta" : AppIdentity.WatchLinksIncluded ? " · personal" : "");
     public string DataMode => File.Exists(Path.Combine(AppContext.BaseDirectory, "portable.marker")) ? "Portable settings beside the app" : "Settings saved locally on this device";
@@ -903,7 +904,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             catch (Exception error) { CaptureDiagnostics(error); }
         try { await ReloadHistoryAsync(CancellationToken.None); }
         catch (Exception error) { CaptureDiagnostics(error); Status = "Download finished. History could not refresh: " + FriendlyError(error); }
-        if (NotifyCompleted) try { CompletionNotice?.Invoke(job.Title); } catch (Exception error) { CaptureDiagnostics(error); }
+        Notify("Download finished", job.Title);
         if (job.Result?.Media?.Thumbnail is { } thumbnail && !_thumbnailCache.ContainsKey(thumbnail.AbsoluteUri)) _ = LoadThumbnailAsync(thumbnail, CancellationToken.None, () => false);
         // Share when finished: only ever after this successful download, and one upload at a time.
         if (_shareAfter.Remove(job.Id) && job.Result is { } shared) RequestAutoShare(job.Id, shared.Media?.Title is { Length: > 0 } title ? title : job.Title, shared.FilePath);
@@ -1141,9 +1142,11 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         if (!automatic)
         {
             SelectedTab = 3;
-            Status = await TryCopyToClipboardAsync(result.ShareUrl)
+            var copied = await TryCopyToClipboardAsync(result.ShareUrl);
+            Status = copied
                 ? "Upload finished: link copied, ready to paste. Keep the full link private; its secret is not saved to history."
                 : "Upload finished. The clipboard is busy in another app, so press Copy link. Its secret is not saved to history.";
+            Notify("Link ready", Path.GetFileName(path) + (copied ? " · link copied" : ""));
         }
         return result;
     }
@@ -1226,6 +1229,18 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     // other row keeps its container, file check and scroll position.
     private void FilterHistory() => SyncHistoryRows();
     public Task RemoveHistoryAsync(string id) => RunAsync(OperationLane.Maintenance, async ct => { await _services.Store.RemoveHistoryAsync(id, ct); await ReloadHistoryAsync(ct); Status = "History record removed. The media file was kept."; });
+    private CompletionNote? _notice;
+    /// <summary>The notice card in the window's bottom-right corner; null when none is showing.</summary>
+    public CompletionNote? Notice { get => _notice; set { if (SetProperty(ref _notice, value)) OnPropertyChanged(nameof(HasNotice)); } }
+    public bool HasNotice => _notice is not null;
+    private IRelayCommand? _dismissNoticeCommand;
+    public IRelayCommand DismissNoticeCommand => _dismissNoticeCommand ??= new RelayCommand(() => Notice = null);
+    // A broken notice must never break the download or upload it reports on.
+    private void Notify(string heading, string detail)
+    {
+        if (!NotifyCompleted) return;
+        try { CompletionNotice?.Invoke(new CompletionNote(heading, detail)); } catch (Exception error) { CaptureDiagnostics(error); }
+    }
     public Task CopyPathAsync(string path) => CopyToClipboardAsync(path, "File path copied.");
     public async Task CopyFileAsync(string path)
     {

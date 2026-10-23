@@ -57,9 +57,16 @@ public sealed class DropShareTests : IDisposable
         model.CancelDroppedCommand.Execute(null);
         Assert.False(model.HasDropShare); Assert.Equal(0, fake.Sharing.Calls);
 
+        var notes = new List<CompletionNote>(); model.CompletionNotice += notes.Add;
+        model.NotifyCompleted = true;
         await model.AcceptDroppedAsync([pdf]);
         await model.ShareDroppedCommand.ExecuteAsync(null);
         Assert.Equal(pdf, Assert.Single(fake.Sharing.Paths));
+        Assert.Equal(new CompletionNote("Link ready", "tickets.pdf · link copied"), Assert.Single(notes));
+
+        model.NotifyCompleted = false; // the same setting as download notices turns these off too
+        await model.AcceptDroppedAsync([pdf]); await model.ShareDroppedCommand.ExecuteAsync(null);
+        Assert.Single(notes);
     }
 
     [AvaloniaFact]
