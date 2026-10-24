@@ -327,6 +327,15 @@
                   </Border>
                 </StackPanel>
               </Grid>
+
+              <!-- Quick picks: a game replay keeps the moment at its end, so one click keeps just the ending. -->
+              <WrapPanel Name="QuickPicks" ItemSpacing="6" LineSpacing="6" IsVisible="{Binding ShowQuickPicks}">
+                <TextBlock Text="Quick picks" Classes="caption muted" VerticalAlignment="Center" Margin="0,0,4,0" />
+                <Button Name="KeepLast15Button" Classes="small ghost" Command="{Binding KeepLastCommand}" CommandParameter="15" Content="Last 15 s" ToolTip.Tip="Keep just the last 15 seconds" />
+                <Button Name="KeepLast30Button" Classes="small ghost" Command="{Binding KeepLastCommand}" CommandParameter="30" Content="Last 30 s" ToolTip.Tip="Keep just the last 30 seconds" />
+                <Button Name="KeepLast60Button" Classes="small ghost" Command="{Binding KeepLastCommand}" CommandParameter="60" Content="Last 60 s" ToolTip.Tip="Keep just the last minute" />
+                <Button Name="KeepWholeButton" Classes="small ghost" Command="{Binding KeepWholeCommand}" Content="Whole clip" ToolTip.Tip="Select the whole file again" />
+              </WrapPanel>
             </StackPanel>
           </Border>
         </StackPanel>
@@ -369,6 +378,58 @@
 
               <!-- Fit for: one click aims the clip just under a sharing limit (an exact cut with a 5% size margin,
                    checked after export). Clicking the active one turns the size target off again. -->
+              <!-- Shape: crop to a phone shape for TikTok, Shorts and Reels, or a square. Shown on a still frame, because
+                   nothing can be drawn over the native video preview. -->
+              <StackPanel Name="ShapeRow" Spacing="8" IsVisible="{Binding ShowShapeChoice}">
+                <TextBlock Text="Shape" Classes="overline" />
+                <UniformGrid Columns="3" ColumnSpacing="8">
+                  <Button Name="ShapeOriginalButton" Classes="fit" Classes.selected="{Binding IsShapeOriginal}" Command="{Binding SetShapeCommand}" CommandParameter="Original" AutomationProperties.Name="Keep the original shape">
+                    <StackPanel Spacing="1"><TextBlock Text="Original" Classes="tile-title" /><TextBlock Text="As recorded" Classes="caption muted" /></StackPanel>
+                  </Button>
+                  <Button Name="ShapeVerticalButton" Classes="fit" Classes.selected="{Binding IsShapeVertical}" Command="{Binding SetShapeCommand}" CommandParameter="Vertical" ToolTip.Tip="9:16 for TikTok, YouTube Shorts and Instagram Reels" AutomationProperties.Name="Vertical 9 by 16 for TikTok, Shorts and Reels">
+                    <StackPanel Spacing="1"><TextBlock Text="Vertical 9:16" Classes="tile-title" /><TextBlock Text="TikTok · Shorts · Reels" Classes="caption muted" /></StackPanel>
+                  </Button>
+                  <Button Name="ShapeSquareButton" Classes="fit" Classes.selected="{Binding IsShapeSquare}" Command="{Binding SetShapeCommand}" CommandParameter="Square" AutomationProperties.Name="Square 1 by 1">
+                    <StackPanel Spacing="1"><TextBlock Text="Square 1:1" Classes="tile-title" /><TextBlock Text="Posts and chats" Classes="caption muted" /></StackPanel>
+                  </Button>
+                </UniformGrid>
+                <StackPanel Name="ShapeEditor" Spacing="8" Classes="reveal" IsVisible="{Binding ShowShapeEditor}">
+                  <Border Name="ShapePreviewFrame" Width="{Binding ShapePreviewWidth}" Height="{Binding ShapePreviewHeight}" HorizontalAlignment="Center" CornerRadius="8" ClipToBounds="True" IsVisible="{Binding ShapeNeedsCrop}">
+                    <Panel>
+                      <Border Background="{DynamicResource AppInput}" CornerRadius="8" />
+                      <Image Source="{Binding ShapePreview}" Stretch="Fill" IsVisible="{Binding HasShapePreview}" />
+                      <!-- The kept window is clear; what gets cut is shaded. Columns for a wide video, rows for a tall one. -->
+                      <Grid IsVisible="{Binding ShapeCutsWidth}">
+                        <Grid.ColumnDefinitions>
+                          <ColumnDefinition Width="{Binding ShapeBeforeLength}" />
+                          <ColumnDefinition Width="{Binding ShapeKeptLength}" />
+                          <ColumnDefinition Width="{Binding ShapeAfterLength}" />
+                        </Grid.ColumnDefinitions>
+                        <Border Background="{DynamicResource AppScrim}" />
+                        <Border Grid.Column="1" BorderBrush="{DynamicResource AppAccent}" BorderThickness="2" />
+                        <Border Grid.Column="2" Background="{DynamicResource AppScrim}" />
+                      </Grid>
+                      <Grid IsVisible="{Binding !ShapeCutsWidth}">
+                        <Grid.RowDefinitions>
+                          <RowDefinition Height="{Binding ShapeBeforeLength}" />
+                          <RowDefinition Height="{Binding ShapeKeptLength}" />
+                          <RowDefinition Height="{Binding ShapeAfterLength}" />
+                        </Grid.RowDefinitions>
+                        <Border Background="{DynamicResource AppScrim}" />
+                        <Border Grid.Row="1" BorderBrush="{DynamicResource AppAccent}" BorderThickness="2" />
+                        <Border Grid.Row="2" Background="{DynamicResource AppScrim}" />
+                      </Grid>
+                    </Panel>
+                  </Border>
+                  <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" IsVisible="{Binding ShapeNeedsCrop}">
+                    <TextBlock Text="{Binding ShapeStartLabel}" Classes="caption muted" VerticalAlignment="Center" />
+                    <Slider Name="ShapePositionSlider" Grid.Column="1" Minimum="0" Maximum="1" SmallChange="0.02" LargeChange="0.1" Value="{Binding ExportShapePosition, Mode=TwoWay}" AutomationProperties.Name="Where the crop sits" />
+                    <TextBlock Grid.Column="2" Text="{Binding ShapeEndLabel}" Classes="caption muted" VerticalAlignment="Center" />
+                  </Grid>
+                  <TextBlock Name="ShapeSummaryText" Text="{Binding ShapeSummary}" Classes="caption muted" TextWrapping="Wrap" />
+                </StackPanel>
+              </StackPanel>
+
               <StackPanel Name="FitForRow" Spacing="8">
                 <TextBlock Text="Fit for" Classes="overline" />
                 <!-- Two by two: tidy in the narrow side column and the full-width layout alike. -->
@@ -399,6 +460,15 @@
                   <TextBlock Text="Target size (MB)" Classes="label" />
                   <TextBox Classes="mono" Text="{Binding TargetSizeMb, Mode=TwoWay}" AutomationProperties.Name="Target size in megabytes" />
                 </StackPanel>
+              </Grid>
+
+              <!-- Game recordings are often quiet in a chat; this is "Even out loudness" (Audio clip) brought forward. -->
+              <Grid Name="LouderRow" ColumnDefinitions="*,Auto" ColumnSpacing="12" IsVisible="{Binding EditorHasAudio}" IsEnabled="{Binding IsExactClip}">
+                <StackPanel Spacing="2">
+                  <TextBlock Text="Make it louder" Classes="strong" />
+                  <TextBlock Text="Brings quiet game or phone audio up to a clear, even level without clipping." Classes="caption muted" TextWrapping="Wrap" />
+                </StackPanel>
+                <ToggleSwitch Name="LouderSwitch" Grid.Column="1" Classes="trailing" IsChecked="{Binding Normalize, Mode=TwoWay}" AutomationProperties.Name="Make it louder" />
               </Grid>
 
               <!-- Estimate (an honest "known after export" when the size cannot be predicted) -->

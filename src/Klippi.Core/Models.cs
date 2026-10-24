@@ -3,7 +3,7 @@ namespace Klippi.Core;
 public static class AppIdentity
 {
     public const string DisplayName = "KeaClip";
-    public const string Version = "0.4.6"; // Keep equal to <Version> in Directory.Build.props (a test checks).
+    public const string Version = "0.5.0"; // Keep equal to <Version> in Directory.Build.props (a test checks).
     public const string Protocol = "keaclip";
 #if KEACLIP_PERSONAL
     public const string Edition = "Personal";
@@ -31,6 +31,7 @@ public enum EncoderPreference { Auto, Gpu, Cpu }
 public enum ClipMode { Lossless, Exact }
 public enum JobState { Queued, Running, Paused, Cancelled, Failed, Finished }
 public enum JobStage { Queued, Analysing, Downloading, Merging, Converting, Compressing, WritingMetadata, Verifying, Uploading, Finished, Cancelled, Failed }
+public enum FrameShape { Original, Vertical, Square }
 public enum CompressionPreset { Off, Light, Balanced, Strong, VerySmall, TargetSize }
 public enum CloseBehavior { Exit, Tray, Ask }
 
@@ -99,6 +100,10 @@ public sealed record ExportOptions
     public int? MaxHeight { get; init; }
     public int? Fps { get; init; }
     public bool HdrToSdr { get; init; }
+    /// <summary>Crop the picture to a phone shape (Vertical 9:16 for TikTok, Shorts and Reels) or a square; Original keeps it.</summary>
+    public FrameShape Shape { get; init; } = FrameShape.Original;
+    /// <summary>Where the crop sits along the side that's cut: 0 = left (or top), 0.5 = centre, 1 = right (or bottom).</summary>
+    public double ShapePosition { get; init; } = 0.5;
     public double Volume { get; init; } = 1;
     public bool Normalize { get; init; }
     public bool TrimSilence { get; init; }

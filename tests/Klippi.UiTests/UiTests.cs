@@ -280,6 +280,9 @@ public sealed class FakeMedia : IMediaService
     public bool OriginalDeleted { get; set; }
     /// <summary>FFprobe JSON for the next probes, for example an HDR (PQ) video stream.</summary>
     public string? TechnicalJson { get; set; }
+    public TimeSpan Duration { get; set; } = TimeSpan.FromSeconds(10);
+    public byte[]? Frame { get; set; }
+    public Task<byte[]?> FrameAsync(string path, TimeSpan at, int width, CancellationToken cancellationToken = default) => Task.FromResult(Frame);
     public List<ExportOptions> Exports { get; } = [];
     public Func<string, bool>? ProbeFails { get; set; }
     // Holds the next probes until released, so a test can look at the editor while a file opens.
@@ -290,7 +293,7 @@ public sealed class FakeMedia : IMediaService
     public async Task<ProbeInfo> ProbeAsync(string path, CancellationToken cancellationToken = default)
     {
         if (ProbeGate is { } gate) await gate.Task.WaitAsync(cancellationToken);
-        return ProbeFails?.Invoke(path) == true ? throw new MediaOperationException("FFmpeg could not process this file.") : new ProbeInfo(path, TimeSpan.FromSeconds(10), 2_000_000, true, true, 1920, 1080, 30, "h264", "aac", 48000, 2, TechnicalJson);
+        return ProbeFails?.Invoke(path) == true ? throw new MediaOperationException("FFmpeg could not process this file.") : new ProbeInfo(path, Duration, 2_000_000, true, true, 1920, 1080, 30, "h264", "aac", 48000, 2, TechnicalJson);
     }
     public async Task<ExportResult> ExportAsync(ExportOptions options, IProgress<JobProgress>? progress = null, CancellationToken cancellationToken = default)
     {

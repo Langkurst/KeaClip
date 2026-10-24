@@ -12,9 +12,9 @@ No ads, no account, no tracking.</p>
 
 ## What it does
 
-- **Save** video or audio from a link: pick Video + audio, Audio only, Video only or a full Archive, choose quality and format, or just press Download. Playlists let you pick which videos you want, and **Just part of it** saves only the bit you need (say 0:45 to 1:20 of a long stream) without downloading the rest.
+- **Save** video or audio from a link: pick Video + audio, Audio only, Video only or a full Archive, choose quality and format, or just press Download. Playlists let you pick which videos you want, and **Just part of it** saves only the bit you need (say 0:45 to 1:20 of a long stream) without downloading the rest; a link that points to a moment (`?t=1m30s`) sets it for you.
 - **Queue** as many as you like. Downloads keep going while you use the rest of the app, can be paused and retried, and your queue is still there after a restart.
-- **Trim** any video or audio file: drag the orange handles, then export just that part. Pull out the sound as MP3, fade in and out, make a short soundboard clip, or export the selection as a **GIF**.
+- **Trim** any video or audio file: drag the orange handles (or press Last 30 s to keep a replay's ending), then export just that part. Make it **vertical 9:16** for TikTok, Shorts and Reels, or **louder** with one switch. Pull out the sound as MP3, fade in and out, make a short soundboard clip, or export the selection as a **GIF**.
 - **Fit it for Discord** in one click: Discord (10 MB), Email (25 MB), Nitro Basic (50 MB) or Nitro (500 MB) aims the clip just under that size. Then press **Copy clip** and paste it straight into the chat with Ctrl+V, or drag it in.
 - **Your game clips** are waiting when you open the Editor: new recordings from Xbox Game Bar, AMD ReLive, NVIDIA and OBS show up ready to trim.
 - **Share** with an encrypted [file.kiwi](https://file.kiwi) link. Sharing uses the [file.kiwi API](https://file.kiwi/api): the file is encrypted on your PC before it uploads, and the link expires on its own. Drag any other files or a whole folder onto KeaClip to send them with one link too (several items go as one .zip, made for you).

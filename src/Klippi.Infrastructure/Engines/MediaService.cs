@@ -539,6 +539,22 @@ public sealed partial class MediaService(IProcessRunner runner, IComponentServic
         return ChooseCpu(probe, options, encoders);
     }
 
+    /// <summary>One still frame as PNG for the crop preview, written to a temporary file that is always removed.</summary>
+    public async Task<byte[]?> FrameAsync(string path, TimeSpan at, int width, CancellationToken cancellationToken = default)
+    {
+        if (width is < 16 or > 4096 || at < TimeSpan.Zero) throw new MediaOperationException("Choose a valid preview frame.");
+        var input = EngineSupport.Input(path);
+        var output = Path.Combine(Path.GetTempPath(), "keaclip-frame-" + Guid.NewGuid().ToString("N") + ".png");
+        try
+        {
+            var result = await runner.RunAsync(new ProcessRequest(EngineSupport.Required(components, "ffmpeg"),
+                ["-hide_banner", "-v", "error", "-nostdin", "-ss", Seconds(at), "-i", input, "-map", "0:v:0", "-frames:v", "1", "-vf", $"scale={width}:-2", "-y", output],
+                Timeout: TimeSpan.FromSeconds(20), Interactive: true), cancellationToken: cancellationToken).ConfigureAwait(false);
+            return result.ExitCode == 0 && File.Exists(output) ? await File.ReadAllBytesAsync(output, cancellationToken).ConfigureAwait(false) : null;
+        }
+        finally { try { File.Delete(output); } catch (Exception error) when (error is IOException or UnauthorizedAccessException) { } }
+    }
+
     public async Task<IReadOnlyList<float>> WaveformAsync(string path, int points = 600, CancellationToken cancellationToken = default)
     {
         if (points is < 16 or > 4096) throw new MediaOperationException("Choose between 16 and 4096 waveform points.");
@@ -872,7 +888,8 @@ public sealed partial class MediaService(IProcessRunner runner, IComponentServic
         if (options.Compression == CompressionPreset.TargetSize && options.TargetBytes is null || options.TargetBytes is < 1024) throw new MediaOperationException("Enter a valid target size.");
         var extension = Path.GetExtension(output).ToLowerInvariant();
         if (extension.Length == 0 || !new[] { ".mp4", ".mkv", ".webm", ".mov", ".avi", ".mp3", ".m4a", ".aac", ".opus", ".ogg", ".flac", ".wav" }.Contains(extension)) throw new MediaOperationException("Choose a supported media filename extension.");
-        if (options.ClipMode == ClipMode.Lossless && (options.Compression != CompressionPreset.Off || options.MaxHeight is not null || options.Fps is not null || options.HdrToSdr || options.Volume != 1 || options.Normalize || options.TrimSilence || options.Mono || options.SampleRate is not null || options.FadeIn > TimeSpan.Zero || options.FadeOut > TimeSpan.Zero)) throw new MediaOperationException("Lossless mode copies the source streams. Choose Exact mode for compression or audio/video changes.");
+        if (!double.IsFinite(options.ShapePosition) || options.ShapePosition is < 0 or > 1) throw new MediaOperationException("Choose where the crop sits, from left to right.");
+        if (options.ClipMode == ClipMode.Lossless && (options.Compression != CompressionPreset.Off || options.Shape != FrameShape.Original || options.MaxHeight is not null || options.Fps is not null || options.HdrToSdr || options.Volume != 1 || options.Normalize || options.TrimSilence || options.Mono || options.SampleRate is not null || options.FadeIn > TimeSpan.Zero || options.FadeOut > TimeSpan.Zero)) throw new MediaOperationException("Lossless mode copies the source streams. Choose Exact mode for compression or audio/video changes.");
         if (options.AudioOnly && options.ClipMode == ClipMode.Exact && options.AudioFormat == AudioFormat.Original) throw new MediaOperationException("Choose an audio format for an exact audio cut, or use Lossless to preserve the original codec.");
         if (options.TrimSilence && !probe.HasAudio) throw new MediaOperationException("Trim silence needs an audio track. Turn it off for this file.");
         ValidateContainer(probe, options, extension);
@@ -941,9 +958,24 @@ public sealed partial class MediaService(IProcessRunner runner, IComponentServic
         var prefix = codec switch { VideoCodec.Hevc => "hevc", VideoCodec.Av1 => "av1", _ => "h264" };
         return new[] { "_amf", "_nvenc", "_qsv" }.Select(suffix => encoders.FirstOrDefault(encoder => encoder.Name == prefix + suffix)).OfType<EncoderInfo>().ToArray();
     }
+    /// <summary>
+    /// The FFmpeg crop for a phone shape: the side with room to spare is cut to the target aspect (9:16 or 1:1), the
+    /// other stays whole, so a landscape game clip becomes a vertical one and an already-tall video is trimmed top and
+    /// bottom instead. <paramref name="position"/> slides the kept window along the cut side. Sizes stay even.
+    /// </summary>
+    internal static string? ShapeFilter(FrameShape shape, double position)
+    {
+        var aspect = shape switch { FrameShape.Vertical => "9/16", FrameShape.Square => "1", _ => null };
+        if (aspect is null) return null;
+        var p = Math.Clamp(double.IsFinite(position) ? position : 0.5, 0, 1).ToString("0.###", EngineSupport.Invariant);
+        return $"crop=w='if(gt(iw/ih,{aspect}),trunc(ih*{aspect}/2)*2,trunc(iw/2)*2)':h='if(gt(iw/ih,{aspect}),trunc(ih/2)*2,trunc(iw/({aspect})/2)*2)':x='(iw-ow)*{p}':y='(ih-oh)*{p}'";
+    }
+
     private static double CompressionWork(ProbeInfo probe, ExportOptions options)
     {
         double width = probe.Width ?? 1920, height = probe.Height ?? 1080;
+        var aspect = options.Shape switch { FrameShape.Vertical => 9d / 16, FrameShape.Square => 1d, _ => 0 };
+        if (aspect > 0) { if (width / height > aspect) width = height * aspect; else height = width / aspect; }
         if (options.MaxHeight is { } maximum && maximum < height) { width *= maximum / height; height = maximum; }
         var fps = Math.Min(options.Fps ?? double.MaxValue, probe.Fps ?? 30);
         var seconds = ((options.End ?? probe.Duration) - (options.Start ?? TimeSpan.Zero)).TotalSeconds;
@@ -1076,6 +1108,8 @@ public sealed partial class MediaService(IProcessRunner runner, IComponentServic
                 var filters = new List<string>();
                 if (cut is { } videoCut) filters.Add(Cut("trim", "setpts", videoCut));
                 if (options.Fps is { } fps) filters.Add("fps=" + fps.ToString(EngineSupport.Invariant));
+                // Crop to the chosen shape before scaling, so the scale works on the smaller picture.
+                if (ShapeFilter(options.Shape, options.ShapePosition) is { } shape) filters.Add(shape);
                 // Scale before tone mapping so the float conversion works on fewer pixels.
                 if (options.MaxHeight is { } height) filters.Add($"scale=-2:trunc(min(ih\\,{height})/2)*2");
                 if (plan.Hdr is { } hdr) filters.Add($"zscale=tin={hdr.Transfer}:pin={hdr.Primaries}:min={hdr.Matrix}:rin={hdr.Range}:t=linear:npl=100:p={hdr.Primaries},format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv420p");

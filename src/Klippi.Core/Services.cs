@@ -24,6 +24,8 @@ public interface IMediaService
     Task<ExportResult> ExportAsync(ExportOptions options, IProgress<JobProgress>? progress = null, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<EncoderInfo>> EncodersAsync(CancellationToken cancellationToken = default);
     Task<IReadOnlyList<float>> WaveformAsync(string path, int points = 600, CancellationToken cancellationToken = default);
+    /// <summary>One still frame as PNG, <paramref name="width"/> pixels wide (for the crop preview); null when there's no picture.</summary>
+    Task<byte[]?> FrameAsync(string path, TimeSpan at, int width, CancellationToken cancellationToken = default) => Task.FromResult<byte[]?>(null);
     ExportEstimate Estimate(ProbeInfo probe, ExportOptions options);
 }
 public interface ISharingService

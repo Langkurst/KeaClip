@@ -71,7 +71,10 @@ public sealed partial class MainViewModel
         get
         {
             var text = Url.Trim();
-            if (text.Length == 0 || MediaValidation.TryMediaUrl(text, out _)) return "";
+            if (text.Length == 0) return "";
+            // A link to a moment ("…?t=1m30s"): say what Analyse will do with it.
+            if (MediaValidation.TryMediaUrl(text, out _))
+                return !HasMedia && LinkMoment.TryRead(text, out var at) ? $"This link points to {ClockText(at)}. Press Analyse to save just that moment, or Download for the whole video." : "";
             if (text.Contains('\n') || text.Contains('\r')) return "Several links? Use Paste to review them one per line.";
             var scheme = Uri.TryCreate(text, UriKind.Absolute, out var parsed) ? parsed.Scheme : null;
             if (scheme == Uri.UriSchemeFile) return "That's a file on this PC. Use Open local media to edit it, or paste a web link here.";
@@ -139,8 +142,25 @@ public sealed partial class MainViewModel
     public bool ShowPartOptions => CanSavePart && SavePart;
     public bool PartHasProblem => ShowPartOptions && !TryGetPart(out _, out _, out _);
     /// <summary>"Saves 0:35 of 12:34", or what to fix.</summary>
-    public string PartSummary => !ShowPartOptions ? "" : TryGetPart(out var start, out var end, out var problem) ? $"Saves {ClockText(end - start)} of {ClockText(_media!.Duration!.Value)}, from {ClockText(start)} to {ClockText(end)}." : problem;
+    public string PartSummary => !ShowPartOptions ? "" : TryGetPart(out var start, out var end, out var problem) ? $"Saves {ClockText(end - start)} of {ClockText(_media!.Duration!.Value)}, from {ClockText(start)} to {ClockText(end)}." + (_linkMomentAt is { } at ? $" Set around {ClockText(at)}, the moment the link points to." : "") : problem;
     private void RaisePartState() { foreach (var name in (string[])[nameof(CanSavePart), nameof(ShowPartOptions), nameof(PartSummary), nameof(PartHasProblem)]) OnPropertyChanged(name); }
+
+    // Analysing a link that points to a moment (…?t=1m30s) sets Just part of it around that moment: 15 seconds of
+    // lead-in and 30 after, inside the video. Shown before anything downloads, so it's easy to change or turn off.
+    // A link sent straight to Download (no review) still saves the whole video.
+    private static readonly TimeSpan MomentLeadIn = TimeSpan.FromSeconds(15), MomentAfter = TimeSpan.FromSeconds(30);
+    private bool _analysingForDownload;
+    private TimeSpan? _linkMomentAt;
+    private void ApplyLinkMoment()
+    {
+        _linkMomentAt = null;
+        if (!CanSavePart || _media?.Duration is not { } length || !LinkMoment.TryRead(Url, out var at) || at >= length) return;
+        var start = at > MomentLeadIn ? at - MomentLeadIn : TimeSpan.Zero;
+        var end = at + MomentAfter < length ? at + MomentAfter : length;
+        _partStart = ClockText(start); _partEnd = ClockText(end); _savePart = true; _linkMomentAt = at;
+        foreach (var name in (string[])[nameof(SavePart), nameof(PartStart), nameof(PartEnd), nameof(UrlHint)]) OnPropertyChanged(name);
+        RaisePartState();
+    }
 
     internal bool TryGetPart(out TimeSpan start, out TimeSpan end, out string problem)
     {
@@ -452,7 +472,8 @@ public sealed partial class MainViewModel
                 RaiseMediaPresentation();
                 // A new link starts as the whole thing again.
                 if (_savePart || _partStart.Length + _partEnd.Length > 0) { _savePart = false; _partStart = ""; _partEnd = ""; foreach (var name in (string[])[nameof(SavePart), nameof(PartStart), nameof(PartEnd)]) OnPropertyChanged(name); }
-                RaisePartState();
+                _linkMomentAt = null;
+                RaisePartState(); OnPropertyChanged(nameof(UrlHint));
                 break;
             case nameof(IsAnalysing):
                 if (IsAnalysing) { _analysisPending = true; _analysisUrl = Url; _mediaBeforeAnalysis = _media; SetAnalysisProblem(""); }

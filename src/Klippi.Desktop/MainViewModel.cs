@@ -495,6 +495,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             Playlist.Add(item);
         }
         RangeStart = "1"; RangeEnd = Playlist.Count.ToString(CultureInfo.InvariantCulture); OnPropertyChanged(nameof(PlaylistSummary));
+        if (!_analysingForDownload) ApplyLinkMoment();
         FormatDetails.Clear(); foreach (var format in info.Formats) FormatDetails.Add($"{format.Id} · {format.Extension ?? "?"} · {(format.Height is { } h ? h + "p" : "audio")} · {format.Fps?.ToString("0.##", CultureInfo.InvariantCulture) ?? "?"} fps · {format.VideoCodec ?? "no video"} / {format.AudioCodec ?? "no audio"} · {(format.SizeBytes is { } size ? Size(size) : "size unavailable")}");
         // Keep the user's choice (for example "Smallest available" picked before analysis);
         // the ComboBox can push null while its list is rebuilt, so remember it first. A height
@@ -516,7 +517,11 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     public Task QueueDownloadAsync(bool editAfter) => RunAsync(OperationLane.Download, async ct =>
     {
         RejectFormatConflict();
-        if (_media is null) await AnalyseCoreAsync(ct);
+        if (_media is null)
+        {
+            _analysingForDownload = true;
+            try { await AnalyseCoreAsync(ct); } finally { _analysingForDownload = false; }
+        }
         if (_media is not { } media) return;
         var selected = media.IsPlaylist ? Playlist.Where(p => p.Selected).ToArray() : [];
         if (media.IsPlaylist && selected.Length == 0) throw new MediaOperationException("Select at least one playlist entry before downloading.");
@@ -1011,7 +1016,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             if (!double.TryParse(TargetSizeMb, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var mb) || !double.IsFinite(mb) || mb <= 0 || mb > 1_000_000) throw new MediaOperationException("Enter a positive target size in MB.");
             target = checked((long)(mb * 1_000_000));
         }
-        return new() { InputPath = EditorPath, OutputPath = output, Start = start, End = end, ClipMode = ClipMode, AudioOnly = AudioOnly, AudioFormat = IsExactClip ? ExportAudioFormat : AudioFormat.Original, AudioKbps = ExportAudioKbps, VideoCodec = IsExactClip ? ExportCodec : VideoCodec.Original, Encoder = Encoder, Compression = Compression, TargetBytes = target, MaxHeight = IsExactClip ? ParseChoice(ExportHeight) : null, Fps = IsExactClip ? ParseChoice(ExportFps) : null, HdrToSdr = IsExactClip && ExportHdr, Volume = IsExactClip ? ExportVolume : 1, Normalize = IsExactClip && Normalize, TrimSilence = IsExactClip && TrimSilence, Mono = IsExactClip && Mono, SampleRate = IsExactClip ? ParseChoice(SampleRate) : null, FadeIn = IsExactClip ? fadeIn : TimeSpan.Zero, FadeOut = IsExactClip ? fadeOut : TimeSpan.Zero, DeleteOriginalAfterSuccess = DeleteOriginal, DiscordSoundboard = IsExactClip && Soundboard, SoundboardMaxSeconds = _settings.SoundboardMaxSeconds, SoundboardTargetBytes = _settings.SoundboardTargetBytes };
+        return new() { InputPath = EditorPath, OutputPath = output, Start = start, End = end, ClipMode = ClipMode, AudioOnly = AudioOnly, AudioFormat = IsExactClip ? ExportAudioFormat : AudioFormat.Original, AudioKbps = ExportAudioKbps, VideoCodec = IsExactClip ? ExportCodec : VideoCodec.Original, Encoder = Encoder, Compression = Compression, TargetBytes = target, Shape = IsExactClip && !AudioOnly ? ExportShape : FrameShape.Original, ShapePosition = ExportShapePosition, MaxHeight = IsExactClip ? ParseChoice(ExportHeight) : null, Fps = IsExactClip ? ParseChoice(ExportFps) : null, HdrToSdr = IsExactClip && ExportHdr, Volume = IsExactClip ? ExportVolume : 1, Normalize = IsExactClip && Normalize, TrimSilence = IsExactClip && TrimSilence, Mono = IsExactClip && Mono, SampleRate = IsExactClip ? ParseChoice(SampleRate) : null, FadeIn = IsExactClip ? fadeIn : TimeSpan.Zero, FadeOut = IsExactClip ? fadeOut : TimeSpan.Zero, DeleteOriginalAfterSuccess = DeleteOriginal, DiscordSoundboard = IsExactClip && Soundboard, SoundboardMaxSeconds = _settings.SoundboardMaxSeconds, SoundboardTargetBytes = _settings.SoundboardTargetBytes };
     }
     // One place decides the output container, so the pre-dialog check, the estimate
     // and the export agree.

@@ -51,6 +51,24 @@ public sealed partial class MainViewModel
     // ===== Media facts =====
 
     public TimeSpan EditorDuration => _probe?.Duration ?? TimeSpan.Zero;
+
+    // Quick picks: game replays (Game Bar, NVIDIA, AMD) save the last minutes, with the moment at the end, so one click
+    // keeps just the ending. Shown for files long enough for the picks to differ from the whole thing.
+    public bool ShowQuickPicks => HasEditor && EditorDuration.TotalSeconds > 20;
+    private IRelayCommand<string>? _keepLastCommand;
+    private IRelayCommand? _keepWholeCommand;
+    public IRelayCommand<string> KeepLastCommand => _keepLastCommand ??= new RelayCommand<string>(seconds =>
+    {
+        if (_probe is not { Duration: var length } || !int.TryParse(seconds, out var keep) || keep <= 0) return;
+        var start = length.TotalSeconds > keep ? length - TimeSpan.FromSeconds(keep) : TimeSpan.Zero;
+        StartTime = MediaValidation.Timecode(start); EndTime = MediaValidation.Timecode(length);
+        Seek(start.TotalSeconds / Math.Max(length.TotalSeconds, 0.001));
+    });
+    public IRelayCommand KeepWholeCommand => _keepWholeCommand ??= new RelayCommand(() =>
+    {
+        if (_probe is not { Duration: var length }) return;
+        StartTime = "00:00:00.000"; EndTime = MediaValidation.Timecode(length);
+    });
     public string EditorDurationText => MediaValidation.Timecode(EditorDuration);
     /// <summary>The transport clock (m:ss, or h:mm:ss for long files).</summary>
     public string PlaybackClockText => ClockText(Playback.Time, EditorDuration);
@@ -551,6 +569,8 @@ public sealed partial class MainViewModel
         {
             case nameof(HasEditor) or nameof(EditorSummary):
                 if (!HasEditor) CancelDetailedWaveform();
+                OnPropertyChanged(nameof(ShowQuickPicks));
+                _shapePreviewKey = null; ShapePreview = null; RaiseShape(); LoadShapePreview();
                 RaiseEditorMedia(); RefreshEditorLoadingState(); RefreshEditorEstimate();
                 OnPropertyChanged(nameof(HasRecentRecordings));
                 break;
@@ -567,6 +587,7 @@ public sealed partial class MainViewModel
                 break;
             case nameof(StartTime) or nameof(EndTime):
                 OnPropertyChanged(nameof(SelectionDurationText)); OnPropertyChanged(nameof(IsSelectionValid)); OnPropertyChanged(nameof(CanExport));
+                if (e.PropertyName == nameof(StartTime)) ScheduleShapePreview();
                 break;
             case nameof(AttachmentPreset):
                 OnPropertyChanged(nameof(FitTargetMb));
@@ -583,6 +604,10 @@ public sealed partial class MainViewModel
                 break;
             case nameof(AudioOnly):
                 OnPropertyChanged(nameof(ExportButtonText)); OnPropertyChanged(nameof(CanExport)); RefreshEditorEstimate();
+                RaiseShape(); LoadShapePreview();
+                break;
+            case nameof(PreviewAspect):
+                RaiseShape();
                 break;
             case nameof(Volume):
                 // Moving the slider is an explicit volume choice, so it also ends mute.

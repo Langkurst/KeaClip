@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.0 (2026-10-24)
+
+- **Vertical clips for TikTok, Shorts and Reels**: under Shape, pick Vertical 9:16 (or Square 1:1), see exactly what stays in frame on a still from your clip, and slide it left or right.
+- **Links that point to a moment**: paste a link with a time in it (like ?t=1m30s) and press Analyse; Just part of it is set around that moment, ready to save.
+- **Quick picks for game replays**: Last 15 s, Last 30 s or Last 60 s keeps just the ending, where the good bit usually is.
+- **Make it louder**: one switch brings quiet game or phone audio up to a clear, even level.
+
 ## 0.4.6 (2026-10-24)
 
 - **What's new after an update**: when KeaClip updates itself, a card says what this version added, with a link to the full release notes. It stays until you close it.

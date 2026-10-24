@@ -15,7 +15,7 @@ If Windows says "Windows protected your PC" when you install, click **More info*
 3. Pick what you want:
    - **Video + audio**, **Audio only** or **Video only**.
    - **Archive** keeps the original with its description, picture and subtitles in one folder, plus a checksum list so you can confirm nothing changed.
-   - **Just part of it** saves only a time range, like 0:45 to 1:20.
+   - **Just part of it** saves only a time range, like 0:45 to 1:20. If the link points to a moment (for example `?t=1m30s`), pressing **Analyse** sets this around that moment for you.
 4. **Download & edit** opens the video in the Editor when it's done.
 
 For a playlist, tick the videos you want. Nothing downloads until you add them.
