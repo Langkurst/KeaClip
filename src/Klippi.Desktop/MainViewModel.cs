@@ -706,9 +706,9 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     /// The export dialog's suggestion: "&lt;file&gt; - clip", or the first free "(2)", "(3)" in the folder it
     /// opens in, so a second clip of the same file never starts by offering to overwrite the first.
     /// </summary>
-    internal static string FreeClipName(string? source, string extension, string? folder)
+    internal static string FreeClipName(string? source, string extension, string? folder, string label = "clip")
     {
-        var stem = MediaValidation.FriendlyFileName(string.IsNullOrWhiteSpace(source) ? "clip" : source, 110) + " - clip";
+        var stem = MediaValidation.FriendlyFileName(string.IsNullOrWhiteSpace(source) ? "clip" : source, 110) + " - " + label;
         if (string.IsNullOrWhiteSpace(folder) || !Directory.Exists(folder)) return stem;
         var name = stem;
         for (var number = 2; File.Exists(Path.Combine(folder, name + "." + extension)) && number < 10_000; number++) name = $"{stem} ({number})";
@@ -1039,7 +1039,9 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         // Soundboard rules are checked before the save dialog, never after the user picked a name.
         if (check.DiscordSoundboard) MediaService.ValidateSoundboardChoice(check);
         var folder = Empty(ClipsDirectory) ?? DownloadDirectory;
-        var output = await _services.Platform.SaveMediaAsync(FreeClipName(Path.GetFileNameWithoutExtension(EditorPath), extension, folder) + "." + extension, extension, folder);
+        // A vertical or square clip says so in its name, so it is easy to tell apart from the original shape.
+        var label = check.Shape switch { FrameShape.Vertical => "vertical", FrameShape.Square => "square", _ => "clip" };
+        var output = await _services.Platform.SaveMediaAsync(FreeClipName(Path.GetFileNameWithoutExtension(EditorPath), extension, folder, label) + "." + extension, extension, folder);
         if (output is null) { Status = "Export cancelled before processing."; return; }
         var options = BuildExportOptions(output) with { ReplaceExisting = File.Exists(output) };
         if (options.DeleteOriginalAfterSuccess && _sharingPath is { } sharing && string.Equals(Path.GetFullPath(sharing), Path.GetFullPath(EditorPath), StringComparison.OrdinalIgnoreCase)) throw new MediaOperationException("This file is still uploading. Wait for the upload to finish before deleting the original.");

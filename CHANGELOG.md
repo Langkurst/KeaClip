@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.3 (2026-10-24)
+
+- **Make it a Short**: one click sets a clip up for TikTok, Shorts and Reels: vertical 9:16, louder, and for a long recording the loudest 15 seconds.
+- **Clearer names**: vertical and square exports are named "… - vertical" or "… - square", so they're easy to tell apart.
+- **Better crop preview**: the still frame comes from the middle of your selection, not its first frame (often a fade or a menu).
+
 ## 0.5.2 (2026-10-24)
 
 - **Loud moments marked**: small dots on the timeline show where the loudest moments of a recording are. Press Loudest 15 s again to hop to the next one (up to three).

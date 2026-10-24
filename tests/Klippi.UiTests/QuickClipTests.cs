@@ -152,6 +152,24 @@ public sealed class QuickClipTests
         finally { model.CloseBehavior = CloseBehavior.Exit; window.Close(); }
     }
 
+    [AvaloniaFact]
+    public async Task Make_it_a_Short_sets_vertical_louder_and_the_loudest_moment_of_a_long_recording()
+    {
+        var fake = new UiFakes(); fake.Media.Duration = TimeSpan.FromMinutes(3);
+        fake.Media.WaveformOverride = points => Enumerable.Range(0, points).Select(i => i * 180d / points is >= 120 and < 135 ? 0.95f : 0.08f).ToArray();
+        using var model = new MainViewModel(fake.Services) { ReducedMotion = true };
+        await model.InitializeAsync(); await model.OpenEditorAsync("long-replay.mp4");
+        Assert.True(model.ShowMakeShort);
+        model.MakeShortCommand.Execute(null);
+        Assert.Equal(FrameShape.Vertical, model.ExportShape);
+        Assert.True(model.Normalize);
+        Assert.InRange(TimeSpan.Parse(model.StartTime).TotalSeconds, 119, 122);
+        Assert.Contains("Ready for TikTok", model.Status);
+        var options = model.BuildExportOptions("out.mp4");
+        Assert.Equal(FrameShape.Vertical, options.Shape); Assert.True(options.Normalize);
+        Assert.Equal("long-replay - vertical", MainViewModel.FreeClipName("long-replay", "mp4", null, "vertical"));
+    }
+
     // A small landscape "game" frame: sky, hills and a bright marker right of centre.
     private static byte[] Frame(int width, int height)
     {

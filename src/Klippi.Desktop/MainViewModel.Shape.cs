@@ -70,6 +70,25 @@ public sealed partial class MainViewModel
         foreach (var name in (string[])[nameof(ShapeBeforeLength), nameof(ShapeKeptLength), nameof(ShapeAfterLength)]) OnPropertyChanged(name);
     }
 
+    // Make it a Short: vertical 9:16, louder, and for a long selection the loudest 15 seconds, in one click.
+    public bool ShowMakeShort => HasEditor && EditorHasVideo;
+    private CommunityToolkit.Mvvm.Input.IRelayCommand? _makeShortCommand;
+    public CommunityToolkit.Mvvm.Input.IRelayCommand MakeShortCommand => _makeShortCommand ??= new CommunityToolkit.Mvvm.Input.RelayCommand(() =>
+    {
+        if (_probe is not { HasVideo: true } probe) return;
+        AudioOnly = false;
+        ExportShape = FrameShape.Vertical;
+        if (probe.HasAudio) Normalize = true;
+        var selected = MediaValidation.TryTimecode(StartTime, out var start) && MediaValidation.TryTimecode(EndTime, out var end) ? end - start : probe.Duration;
+        var picked = "";
+        if (selected > TimeSpan.FromSeconds(60) && probe.HasAudio && LoudMoments.Count > 0)
+        {
+            _loudestIndex = 0; KeepLoudestCommand.Execute(null);
+            picked = " Kept the loudest 15 seconds.";
+        }
+        Status = "Ready for TikTok, Shorts and Reels: vertical 9:16" + (probe.HasAudio ? ", louder" : "") + "." + picked + " Slide the crop if needed, then Export.";
+    });
+
     // Dragging the start handle changes StartTime many times a second; the preview frame follows once it settles.
     private Avalonia.Threading.DispatcherTimer? _shapePreviewTimer;
     private void ScheduleShapePreview()
@@ -87,7 +106,10 @@ public sealed partial class MainViewModel
     internal void LoadShapePreview()
     {
         if (!ShowShapeEditor || _probe is not { HasVideo: true } || string.IsNullOrEmpty(EditorPath)) return;
-        var at = MediaValidation.TryTimecode(StartTime, out var start) ? start : TimeSpan.Zero;
+        // The middle of the selection: a clip's first frame is often a fade, a menu or a loading screen.
+        var start = MediaValidation.TryTimecode(StartTime, out var from) ? from : TimeSpan.Zero;
+        var end = MediaValidation.TryTimecode(EndTime, out var to) && to > start ? to : _probe.Duration;
+        var at = start + (end - start) / 2;
         var key = EditorPath + "|" + Math.Round(at.TotalSeconds, 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
         if (key == _shapePreviewKey && _shapePreview is not null) return;
         _shapePreviewLoad?.Cancel();

@@ -589,7 +589,7 @@ public sealed partial class MainViewModel
         {
             case nameof(HasEditor) or nameof(EditorSummary):
                 if (!HasEditor) CancelDetailedWaveform();
-                OnPropertyChanged(nameof(ShowQuickPicks)); OnPropertyChanged(nameof(ShowLoudestPick));
+                OnPropertyChanged(nameof(ShowQuickPicks)); OnPropertyChanged(nameof(ShowLoudestPick)); OnPropertyChanged(nameof(ShowMakeShort));
                 _shapePreviewKey = null; ShapePreview = null; RaiseShape(); LoadShapePreview();
                 RaiseEditorMedia(); RefreshEditorLoadingState(); RefreshEditorEstimate();
                 OnPropertyChanged(nameof(HasRecentRecordings));
@@ -607,7 +607,7 @@ public sealed partial class MainViewModel
                 break;
             case nameof(StartTime) or nameof(EndTime):
                 OnPropertyChanged(nameof(SelectionDurationText)); OnPropertyChanged(nameof(IsSelectionValid)); OnPropertyChanged(nameof(CanExport));
-                if (e.PropertyName == nameof(StartTime)) ScheduleShapePreview();
+                ScheduleShapePreview();
                 break;
             case nameof(AttachmentPreset):
                 OnPropertyChanged(nameof(FitTargetMb));

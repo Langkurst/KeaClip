@@ -384,7 +384,12 @@
               <!-- Shape: crop to a phone shape for TikTok, Shorts and Reels, or a square. Shown on a still frame, because
                    nothing can be drawn over the native video preview. -->
               <StackPanel Name="ShapeRow" Spacing="8" IsVisible="{Binding ShowShapeChoice}">
-                <TextBlock Text="Shape" Classes="overline" />
+                <Grid ColumnDefinitions="*,Auto">
+                  <TextBlock Text="Shape" Classes="overline" VerticalAlignment="Center" />
+                  <Button Name="MakeShortButton" Grid.Column="1" Classes="link small" Padding="0,2" Command="{Binding MakeShortCommand}" IsVisible="{Binding ShowMakeShort}" ToolTip.Tip="Vertical 9:16, louder, and for a long clip the loudest 15 seconds, in one click" AutomationProperties.Name="Make it a Short">
+                    <StackPanel Orientation="Horizontal" Spacing="5"><c:StrokeIcon Data="{StaticResource IconSparkle}" Size="13" /><TextBlock Text="Make it a Short" VerticalAlignment="Center" /></StackPanel>
+                  </Button>
+                </Grid>
                 <UniformGrid Columns="3" ColumnSpacing="8">
                   <Button Name="ShapeOriginalButton" Classes="fit" Classes.selected="{Binding IsShapeOriginal}" Command="{Binding SetShapeCommand}" CommandParameter="Original" AutomationProperties.Name="Keep the original shape">
                     <StackPanel Spacing="1"><TextBlock Text="Original" Classes="tile-title" /><TextBlock Text="As recorded" Classes="caption muted" /></StackPanel>
