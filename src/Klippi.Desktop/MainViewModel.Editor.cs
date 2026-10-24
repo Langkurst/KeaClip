@@ -64,6 +64,17 @@ public sealed partial class MainViewModel
         StartTime = MediaValidation.Timecode(start); EndTime = MediaValidation.Timecode(length);
         Seek(start.TotalSeconds / Math.Max(length.TotalSeconds, 0.001));
     });
+    // The loudest 15 seconds, from the waveform already on screen: usually where the action is in a game clip.
+    public bool ShowLoudestPick => ShowQuickPicks && EditorHasAudio && Waveform.Count >= 8;
+    private IRelayCommand? _keepLoudestCommand;
+    public IRelayCommand KeepLoudestCommand => _keepLoudestCommand ??= new RelayCommand(() =>
+    {
+        if (_probe is not { Duration: var length } || LoudestMoment.Find(Waveform, length, TimeSpan.FromSeconds(15)) is not { } loudest)
+        { Status = "There's no loud part that stands out in this file."; return; }
+        StartTime = MediaValidation.Timecode(loudest.Start); EndTime = MediaValidation.Timecode(loudest.End);
+        Seek(loudest.Start.TotalSeconds / Math.Max(length.TotalSeconds, 0.001));
+        Status = $"Kept the loudest 15 seconds, {ClockText(loudest.Start, length)} to {ClockText(loudest.End, length)}. Drag the ends to adjust.";
+    });
     public IRelayCommand KeepWholeCommand => _keepWholeCommand ??= new RelayCommand(() =>
     {
         if (_probe is not { Duration: var length }) return;
@@ -569,7 +580,7 @@ public sealed partial class MainViewModel
         {
             case nameof(HasEditor) or nameof(EditorSummary):
                 if (!HasEditor) CancelDetailedWaveform();
-                OnPropertyChanged(nameof(ShowQuickPicks));
+                OnPropertyChanged(nameof(ShowQuickPicks)); OnPropertyChanged(nameof(ShowLoudestPick));
                 _shapePreviewKey = null; ShapePreview = null; RaiseShape(); LoadShapePreview();
                 RaiseEditorMedia(); RefreshEditorLoadingState(); RefreshEditorEstimate();
                 OnPropertyChanged(nameof(HasRecentRecordings));
@@ -608,6 +619,9 @@ public sealed partial class MainViewModel
                 break;
             case nameof(PreviewAspect):
                 RaiseShape();
+                break;
+            case nameof(Waveform):
+                OnPropertyChanged(nameof(ShowLoudestPick));
                 break;
             case nameof(Volume):
                 // Moving the slider is an explicit volume choice, so it also ends mute.

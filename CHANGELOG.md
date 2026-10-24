@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.1 (2026-10-24)
+
+- **Loudest 15 s**: one click finds the loudest 15 seconds of a recording, which in a game clip is usually the action, and selects it ready to export.
+
 ## 0.5.0 (2026-10-24)
 
 - **Vertical clips for TikTok, Shorts and Reels**: under Shape, pick Vertical 9:16 (or Square 1:1), see exactly what stays in frame on a still from your clip, and slide it left or right.

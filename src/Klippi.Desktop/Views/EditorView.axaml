@@ -331,6 +331,9 @@
               <!-- Quick picks: a game replay keeps the moment at its end, so one click keeps just the ending. -->
               <WrapPanel Name="QuickPicks" ItemSpacing="6" LineSpacing="6" IsVisible="{Binding ShowQuickPicks}">
                 <TextBlock Text="Quick picks" Classes="caption muted" VerticalAlignment="Center" Margin="0,0,4,0" />
+                <Button Name="KeepLoudestButton" Classes="small ghost" Command="{Binding KeepLoudestCommand}" IsVisible="{Binding ShowLoudestPick}" ToolTip.Tip="Finds the loudest 15 seconds: in a game clip, usually where the action is" AutomationProperties.Name="Keep the loudest 15 seconds">
+                  <StackPanel Orientation="Horizontal" Spacing="5"><c:StrokeIcon Data="{StaticResource IconVolume}" Size="13" /><TextBlock Text="Loudest 15 s" VerticalAlignment="Center" /></StackPanel>
+                </Button>
                 <Button Name="KeepLast15Button" Classes="small ghost" Command="{Binding KeepLastCommand}" CommandParameter="15" Content="Last 15 s" ToolTip.Tip="Keep just the last 15 seconds" />
                 <Button Name="KeepLast30Button" Classes="small ghost" Command="{Binding KeepLastCommand}" CommandParameter="30" Content="Last 30 s" ToolTip.Tip="Keep just the last 30 seconds" />
                 <Button Name="KeepLast60Button" Classes="small ghost" Command="{Binding KeepLastCommand}" CommandParameter="60" Content="Last 60 s" ToolTip.Tip="Keep just the last minute" />
