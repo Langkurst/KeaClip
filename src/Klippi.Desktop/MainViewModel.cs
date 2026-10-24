@@ -29,7 +29,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private bool _initialized;
     private int _selectedTab;
     private string _url = "";
-    private string _status = "Ready. Paste a media link or open a local file.";
+    private string _status = "Ready. Paste a link, open a video, or drop any files here to share them.";
     private MediaInfo? _media;
     private string _historySearch = "";
     private ProbeInfo? _probe;

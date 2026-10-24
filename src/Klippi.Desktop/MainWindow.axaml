@@ -121,7 +121,7 @@
         <v:BetaTestView Name="BetaTestPage" Classes="page" IsVisible="{Binding IsBetaTest}" />
         <!-- A finished download or upload, bottom right on any page. It fades on its own; the close button dismisses it now. -->
         <Border Name="NoticeCard" Classes="card reveal" IsVisible="{Binding HasNotice}" HorizontalAlignment="Right" VerticalAlignment="Bottom"
-                Margin="0,0,24,20" Padding="14,12" MaxWidth="380" BoxShadow="0 8 24 0 #40000000"
+                Margin="0,0,24,96" Padding="14,12" MaxWidth="380" BoxShadow="0 8 24 0 #40000000"
                 AutomationProperties.LiveSetting="Polite" AutomationProperties.Name="{Binding Notice.Heading}">
           <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
             <Border Width="32" Height="32" CornerRadius="16" Background="{DynamicResource AppAccent}" VerticalAlignment="Top">
@@ -129,7 +129,10 @@
             </Border>
             <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
               <TextBlock Name="NoticeHeadingText" Text="{Binding Notice.Heading}" Classes="strong" />
-              <TextBlock Name="NoticeDetailText" Text="{Binding Notice.Detail}" Classes="caption muted" TextTrimming="CharacterEllipsis" MaxLines="2" TextWrapping="Wrap" ToolTip.Tip="{Binding Notice.Detail}" />
+              <TextBlock Name="NoticeDetailText" Text="{Binding Notice.Detail}" Classes="caption muted" TextTrimming="CharacterEllipsis" MaxLines="3" TextWrapping="Wrap" ToolTip.Tip="{Binding Notice.Detail}" />
+              <Button Name="NoticeLinkButton" Classes="link small" HorizontalAlignment="Left" Padding="0,2" Margin="0,2,0,0" IsVisible="{Binding Notice.HasLink, FallbackValue=False}" Command="{Binding OpenNoticeLinkCommand}" AutomationProperties.Name="{Binding Notice.LinkText}">
+                <StackPanel Orientation="Horizontal" Spacing="5"><TextBlock Text="{Binding Notice.LinkText}" VerticalAlignment="Center" /><c:StrokeIcon Data="{StaticResource IconExternal}" Size="12" /></StackPanel>
+              </Button>
             </StackPanel>
             <Button Name="DismissNoticeButton" Grid.Column="2" Classes="icon small ghost" VerticalAlignment="Top" Command="{Binding DismissNoticeCommand}" ToolTip.Tip="Dismiss" AutomationProperties.Name="Dismiss notice">
               <c:StrokeIcon Data="{StaticResource IconClose}" Size="14" />

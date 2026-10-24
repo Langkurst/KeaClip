@@ -51,13 +51,13 @@ a local feed:
 1. Raise `<Version>` in `Directory.Build.props` and `AppIdentity.Version` in
    `src/Klippi.Core/Models.cs`, add the CHANGELOG entry, run the test suites and commit.
 2. `pwsh -File build/release-local.ps1 -Notes "What changed"`. It packages, builds and self-tests
-   the installer, copies it to `%LOCALAPPDATA%\KeaClip-Releases\KeaClip-<version>-Setup.exe` and
+   the installer, copies it to `%USERPROFILE%\.keaclip-releases\KeaClip-<version>-Setup.exe` and
    writes `keaclip-update.json` beside it (asset entries are plain file names, never links).
 3. Start KeaClip: it reads that feed at every start when the file exists (no network, no daily wait)
    and offers **Update now**. The copy is size-capped and SHA-256 checked like a download, and the
    installer's upgrade mode refuses the same or an older version.
 
-The local feed is only used when `%LOCALAPPDATA%\KeaClip-Releases\keaclip-update.json` exists and no
+The local feed is only used when `%USERPROFILE%\.keaclip-releases\keaclip-update.json` (or, for builds before 0.4.6, `%LOCALAPPDATA%\KeaClip-Releases\keaclip-update.json`) exists and no
 `UpdateFeedUrl` is set in settings.json; a local feed must be named `keaclip-update.json` on a local
 drive (network shares are refused). Delete that folder to fall back to the GitHub feed.
 

@@ -21,9 +21,15 @@ public sealed record UpdateServiceOptions
     /// The local feed build/release-local.ps1 writes. When it exists it is used instead of the default,
     /// so builds made on this PC reach the installed app without any public hosting.
     /// </summary>
-    public static string LocalFeedPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "KeaClip-Releases", UpdateManifest.FileName);
+    /// It lives in the user profile, not AppData: a script started from inside a packaged (MSIX) Windows app has its
+    /// AppData writes redirected into that app's private storage, where the installed KeaClip never sees them.
+    public static string LocalFeedPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".keaclip-releases", UpdateManifest.FileName);
+    /// <summary>Where builds before 0.4.6 put the local feed; still read when the new one is absent.</summary>
+    public static string LegacyLocalFeedPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "KeaClip-Releases", UpdateManifest.FileName);
 
-    public static Uri PreferredFeed(string localFeedPath) => File.Exists(localFeedPath) && UpdateManifest.IsLocalFeed(new Uri(localFeedPath)) ? new Uri(localFeedPath) : new Uri(DefaultFeed);
+    /// <summary>The first local feed that exists, else the public feed.</summary>
+    public static Uri PreferredFeed(params string[] localFeedPaths) =>
+        localFeedPaths.FirstOrDefault(path => File.Exists(path) && UpdateManifest.IsLocalFeed(new Uri(path))) is { } local ? new Uri(local) : new Uri(DefaultFeed);
 
     /// <summary>The app's data folder: update-state.json and the Updates download folder live here.</summary>
     public required string DataRoot { get; init; }

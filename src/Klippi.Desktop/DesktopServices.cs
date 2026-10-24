@@ -19,7 +19,7 @@ public sealed record DesktopServices(IDownloadService Downloads, IMediaService M
         var environment = UpdateEnvironment.Detect(AppContext.BaseDirectory);
         // Only the owner's personal build reads the local feed (release-local.ps1); public copies trust GitHub alone,
         // so nothing else on the PC can plant an update for them.
-        var feed = AppIdentity.Edition == "Personal" ? UpdateServiceOptions.PreferredFeed(UpdateServiceOptions.LocalFeedPath) : new Uri(UpdateServiceOptions.DefaultFeed);
+        var feed = AppIdentity.Edition == "Personal" ? UpdateServiceOptions.PreferredFeed(UpdateServiceOptions.LocalFeedPath, UpdateServiceOptions.LegacyLocalFeedPath) : new Uri(UpdateServiceOptions.DefaultFeed);
         var updates = new UpdateService(new UpdateServiceOptions { DataRoot = root, InstallKind = environment.Kind, InstallRoot = environment.InstallRoot, FeedUrl = feed });
         var media = new MediaService(runner, components, temporaryWorkspaces);
         return new(new DownloadService(runner, components, temporaryWorkspaces), media, new FileKiwiSharingService(new HttpClient(new HttpClientHandler { AllowAutoRedirect = false }) { Timeout = Timeout.InfiniteTimeSpan }), new JsonLocalStore(root), components, new DesktopPlatform(), new VlcPlaybackService(), root, temporaryWorkspaces, updates,

@@ -5,7 +5,8 @@ Builds KeaClip and publishes it to the local update feed, so the installed app o
 .DESCRIPTION
 One command for a new version on this PC: bump <Version> in Directory.Build.props, commit, then run
 this. It builds the portable package (with components), builds and self-tests the installer, and
-publishes the installer to %LOCALAPPDATA%\KeaClip-Releases with keaclip-update.json beside it. The
+publishes the installer to %USERPROFILE%\.keaclip-releases with keaclip-update.json beside it (not AppData:
+when this runs from inside a packaged Windows app, AppData writes are redirected where KeaClip can't see them). The
 installed app reads that feed at every start (no network, no public hosting) and offers
 "Update now"; its download is still size-capped and SHA-256 checked, and the installer refuses the
 same or an older version. Older installers in that folder are removed (they are copies of build
@@ -35,7 +36,7 @@ $Installer = (Resolve-Path -LiteralPath $Installer).Path
 $installerVersion = (Get-Item -LiteralPath $Installer).VersionInfo.ProductVersion
 if ($installerVersion -notmatch ('^' + [regex]::Escape($localVersion) + '($|[+-])')) { throw "The installer reports version '$installerVersion', not $localVersion. Rebuild it from this source." }
 
-$feedFolder = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'KeaClip-Releases'
+$feedFolder = Join-Path ([Environment]::GetFolderPath('UserProfile')) '.keaclip-releases'
 New-Item -ItemType Directory -Path $feedFolder -Force | Out-Null
 if ((Get-Item -LiteralPath $feedFolder).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'The local feed folder is a link; refusing to publish into it.' }
 $assetName = "KeaClip-$localVersion-Setup.exe"

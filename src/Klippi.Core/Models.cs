@@ -3,7 +3,7 @@ namespace Klippi.Core;
 public static class AppIdentity
 {
     public const string DisplayName = "KeaClip";
-    public const string Version = "0.4.5"; // Keep equal to <Version> in Directory.Build.props (a test checks).
+    public const string Version = "0.4.6"; // Keep equal to <Version> in Directory.Build.props (a test checks).
     public const string Protocol = "keaclip";
 #if KEACLIP_PERSONAL
     public const string Edition = "Personal";

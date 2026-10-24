@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.6 (2026-10-24)
+
+- **What's new after an update**: when KeaClip updates itself, a card says what this version added, with a link to the full release notes. It stays until you close it.
+- **Ready to share, from the start**: the welcome line now mentions dropping any files on KeaClip to share them.
+
 ## 0.4.5 (2026-10-22)
 
 - **You'll notice when it's done**: if KeaClip is behind a game or minimised when a download or upload finishes, its taskbar button flashes and the notice stays until you've seen it. Hidden in the tray? Hover the tray icon to see what finished. Uploads now get a "Link ready" notice too. (Settings, Completion notices turns all of this off.)

@@ -461,6 +461,19 @@ public sealed class UpdateServiceTests : IDisposable
     }
 
     [Fact]
+    public void The_profile_feed_wins_over_the_old_AppData_feed_which_still_works_alone()
+    {
+        var legacy = Path.Combine(_root, "KeaClip-Releases", UpdateManifest.FileName);
+        var profile = Path.Combine(_root, ".keaclip-releases", UpdateManifest.FileName);
+        PublishLocal("0.3.0", [1]); // writes the legacy-style folder
+        Assert.Equal(new Uri(legacy), UpdateServiceOptions.PreferredFeed(profile, legacy));
+        Directory.CreateDirectory(Path.GetDirectoryName(profile)!); File.Copy(legacy, profile);
+        Assert.Equal(new Uri(profile), UpdateServiceOptions.PreferredFeed(profile, legacy));
+        Assert.EndsWith(Path.Combine(".keaclip-releases", UpdateManifest.FileName), UpdateServiceOptions.LocalFeedPath);
+        Assert.DoesNotContain("AppData", UpdateServiceOptions.LocalFeedPath, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void Cleanup_removes_only_this_apps_downloads_for_installed_or_older_versions()
     {
         var updates = Path.Combine(_root, "Data", "Updates");

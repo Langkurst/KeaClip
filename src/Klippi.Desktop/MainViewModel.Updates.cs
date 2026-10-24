@@ -132,12 +132,32 @@ public sealed partial class MainViewModel
     public IRelayCommand ShowUpdateCommand => _showUpdateCommand ??= new RelayCommand(() => { SelectedTab = 4; UpdateRevealRequested?.Invoke(); });
     public IRelayCommand RevealPortableUpdateCommand => _revealPortableUpdateCommand ??= new RelayCommand(() => TryAction(() => { if (_preparedUpdate is { } prepared) _services.Platform.RevealFile(prepared.FilePath); }));
 
+    /// <summary>
+    /// After a finished update, a card that stays until closed: what this version added (from the CHANGELOG.md beside
+    /// the app) and a link to its release notes. Silent auto-updates would otherwise leave new features undiscovered.
+    /// </summary>
+    internal void ShowWhatsNew(string notice, string? highlights = null)
+    {
+        if (!notice.StartsWith("KeaClip was updated", StringComparison.Ordinal)) return;
+        highlights ??= WhatsNew.Summary(AppIdentity.Version);
+        Notice = new CompletionNote("KeaClip updated to " + AppIdentity.Version,
+            highlights is null ? "Your settings and media were kept." : "New: " + highlights,
+            new Uri("https://github.com/Langkurst/KeaClip/releases/tag/v" + AppIdentity.Version), "See what's new");
+    }
+    private IRelayCommand? _openNoticeLinkCommand;
+    public IRelayCommand OpenNoticeLinkCommand => _openNoticeLinkCommand ??= new RelayCommand(() =>
+    {
+        if (Notice?.Link is not { } link) return;
+        try { _services.Platform.OpenUri(link); Notice = null; }
+        catch (Exception error) { CaptureDiagnostics(error); Status = "The release notes couldn't be opened in your browser."; }
+    });
+
     // ----- Background schedule -----
     private void StartUpdates()
     {
         if (Updates is not { } updates || _disposed) return;
         if (!updates.TrySetFeed(_settings.UpdateFeedUrl)) SetUpdateStatus("The update feed in settings.json isn't a secure https link or a local keaclip-update.json file, so the default feed is used.");
-        if (updates.TakeCompletedUpdateNotice() is { } notice) { Status = notice; SetUpdateStatus(notice); }
+        if (updates.TakeCompletedUpdateNotice() is { } notice) { Status = notice; SetUpdateStatus(notice); ShowWhatsNew(notice); }
         _ = Task.Run(updates.CleanupDownloads);
         // Only settings that really loaded can turn automatic checks on.
         if (_initialized && CheckForUpdates) RestartUpdateSchedule(UpdateStartupDelay);

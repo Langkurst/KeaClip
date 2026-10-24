@@ -243,10 +243,27 @@ public sealed class UpdateUiTests
     [AvaloniaFact]
     public async Task The_finished_update_notice_is_shown_once_after_the_relaunch()
     {
-        var (_, updates, model) = Create(); updates.CompletedNotice = "KeaClip was updated to 0.3.0. Your settings and media were kept.";
+        var (fake, updates, model) = Create(); updates.CompletedNotice = "KeaClip was updated to 0.3.0. Your settings and media were kept.";
         using var _ = model; await model.InitializeAsync();
         Assert.Equal("KeaClip was updated to 0.3.0. Your settings and media were kept.", model.Status);
         Assert.Null(updates.CompletedNotice);
+        // A card that stays until closed says what's new and links to this version's release notes.
+        Assert.Equal("KeaClip updated to " + AppIdentity.Version, model.Notice?.Heading);
+        Assert.Equal(new Uri("https://github.com/Langkurst/KeaClip/releases/tag/v" + AppIdentity.Version), model.Notice?.Link);
+        model.OpenNoticeLinkCommand.Execute(null);
+        Assert.Equal(new Uri("https://github.com/Langkurst/KeaClip/releases/tag/v" + AppIdentity.Version), Assert.Single(fake.Platform.OpenedUris));
+        Assert.Null(model.Notice); // opening the notes dismisses the card
+    }
+
+    [AvaloniaFact]
+    public void An_update_that_did_not_finish_shows_no_whats_new_card_and_highlights_fill_the_card()
+    {
+        var (_, _, model) = Create(); using var _ = model;
+        model.ShowWhatsNew("The update to KeaClip 9.9.9 didn't finish, so this version is still installed.");
+        Assert.Null(model.Notice);
+        model.ShowWhatsNew("KeaClip was updated to 0.4.6. Your settings and media were kept.", "Copy clip · Share any files or folders");
+        Assert.Equal("New: Copy clip · Share any files or folders", model.Notice?.Detail);
+        Assert.Equal("See what's new", model.Notice?.LinkText);
     }
 
     // ----- What the user sees -----
