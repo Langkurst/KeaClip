@@ -21,6 +21,20 @@ public sealed class LoudestMomentTests
     }
 
     [Fact]
+    public void Separate_loud_moments_come_back_loudest_first_and_never_overlap()
+    {
+        // 120 s as 600 points: a big fight at 70-90 s, a smaller one at 20-30 s, ordinary sound elsewhere.
+        var samples = Quiet(600);
+        for (var i = 350; i < 450; i++) samples[i] = 0.9f;
+        for (var i = 100; i < 150; i++) samples[i] = 0.5f;
+        var moments = LoudestMoment.FindTop(samples, TimeSpan.FromSeconds(120), TimeSpan.FromSeconds(15), 3);
+        Assert.Equal(2, moments.Count); // nothing else stands out from the background
+        Assert.InRange(moments[0].Start.TotalSeconds, 70, 75);
+        Assert.InRange(moments[1].Start.TotalSeconds, 15, 25);
+        Assert.True(moments[0].Start >= moments[1].End || moments[1].Start >= moments[0].End);
+    }
+
+    [Fact]
     public void The_window_stays_inside_the_file_and_silence_finds_nothing()
     {
         var samples = Quiet(600);

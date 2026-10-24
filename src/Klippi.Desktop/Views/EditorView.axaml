@@ -290,7 +290,7 @@
               </Grid>
 
               <Panel>
-                <local:WaveformControl Name="Waveform" Height="112" Classes.loading="{Binding IsWaveformLoading}" Samples="{Binding Waveform}" StartRatio="{Binding ClipStartRatio, Mode=TwoWay}" EndRatio="{Binding ClipEndRatio, Mode=TwoWay}" PlayheadRatio="{Binding PlaybackPosition}" IsPlaying="{Binding IsPlaying}" Duration="{Binding EditorDuration}" PlaceholderText="{Binding WaveformPlaceholder}" AutomationProperties.Name="Trim timeline" AutomationProperties.HelpText="Click to move the playhead. Drag the handles to trim. I and O set the start and end at the playhead; arrow keys nudge; Ctrl and scroll zooms." />
+                <local:WaveformControl Name="Waveform" Height="112" Classes.loading="{Binding IsWaveformLoading}" Samples="{Binding Waveform}" StartRatio="{Binding ClipStartRatio, Mode=TwoWay}" EndRatio="{Binding ClipEndRatio, Mode=TwoWay}" PlayheadRatio="{Binding PlaybackPosition}" IsPlaying="{Binding IsPlaying}" Duration="{Binding EditorDuration}" Highlights="{Binding LoudHighlights}" PlaceholderText="{Binding WaveformPlaceholder}" AutomationProperties.Name="Trim timeline" AutomationProperties.HelpText="Click to move the playhead. Drag the handles to trim. I and O set the start and end at the playhead; arrow keys nudge; Ctrl and scroll zooms." />
                 <Border Classes="skeleton" CornerRadius="10" IsVisible="{Binding IsWaveformLoading}" />
                 <StackPanel Orientation="Horizontal" Spacing="9" HorizontalAlignment="Center" VerticalAlignment="Center" IsVisible="{Binding IsWaveformLoading}">
                   <c:ProgressRing Width="16" Height="16" Thickness="2" Value="0" IsIndeterminate="{Binding AnimateEditorLoading}" />

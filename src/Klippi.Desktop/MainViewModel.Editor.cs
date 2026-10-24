@@ -67,13 +67,22 @@ public sealed partial class MainViewModel
     // The loudest 15 seconds, from the waveform already on screen: usually where the action is in a game clip.
     public bool ShowLoudestPick => ShowQuickPicks && EditorHasAudio && Waveform.Count >= 8;
     private IRelayCommand? _keepLoudestCommand;
+    // Pressing it again hops to the next loud moment (up to three), which the timeline marks with dots.
+    private int _loudestIndex;
+    private IReadOnlyList<(TimeSpan Start, TimeSpan End)> LoudMoments => _probe is { Duration: var length } && EditorHasAudio ? LoudestMoment.FindTop(Waveform, length, TimeSpan.FromSeconds(15), 3) : [];
+    /// <summary>Centre ratios of the loud moments, for the timeline's marks.</summary>
+    public IReadOnlyList<double> LoudHighlights => _probe is { Duration.TotalSeconds: > 0 } probe
+        ? LoudMoments.Select(moment => (moment.Start + moment.End).TotalSeconds / 2 / probe.Duration.TotalSeconds).ToArray() : [];
     public IRelayCommand KeepLoudestCommand => _keepLoudestCommand ??= new RelayCommand(() =>
     {
-        if (_probe is not { Duration: var length } || LoudestMoment.Find(Waveform, length, TimeSpan.FromSeconds(15)) is not { } loudest)
-        { Status = "There's no loud part that stands out in this file."; return; }
+        var moments = LoudMoments;
+        if (_probe is not { Duration: var length } || moments.Count == 0) { Status = "There's no loud part that stands out in this file."; return; }
+        var index = _loudestIndex % moments.Count; _loudestIndex = index + 1;
+        var loudest = moments[index];
         StartTime = MediaValidation.Timecode(loudest.Start); EndTime = MediaValidation.Timecode(loudest.End);
         Seek(loudest.Start.TotalSeconds / Math.Max(length.TotalSeconds, 0.001));
-        Status = $"Kept the loudest 15 seconds, {ClockText(loudest.Start, length)} to {ClockText(loudest.End, length)}. Drag the ends to adjust.";
+        var which = moments.Count == 1 ? "the loudest 15 seconds" : $"loud moment {index + 1} of {moments.Count}";
+        Status = $"Kept {which}, {ClockText(loudest.Start, length)} to {ClockText(loudest.End, length)}." + (moments.Count > 1 ? " Press Loudest again for the next one." : " Drag the ends to adjust.");
     });
     public IRelayCommand KeepWholeCommand => _keepWholeCommand ??= new RelayCommand(() =>
     {
@@ -621,7 +630,8 @@ public sealed partial class MainViewModel
                 RaiseShape();
                 break;
             case nameof(Waveform):
-                OnPropertyChanged(nameof(ShowLoudestPick));
+                _loudestIndex = 0;
+                OnPropertyChanged(nameof(ShowLoudestPick)); OnPropertyChanged(nameof(LoudHighlights));
                 break;
             case nameof(Volume):
                 // Moving the slider is an explicit volume choice, so it also ends mute.

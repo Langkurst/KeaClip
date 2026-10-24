@@ -121,6 +121,37 @@ public sealed class QuickClipTests
         finally { model.CloseBehavior = CloseBehavior.Exit; window.Close(); }
     }
 
+    [AvaloniaFact]
+    public async Task Loudest_hops_between_the_marked_loud_moments()
+    {
+        var fake = new UiFakes(); fake.Media.Duration = TimeSpan.FromMinutes(2);
+        // The fake waveform is a gentle wave; two loud bursts are placed in it.
+        fake.Media.WaveformOverride = points => Enumerable.Range(0, points).Select(i => i * 120d / points is >= 70 and < 85 ? 0.95f : i * 120d / points is >= 20 and < 30 ? 0.7f : 0.08f).ToArray();
+        using var model = new MainViewModel(fake.Services) { ReducedMotion = true };
+        var window = new MainWindow { DataContext = model, Width = 1180, Height = 900 }; window.Show();
+        try
+        {
+            await model.InitializeAsync(); await model.OpenEditorAsync("replay.mp4"); Dispatcher.UIThread.RunJobs();
+            Assert.Equal(2, model.LoudHighlights.Count);
+            Assert.Equal(2, window.FindNamed<WaveformControl>("Waveform")!.Highlights!.Count);
+            model.KeepLoudestCommand.Execute(null);
+            Assert.InRange(TimeSpan.Parse(model.StartTime).TotalSeconds, 69, 72);
+            Assert.Contains("1 of 2", model.Status);
+            model.KeepLoudestCommand.Execute(null);
+            Assert.InRange(TimeSpan.Parse(model.StartTime).TotalSeconds, 15, 21);
+            Assert.Contains("2 of 2", model.Status);
+            model.KeepLoudestCommand.Execute(null); // back to the loudest
+            Assert.InRange(TimeSpan.Parse(model.StartTime).TotalSeconds, 69, 72);
+            if (Environment.GetEnvironmentVariable("KEACLIP_UI_EVIDENCE_DIRECTORY") is { Length: > 0 } output)
+            {
+                model.Theme = "Dark"; window.FindNamed<WaveformControl>("Waveform")!.BringIntoView(); Dispatcher.UIThread.RunJobs(); await Task.Delay(300); Dispatcher.UIThread.RunJobs();
+                using var frame = Avalonia.Headless.HeadlessWindowExtensions.CaptureRenderedFrame(window);
+                frame!.Save(Path.Combine(output, "loud-marks-dark.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
+            }
+        }
+        finally { model.CloseBehavior = CloseBehavior.Exit; window.Close(); }
+    }
+
     // A small landscape "game" frame: sky, hills and a bright marker right of centre.
     private static byte[] Frame(int width, int height)
     {

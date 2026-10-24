@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.2 (2026-10-24)
+
+- **Loud moments marked**: small dots on the timeline show where the loudest moments of a recording are. Press Loudest 15 s again to hop to the next one (up to three).
+
 ## 0.5.1 (2026-10-24)
 
 - **Loudest 15 s**: one click finds the loudest 15 seconds of a recording, which in a game clip is usually the action, and selects it ready to export.

@@ -35,6 +35,9 @@ public sealed class WaveformControl : Control
     public static readonly StyledProperty<bool> IsPlayingProperty = AvaloniaProperty.Register<WaveformControl, bool>(nameof(IsPlaying));
     public static readonly StyledProperty<TimeSpan> DurationProperty = AvaloniaProperty.Register<WaveformControl, TimeSpan>(nameof(Duration));
     public static readonly StyledProperty<string?> PlaceholderTextProperty = AvaloniaProperty.Register<WaveformControl, string?>(nameof(PlaceholderText));
+    /// <summary>The loudest moments (centre ratios), marked with small dots along the bottom of the track.</summary>
+    public static readonly StyledProperty<IReadOnlyList<double>?> HighlightsProperty = AvaloniaProperty.Register<WaveformControl, IReadOnlyList<double>?>(nameof(Highlights));
+    public IReadOnlyList<double>? Highlights { get => GetValue(HighlightsProperty); set => SetValue(HighlightsProperty, value); }
     public static readonly DirectProperty<WaveformControl, double> ZoomProperty = AvaloniaProperty.RegisterDirect<WaveformControl, double>(nameof(Zoom), o => o.Zoom);
     public static readonly DirectProperty<WaveformControl, bool> CanZoomInProperty = AvaloniaProperty.RegisterDirect<WaveformControl, bool>(nameof(CanZoomIn), o => o.CanZoomIn);
     public static readonly DirectProperty<WaveformControl, bool> CanZoomOutProperty = AvaloniaProperty.RegisterDirect<WaveformControl, bool>(nameof(CanZoomOut), o => o.CanZoomOut);
@@ -107,7 +110,7 @@ public sealed class WaveformControl : Control
 
     static WaveformControl()
     {
-        AffectsRender<WaveformControl>(SamplesProperty, StartRatioProperty, EndRatioProperty, PlayheadRatioProperty, IsPlayingProperty, DurationProperty, PlaceholderTextProperty);
+        AffectsRender<WaveformControl>(SamplesProperty, StartRatioProperty, EndRatioProperty, PlayheadRatioProperty, IsPlayingProperty, DurationProperty, PlaceholderTextProperty, HighlightsProperty);
         FocusableProperty.OverrideDefaultValue<WaveformControl>(true);
     }
 
@@ -793,6 +796,7 @@ public sealed class WaveformControl : Control
         }
 
         DrawTrim(context, start, end, track);
+        DrawHighlights(context, track);
         DrawPlayhead(context, track);
         if (pill.Width > 0 && _hoverText is { } label)
         {
@@ -856,6 +860,20 @@ public sealed class WaveformControl : Control
         var notch = Math.Min(16, rect.Height * .3);
         if (rect.Width >= 6) context.DrawLine(_notchPen, new Point(center.X, center.Y - notch / 2), new Point(center.X, center.Y + notch / 2));
         if (active && IsFocused) context.DrawRectangle(null, _activeGripPen, new RoundedRect(rect.Inflate(2), leading ? outer + 2 : inner + 2, leading ? inner + 2 : outer + 2, leading ? inner + 2 : outer + 2, leading ? outer + 2 : inner + 2));
+    }
+
+    // Loudest moments: small warm dots on the bottom edge, outlined so they read on the waveform and the dimmed parts.
+    private void DrawHighlights(DrawingContext context, Rect track)
+    {
+        if (Highlights is not { Count: > 0 } marks) return;
+        var y = track.Bottom - 7;
+        foreach (var ratio in marks)
+        {
+            if (!double.IsFinite(ratio)) continue;
+            var x = RatioToX(Clamp01(ratio));
+            if (x < 4 || x > track.Width - 4) continue;
+            context.DrawEllipse(_warmBrush, _knobPen, new Point(x, y), 4, 4);
+        }
     }
 
     private void DrawPlayhead(DrawingContext context, Rect track)

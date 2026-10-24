@@ -303,7 +303,8 @@ public sealed class FakeMedia : IMediaService
     }
     public Task<IReadOnlyList<EncoderInfo>> EncodersAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<EncoderInfo>>([new("libx264", "CPU H.264", false)]);
     public Func<string, bool>? WaveformFails { get; set; }
-    public Task<IReadOnlyList<float>> WaveformAsync(string path, int points = 600, CancellationToken cancellationToken = default) => WaveformFails?.Invoke(path) == true ? Task.FromException<IReadOnlyList<float>>(new MediaOperationException("FFmpeg could not process this file.")) : Task.FromResult<IReadOnlyList<float>>(Enumerable.Range(0, points).Select(i => (float)Math.Abs(Math.Sin(i / 12d)) * .75f).ToArray());
+    public Task<IReadOnlyList<float>> WaveformAsync(string path, int points = 600, CancellationToken cancellationToken = default) => WaveformFails?.Invoke(path) == true ? Task.FromException<IReadOnlyList<float>>(new MediaOperationException("FFmpeg could not process this file.")) : Task.FromResult<IReadOnlyList<float>>(WaveformOverride?.Invoke(points) ?? Enumerable.Range(0, points).Select(i => (float)Math.Abs(Math.Sin(i / 12d)) * .75f).ToArray());
+    public Func<int, float[]>? WaveformOverride { get; set; }
     public ExportEstimate Estimate(ProbeInfo probe, ExportOptions options) => new((options.End ?? probe.Duration) - (options.Start ?? TimeSpan.Zero), 300_000, null, "Actual output is checked after export.");
 }
 

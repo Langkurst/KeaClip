@@ -33,7 +33,7 @@ The **Library** lists everything you saved, newest first, with search. From a ro
 Open a video from the Library, with **Open local media**, by dropping it on the window, or from **Your recordings** (new game clips from Xbox Game Bar, NVIDIA, AMD and OBS).
 
 - Press Space to play. Drag the orange ends on the timeline to keep the part you want, or press **I** and **O** to mark the start and end where the playhead is. You can also type times like `1:20.5`.
-- **Quick picks**: **Loudest 15 s** finds the loudest part of the recording (in a game clip, usually the action) and selects it. **Last 15 s**, **Last 30 s** and **Last 60 s** keep just the ending, where a game replay's best moment often is.
+- **Quick picks**: **Loudest 15 s** finds the loudest part of the recording (in a game clip, usually the action) and selects it; press it again for the next loud moment. Small dots on the timeline mark where they are. **Last 15 s**, **Last 30 s** and **Last 60 s** keep just the ending, where a game replay's best moment often is.
 - **Shape**: **Vertical 9:16** makes a clip for TikTok, YouTube Shorts and Instagram Reels, and **Square 1:1** a square one. A still from your clip shows what stays in frame; slide it to choose.
 - **Fit for** makes the clip small enough for Discord (10 MB), email (25 MB), Nitro Basic (50 MB) or Nitro (500 MB) in one click.
 - **Make it smaller** offers lighter or stronger size savings.
