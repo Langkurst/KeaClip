@@ -31,10 +31,20 @@ public sealed class WhatsNewTests
     [Fact]
     public void The_real_changelog_has_highlights_for_this_version()
     {
-        // Guards the release step: every version's CHANGELOG entry needs at least one bold title for the card.
+        // Guards the release step: every version's CHANGELOG entry needs a bold feature title or a **Fixed** line for the card.
         var root = AppContext.BaseDirectory;
         while (root is not null && !File.Exists(Path.Combine(root, "CHANGELOG.md"))) root = Path.GetDirectoryName(root);
         Assert.NotNull(root);
-        Assert.NotEmpty(WhatsNew.Highlights(File.ReadAllText(Path.Combine(root!, "CHANGELOG.md")), Klippi.Core.AppIdentity.Version));
+        var changelog = File.ReadAllText(Path.Combine(root!, "CHANGELOG.md"));
+        Assert.True(WhatsNew.Highlights(changelog, Klippi.Core.AppIdentity.Version).Count > 0 || WhatsNew.HasFixes(changelog, Klippi.Core.AppIdentity.Version));
+    }
+
+    [Fact]
+    public void A_fixes_only_version_is_recognised()
+    {
+        const string fixesOnly = "## 0.5.4 (2026-10-30)\n\n- **Fixed**: the drag panel could stay on screen.\n\n## 0.5.3 (2026-10-24)\n\n- **Make it a Short**: one click.\n";
+        Assert.Empty(WhatsNew.Highlights(fixesOnly, "0.5.4"));
+        Assert.True(WhatsNew.HasFixes(fixesOnly, "0.5.4"));
+        Assert.False(WhatsNew.HasFixes(fixesOnly, "0.5.3"));
     }
 }

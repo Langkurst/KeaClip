@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.4 (2026-10-30)
+
+- **Fixed**: the "Drop to …" panel could stay on screen after a drag ended (cancelled, let go outside the window, or over a text box). It now always goes away.
+
 ## 0.5.3 (2026-10-24)
 
 - **Make it a Short**: one click sets a clip up for TikTok, Shorts and Reels: vertical 9:16, louder, and for a long recording the loudest 15 seconds.

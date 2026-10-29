@@ -101,4 +101,15 @@ $install = Start-Process $personalSetup -ArgumentList '--silent' -PassThru -Wait
 if ($install.ExitCode -ne 0) { throw "Installing on this PC failed ($($install.ExitCode))." }
 $installed = (Get-Item "$env:LOCALAPPDATA\Programs\KeaClip\KeaClip.exe").VersionInfo.ProductVersion
 Start-Process "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\KeaClip\KeaClip.lnk"
-Step "This PC now runs $installed. Done."
+Step "This PC now runs $installed."
+
+# 5. Keep the disk tidy: only this release's files stay. Everything removed here is build output that can be made again.
+$before = (Get-PSDrive C).Free
+$old = @()
+$old += Get-ChildItem artifacts\installer-tests -Directory -ErrorAction SilentlyContinue   # self-test evidence, about 1.8 GB a run
+$old += Get-ChildItem artifacts -Directory -Filter 'release-*' | Where-Object { $_.FullName -ne $release }
+$keep = @($folder, $zip, ($personalZip -replace '\.zip$', ''), $personalZip)
+$old += Get-ChildItem artifacts\packages -ErrorAction SilentlyContinue | Where-Object { $_.FullName -notin $keep -and "$($_.FullName).zip" -notin $keep }
+$old += Get-ChildItem $env:TEMP -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name -match '^(KeaClip|Klippi|keaclip)' -and $_.LastWriteTime -lt (Get-Date).AddHours(-1) }
+foreach ($item in $old) { Remove-Item -LiteralPath $item.FullName -Recurse -Force -ErrorAction SilentlyContinue }
+Step ("Cleaned up {0} old build items ({1:0.0} GB freed). Done." -f $old.Count, (((Get-PSDrive C).Free - $before) / 1GB))

@@ -141,7 +141,7 @@ public sealed partial class MainViewModel
         if (!notice.StartsWith("KeaClip was updated", StringComparison.Ordinal)) return;
         highlights ??= WhatsNew.Summary(AppIdentity.Version);
         Notice = new CompletionNote("KeaClip updated to " + AppIdentity.Version,
-            highlights is null ? "Your settings and media were kept." : "New: " + highlights,
+            highlights ?? "Your settings and media were kept.",
             new Uri("https://github.com/Langkurst/KeaClip/releases/tag/v" + AppIdentity.Version), "See what's new");
     }
     private IRelayCommand? _openNoticeLinkCommand;

@@ -261,7 +261,7 @@ public sealed class UpdateUiTests
         var (_, _, model) = Create(); using var _ = model;
         model.ShowWhatsNew("The update to KeaClip 9.9.9 didn't finish, so this version is still installed.");
         Assert.Null(model.Notice);
-        model.ShowWhatsNew("KeaClip was updated to 0.4.6. Your settings and media were kept.", "Copy clip · Share any files or folders");
+        model.ShowWhatsNew("KeaClip was updated to 0.4.6. Your settings and media were kept.", "New: Copy clip · Share any files or folders");
         Assert.Equal("New: Copy clip · Share any files or folders", model.Notice?.Detail);
         Assert.Equal("See what's new", model.Notice?.LinkText);
     }

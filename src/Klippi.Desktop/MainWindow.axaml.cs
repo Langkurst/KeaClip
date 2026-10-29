@@ -60,7 +60,7 @@ public sealed partial class MainWindow : Window
         ScalingChanged += (_, _) => UpdateDisplayInfo();
         DataContextChanged += (_, _) => AttachModel(Model);
         Closing += OnClosing;
-        Closed += (_, _) => { _noticeTimer.Stop(); _tray?.Dispose(); _tray = null; AttachModel(null); };
+        Closed += (_, _) => { _noticeTimer.Stop(); _dragLeaveTimer.Stop(); _tray?.Dispose(); _tray = null; AttachModel(null); };
         // Tunnel routing: shortcuts run before a focused Button (Space would click it) or
         // Slider (arrows would jump by 1% of the file) can consume the key.
         AddHandler(KeyDownEvent, OnKey, RoutingStrategies.Tunnel);
@@ -71,11 +71,27 @@ public sealed partial class MainWindow : Window
         // Whatever page is open, a drag over the window says what letting go will do.
         AddHandler(DragDrop.DragEnterEvent, OnDragOver); AddHandler(DragDrop.DragOverEvent, OnDragOver);
         AddHandler(DragDrop.DragLeaveEvent, OnDragLeave);
+        // The hint must end with every drag, however it ends: a drop a text box handled itself never reaches OnDrop,
+        // and a drag cancelled with Esc or let go outside may not leave cleanly. Ordinary pointer movement only comes
+        // back once no drag is running, so the first one is a safety net.
+        AddHandler(DragDrop.DropEvent, (_, _) => EndDragHint(), RoutingStrategies.Bubble | RoutingStrategies.Tunnel, handledEventsToo: true);
+        AddHandler(PointerMovedEvent, (_, _) => { if (Model is { IsDragOver: true }) EndDragHint(); }, RoutingStrategies.Tunnel, handledEventsToo: true);
+        _dragLeaveTimer.Tick += (_, _) => EndDragHint();
+    }
+
+    // DragLeave also fires while moving between controls inside the window, immediately followed by DragOver; the hint
+    // only goes once no DragOver follows, so it never flickers.
+    private readonly Avalonia.Threading.DispatcherTimer _dragLeaveTimer = new() { Interval = TimeSpan.FromMilliseconds(120) };
+    private void EndDragHint()
+    {
+        _dragLeaveTimer.Stop();
+        if (Model is { } model) model.DropHint = null;
     }
 
     private void OnDragOver(object? sender, DragEventArgs e)
     {
         if (Model is not { } model) return;
+        _dragLeaveTimer.Stop();
         var paths = e.DataTransfer.TryGetFiles()?.Select(item => item.TryGetLocalPath()).OfType<string>().ToArray() ?? [];
         // If the source only reveals its files on drop, the hint stays general but the drop is still accepted.
         var hint = paths.Length > 0 ? model.DropHintFor(paths)
@@ -85,11 +101,11 @@ public sealed partial class MainWindow : Window
         e.DragEffects = hint is null ? DragDropEffects.None : DragDropEffects.Copy;
     }
 
-    // Leaving a child element also raises DragLeave; only leaving the window itself hides the hint.
+    // Leaving the window hides the hint at once; leaving a control inside it waits briefly for the next DragOver.
     private void OnDragLeave(object? sender, DragEventArgs e)
     {
-        var point = e.GetPosition(this);
-        if (Model is { } model && !new Rect(Bounds.Size).Contains(point)) model.DropHint = null;
+        if (!new Rect(Bounds.Size).Contains(e.GetPosition(this))) { EndDragHint(); return; }
+        _dragLeaveTimer.Stop(); _dragLeaveTimer.Start();
     }
 
     private MainViewModel? Model => DataContext as MainViewModel;

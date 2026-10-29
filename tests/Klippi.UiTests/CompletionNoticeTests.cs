@@ -52,7 +52,7 @@ public sealed class CompletionNoticeTests
         try
         {
             model.Theme = "Dark";
-            model.ShowWhatsNew("KeaClip was updated to 0.4.6. Your settings and media were kept.", "What's new after an update · Ready to share, from the start");
+            model.ShowWhatsNew("KeaClip was updated to 0.4.6. Your settings and media were kept.", "New: What's new after an update · Ready to share, from the start");
             Dispatcher.UIThread.RunJobs();
             Assert.True(window.FindNamed<Border>("NoticeCard")!.IsEffectivelyVisible);
             Assert.True(window.FindNamed<Button>("NoticeLinkButton")!.IsEffectivelyVisible);

@@ -180,5 +180,45 @@ public sealed class DropShareTests : IDisposable
         finally { model.CloseBehavior = Klippi.Core.CloseBehavior.Exit; window.Close(); }
     }
 
+    // Bug report: the drag hint stayed on screen after letting go over the link box (the text box took the drop
+    // itself, so the window's drop handler never ran) and after a drag left or was cancelled.
+    [AvaloniaTheory]
+    [InlineData("drop on the link box")]
+    [InlineData("leave the window")]
+    [InlineData("cancel, then move the mouse")]
+    [InlineData("leave a control and stop")]
+    public async Task The_drag_hint_always_goes_away_when_the_drag_ends(string ending)
+    {
+        var fake = new UiFakes();
+        using var model = new MainViewModel(fake.Services) { ReducedMotion = true };
+        var window = new MainWindow { DataContext = model, Width = 1180, Height = 780 }; window.Show();
+        try
+        {
+            await model.InitializeAsync(); model.SelectedTab = 0; Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+            var box = window.FindNamed<Avalonia.Controls.TextBox>("UrlInput")!;
+            var over = Avalonia.VisualExtensions.TranslatePoint(box, new Avalonia.Point(40, box.Bounds.Height / 2), window)!.Value;
+            var data = new Avalonia.Input.DataTransfer(); data.Add(Avalonia.Input.DataTransferItem.CreateText("https://example.com/video"));
+            window.DragDrop(over, Avalonia.Input.Raw.RawDragEventType.DragEnter, data, Avalonia.Input.DragDropEffects.Copy, Avalonia.Input.RawInputModifiers.None);
+            window.DragDrop(over, Avalonia.Input.Raw.RawDragEventType.DragOver, data, Avalonia.Input.DragDropEffects.Copy, Avalonia.Input.RawInputModifiers.None);
+            Assert.True(model.IsDragOver);
+
+            switch (ending)
+            {
+                case "drop on the link box": window.DragDrop(over, Avalonia.Input.Raw.RawDragEventType.Drop, data, Avalonia.Input.DragDropEffects.Copy, Avalonia.Input.RawInputModifiers.None); break;
+                case "leave the window": window.DragDrop(new Avalonia.Point(-20, -20), Avalonia.Input.Raw.RawDragEventType.DragLeave, data, Avalonia.Input.DragDropEffects.Copy, Avalonia.Input.RawInputModifiers.None); break;
+                case "cancel, then move the mouse": window.MouseMove(new Avalonia.Point(500, 400), Avalonia.Input.RawInputModifiers.None); break;
+                case "leave a control and stop":
+                    window.DragDrop(over, Avalonia.Input.Raw.RawDragEventType.DragLeave, data, Avalonia.Input.DragDropEffects.Copy, Avalonia.Input.RawInputModifiers.None);
+                    var limit = DateTime.UtcNow.AddSeconds(2);
+                    while (model.IsDragOver && DateTime.UtcNow < limit) { Avalonia.Threading.Dispatcher.UIThread.RunJobs(); await Task.Delay(20); }
+                    break;
+            }
+            Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+            Assert.False(model.IsDragOver, $"the hint stayed after: {ending}");
+            Assert.False(window.FindNamed<Avalonia.Controls.Panel>("DropOverlay")!.IsVisible);
+        }
+        finally { model.CloseBehavior = Klippi.Core.CloseBehavior.Exit; window.Close(); }
+    }
+
     public void Dispose() { if (Directory.Exists(_root)) Directory.Delete(_root, true); }
 }
